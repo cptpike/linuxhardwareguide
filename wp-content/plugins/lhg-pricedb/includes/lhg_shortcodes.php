@@ -282,7 +282,7 @@ add_shortcode( 'lhg_scan_overview', 'lhg_scan_overview_shortcode');
 
 function lhg_scan_overview_shortcode($attr) {
 
-	require_once(plugin_dir_path(__FILE__)."../../subscribe-to-comments-reloaded/templates/uid.php");
+	require_once(plugin_dir_path(__FILE__)."../../lhg-hardware-profile-manager/templates/uid.php");
 	require_once(plugin_dir_path(__FILE__)."lhg.conf");
 
 	$myquery = $lhg_price_db->prepare("SELECT id, sid, pub_id, scandate, kversion, distribution, status FROM `lhgscansessions` GROUP BY scandate ORDER BY scandate DESC LIMIT 10;");
