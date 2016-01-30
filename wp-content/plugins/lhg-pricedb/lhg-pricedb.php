@@ -5,7 +5,7 @@ Plugin Name: LHG PriceDB
 Plugin URI: http://www.linux-hardware-guide.com
 Description: Interface to the LHG price data base
 Version: 0.1
-Author: Ronny Ziegler
+Author: Captain Pike https://github.com/cptpike
 Author URI: http://www.linux-hardware-guide.com
 License: Proprietary
 */
