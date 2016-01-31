@@ -23,7 +23,7 @@ if ($address eq "192.168.3.115") {
 
 
 our    $database = "DBI:mysql:lhgpricedb;host=$host";
-require ("lhg.conf");
+require ("/var/www/uploads/lhg.conf");
 #our    $user = "USERNAME";
 #our    $pw = "PASSWORD";
 our    $rescan = 0;
