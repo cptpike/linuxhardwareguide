@@ -1520,7 +1520,8 @@ function lhg_get_mainboard_fingerprint ( $sid  ) {
 		if ($is_onboard == "yes")  { array_push( $pci_obl , $pciid); }
 
 	}
-        $pcistring = implode(";",$pci_obl);
+        #use , as separator!
+        $pcistring = implode(",",$pci_obl);
         return $pcistring;
         #print "PCI-Onboard: "; var_dump( $pci_obl );
 
