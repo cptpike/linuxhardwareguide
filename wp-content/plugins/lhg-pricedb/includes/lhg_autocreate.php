@@ -1554,7 +1554,7 @@ function lhg_taglist_by_title ( $title  ) {
      	array_push ( $taglist , 882);
   }
 
-  # Mainboard
+  # Mainboard / Laptop
   if (preg_match('/Fujitsu/i',$title)) array_push ( $taglist , 755);
   if (preg_match('/Fujitsu/i',$title)) array_push ( $taglist , 756);
   if (preg_match('/Dell/i',$title)) array_push ( $taglist , 712);
@@ -1563,6 +1563,10 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/MSI /i',$title)) array_push ( $taglist , 539);
   if (preg_match('/Asus/i',$title)) array_push ( $taglist , 497);
   if (preg_match('/Lifebook/i',$title)) array_push ( $taglist , 756);
+  if (preg_match('/Hewlett-Packard/i',$title)) array_push ( $taglist , 439);
+  if (preg_match('/Compaq/i',$title)) array_push ( $taglist , 952);
+  if (preg_match('/Compaq Presario/i',$title)) array_push ( $taglist , 197);
+  if (preg_match('/Notebook/i',$title)) array_push ( $taglist , 197);
 
   # USB
   if (preg_match('/Laser/',$title)) array_push ( $taglist , 681);
@@ -1587,6 +1591,8 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/TSSTcorp/',$title)) array_push ( $taglist , 465);
   if (preg_match('/CDDVD/',$title)) array_push ( $taglist , 146);
   if (preg_match('/CDDVD/',$title)) array_push ( $taglist , 326);
+  if (preg_match('/DVD RW/',$title)) array_push ( $taglist , 146);
+  if (preg_match('/DVD RW/',$title)) array_push ( $taglist , 326);
   if (preg_match('/DVD+-RW/',$title)) array_push ( $taglist , 331);
   if (preg_match('/DVD+-RW/',$title)) array_push ( $taglist , 582);
   if (preg_match('/MATSHITA/i',$title)) array_push ( $taglist , 985);
@@ -1596,6 +1602,7 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/ DRW-/i',$title)) array_push ( $taglist , 331);
   if (preg_match('/DVD writer/i',$title)) array_push ( $taglist , 582);
   if (preg_match('/ External/i',$title)) array_push ( $taglist , 333);
+  if (preg_match('/Optiarc/',$title)) array_push ( $taglist , 754);
 
   #Hitachi
   if (preg_match('/HTS[0-9][0-9]/',$title)) array_push ( $taglist , 905);
