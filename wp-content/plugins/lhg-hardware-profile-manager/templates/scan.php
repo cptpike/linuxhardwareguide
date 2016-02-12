@@ -1190,7 +1190,36 @@ echo ' <form action="?" method="post" class="mb-usercomment">
 }
 
 
-if (count($unidentified_hw) > 0) {
+# check if remaining HW is filtered and nothing remains to be shown
+foreach($unidentified_hw as $a_identified_hw){
+
+                        $skip = 0;
+                        #List UN-identified hw components
+			$title = ($a_identified_hw->idstring);
+			$usbid = ($a_identified_hw->usbid);
+			$pciid = ($a_identified_hw->pciid);
+                        $art_image=get_the_post_thumbnail( $a_identified_hw->postid, array(55,55) );
+                        $comment=( $a_identified_hw->usercomment );
+                        $url=( $a_identified_hw->url );
+                        $id=( $a_identified_hw->id );
+                        $scantype=( $a_identified_hw->scantype );
+
+
+                        if ( ($usbid != "") && (strpos($title, "Matching Hub") > 0) ) { $skip = 1; $num_skip_tmp ++; }
+                        if ( ($usbid != "") && (strpos($title, "root hub") > 0) ) { $skip = 1; $num_skip_tmp ++; }
+                        # Skip "Intel Corp."
+                        if ( ($usbid == "8087:8000") ) { $skip = 1; $num_skip_tmp ++; }
+                        if ( ($usbid == "8087:8008") ) { $skip = 1; $num_skip_tmp ++; }
+}
+
+
+if ($num_skip_tmp == $unidentified_hw) {
+        # all remaining components are filtered components!
+        $skip_unknown_hw = 1;
+}
+
+
+if ( (count($unidentified_hw) > 0) && ($skip_unknown_hw != 1) ) {
 
 print "<h2>Unknown Hardware</h2>";
 
