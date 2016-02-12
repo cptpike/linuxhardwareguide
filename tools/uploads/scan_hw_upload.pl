@@ -35,6 +35,26 @@ our $laptop_identified = 0;
 
 #exit 0;
 
+if ( ($ARGV[1] eq "-h") or ($ARGV[0] eq "") ){
+    print "
+USAGE:
+        scan_hw_upload.pl <sessionID> <option>
+        
+OPTIONS:
+        -c 
+           Clear stored data
+        
+        -r
+           perform rescan (e.g. after update of hardware database)
+        
+If <sessionID> equals \"ALL\" a rescan of all available hardware 
+uploads is performed.
+        
+";
+    exit 0;
+}
+
+
 if ($ARGV[1] eq "-r") {
     $rescan = 1;
     # rescan requested
@@ -58,6 +78,11 @@ if ($ARGV[1] eq "-r") {
 if ($ARGV[1] eq "-c") {
     $rescan = 1;
     clear_db($sid);
+    exit 0;
+}
+
+if ($ARGV[0] eq "ALL") {
+    rescan_all();
     exit 0;
 }
 
@@ -1783,4 +1808,19 @@ sub article_type_is_mainboard {
     #    \n";
     
     return $mainboard;
+}
+
+sub rescan_all {
+    # get list of all session IDs
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT DISTINCT sid FROM `lhgscansessions`";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute();
+    
+    while (@sids = $sth_glob->fetchrow_array() ) {
+        my $sid=$sids[0];
+        system($0,$sid,"-r");
+    }
+
 }
