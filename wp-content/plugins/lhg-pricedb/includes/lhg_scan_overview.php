@@ -95,8 +95,10 @@ function lhg_article_scans_overview () {
 
 
         # Sort scan overview table by date
-        array_multisort($date_array, SORT_DESC, $output_tmp_array);
-        $output_tmp_string = implode(" ",$output_tmp_array);
+        if ($counter > 0) {
+        	array_multisort($date_array, SORT_DESC, $output_tmp_array);
+        	$output_tmp_string = implode(" ",$output_tmp_array);
+	}
 
         $output_tmp .= $output_tmp_string."</table></div>";
 
