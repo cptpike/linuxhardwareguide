@@ -1204,6 +1204,7 @@ foreach($unidentified_hw as $a_identified_hw){
                         $id=( $a_identified_hw->id );
                         $scantype=( $a_identified_hw->scantype );
 
+                        # ToDo: check as part of sub-routine (used twice! in code)
 
                         if ( ($usbid != "") && (strpos($title, "Matching Hub") > 0) ) { $skip = 1; $num_skip_tmp ++; }
                         if ( ($usbid != "") && (strpos($title, "root hub") > 0) ) { $skip = 1; $num_skip_tmp ++; }
@@ -1213,7 +1214,7 @@ foreach($unidentified_hw as $a_identified_hw){
 }
 
 
-if ($num_skip_tmp == $unidentified_hw) {
+if ($num_skip_tmp == count($unidentified_hw) ) {
         # all remaining components are filtered components!
         $skip_unknown_hw = 1;
 }
