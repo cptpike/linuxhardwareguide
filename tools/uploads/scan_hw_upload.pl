@@ -92,7 +92,7 @@ exit 0;
 
 sub check_mainboard {
     
-    print "-----> Checking Mainboard \n";
+    print "-----> Checking Mainboard / Laptop \n";
     
     open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
     open(FILEN, "<", "/var/www/uploads/".$sid."/lspci.txt");
@@ -136,6 +136,7 @@ sub check_mainboard {
     # therefore, get number of PCI IDs
     
     $Npciid = get_number_pciids($mindex);
+    print "       Fingerprint has $Npciid elements\n";
     if ( $Npciid > 0 ) {
         $mb_recognition = $identifiedmb[$mindex]/$Npciid;
     }
@@ -158,7 +159,7 @@ sub check_mainboard {
         
         # Laptop found - check if it is the right one
         if ( ($mainboard_found_in_db == 0) && ($laptop_probability > 0.85) ) {
-            print "Laptop identified ... ";
+            print "       Laptop identified ... ";
             
             # check if additional PCI ids exist
             open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
@@ -166,7 +167,11 @@ sub check_mainboard {
             $i=0;
             @knownpciids = qw();
             @pciid_blacklist = get_pciid_blacklist($mindex);
-
+            
+            # Print array
+            #print "Blacklist";
+            #print join(", ", @pciid_blacklist);
+            
             while ( <FILE> ) {
 
                 $pciid   = grab_pciid($_);
@@ -1044,7 +1049,15 @@ sub get_number_pciids {
     $search = $postid;
     $sth_glob->execute($search);
     my $pciids = $sth_glob->fetchrow_array();
-    my @pciarray = split(',',$pciids);
+    # separated by , or by ;
+    my @pciarray=();
+    if (index($pciids, ",") != -1) {
+        @pciarray = split(',',$pciids);
+    }
+    if (index($pciids, ";") != -1) {
+        @pciarray = split(';',$pciids);
+    }
+
     $Npciids = scalar(@pciarray);
     #print "PID: $postid -- $pciids -- ";
     return $Npciids;
@@ -1064,7 +1077,13 @@ sub get_pciid_blacklist {
     $search = $postid;
     $sth_glob->execute($search);
     my $pciids = $sth_glob->fetchrow_array();
-    my @pciarray = split(',',$pciids);
+    my @pciarray=();
+    if (index($pciids, ",") != -1) {
+        @pciarray = split(',',$pciids);
+    }
+    if (index($pciids, ";") != -1) {
+        @pciarray = split(';',$pciids);
+    }
     return @pciarray;
 
 }
@@ -1651,7 +1670,7 @@ sub storescan_laptop_probability {
 
 sub calculate_laptop_probability {
     
-    print "-----> Calculate Laptop Prob: ";
+    print "-----> Calculate Laptop Probability: ";
     $probability = 0;
 
 
@@ -1673,7 +1692,7 @@ sub calculate_laptop_probability {
         #stop already here
         #print "Rule 1: Name found \n-------->$title \n";
         storescan_laptop_probability($sid, $probability);
-        print "Laptop found \n";
+        print "100% - Laptop found \n";
         return $probability;
     }
     
