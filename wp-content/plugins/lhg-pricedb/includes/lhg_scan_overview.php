@@ -33,6 +33,7 @@ function lhg_article_scans_overview () {
 
 
         $idarray=array();
+        $counter = 0;
 
         foreach ($ids as $id) {
                 $sid = $id->sid;
@@ -63,10 +64,11 @@ function lhg_article_scans_overview () {
                    array_push( $idarray, $uniquestring );
                    if ( ($result0->distribution != "") && ($result0->kversion != "") && ($findings < 11) ) {
                         $date = date_i18n( get_option( 'date_format' ), $result0->scandate );
+                        $date_array[$counter]= $result0->scandate;
                         $logo = get_distri_logo($result0->distribution);
 
 
-                        $output_tmp .= '<tr>
+                        $output_tmp_array[$counter] .= '<tr>
                         <td width="30">'."
                         <div class=\"scan-overview-distri-logo\"><img src=\"".$logo.'" width="30" ></div>
                         </td><td>'.$result0->distribution."</td>
@@ -82,7 +84,6 @@ function lhg_article_scans_overview () {
 
                 }
 	}
-        $output_tmp .="</table></div>";
 
         if ($counter == 1) $txt_results = "1 ".$txt_scan_result;
         if ($counter > 1) $txt_results = $counter." ".$txt_scan_results;
@@ -91,6 +92,13 @@ function lhg_article_scans_overview () {
         $output .= "<h2>$txt_scan_title - $txt_results </h2>";
 	$output .= $txt_scan_text;
         #'This hardware component was used by Linux users under the following system configurations. These results were collected by our <a href="./add-hardware">Scan Tool</a>:';
+
+
+        # Sort scan overview table by date
+        array_multisort($date_array, SORT_DESC, $output_tmp_array);
+        $output_tmp_string = implode(" ",$output_tmp_array);
+
+        $output_tmp .= $output_tmp_string."</table></div>";
 
 
         # we found something -> show table
