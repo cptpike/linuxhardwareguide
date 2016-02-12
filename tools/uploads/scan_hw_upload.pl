@@ -35,6 +35,26 @@ our $laptop_identified = 0;
 
 #exit 0;
 
+if ( ($ARGV[1] eq "-h") or ($ARGV[0] eq "") ){
+    print "
+USAGE:
+        scan_hw_upload.pl <sessionID> <option>
+        
+OPTIONS:
+        -c 
+           Clear stored data
+        
+        -r
+           perform rescan (e.g. after update of hardware database)
+        
+If <sessionID> equals \"ALL\" a rescan of all available hardware 
+uploads is performed.
+        
+";
+    exit 0;
+}
+
+
 if ($ARGV[1] eq "-r") {
     $rescan = 1;
     # rescan requested
@@ -58,6 +78,11 @@ if ($ARGV[1] eq "-r") {
 if ($ARGV[1] eq "-c") {
     $rescan = 1;
     clear_db($sid);
+    exit 0;
+}
+
+if ($ARGV[0] eq "ALL") {
+    rescan_all();
     exit 0;
 }
 
@@ -92,7 +117,7 @@ exit 0;
 
 sub check_mainboard {
     
-    print "-----> Checking Mainboard \n";
+    print "-----> Checking Mainboard / Laptop \n";
     
     open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
     open(FILEN, "<", "/var/www/uploads/".$sid."/lspci.txt");
@@ -136,6 +161,7 @@ sub check_mainboard {
     # therefore, get number of PCI IDs
     
     $Npciid = get_number_pciids($mindex);
+    print "       Fingerprint has $Npciid elements\n";
     if ( $Npciid > 0 ) {
         $mb_recognition = $identifiedmb[$mindex]/$Npciid;
     }
@@ -158,7 +184,7 @@ sub check_mainboard {
         
         # Laptop found - check if it is the right one
         if ( ($mainboard_found_in_db == 0) && ($laptop_probability > 0.85) ) {
-            print "Laptop identified ... ";
+            print "       Laptop identified ... ";
             
             # check if additional PCI ids exist
             open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
@@ -166,7 +192,11 @@ sub check_mainboard {
             $i=0;
             @knownpciids = qw();
             @pciid_blacklist = get_pciid_blacklist($mindex);
-
+            
+            # Print array
+            #print "Blacklist";
+            #print join(", ", @pciid_blacklist);
+            
             while ( <FILE> ) {
 
                 $pciid   = grab_pciid($_);
@@ -1044,7 +1074,15 @@ sub get_number_pciids {
     $search = $postid;
     $sth_glob->execute($search);
     my $pciids = $sth_glob->fetchrow_array();
-    my @pciarray = split(',',$pciids);
+    # separated by , or by ;
+    my @pciarray=();
+    if (index($pciids, ",") != -1) {
+        @pciarray = split(',',$pciids);
+    }
+    if (index($pciids, ";") != -1) {
+        @pciarray = split(';',$pciids);
+    }
+
     $Npciids = scalar(@pciarray);
     #print "PID: $postid -- $pciids -- ";
     return $Npciids;
@@ -1064,7 +1102,13 @@ sub get_pciid_blacklist {
     $search = $postid;
     $sth_glob->execute($search);
     my $pciids = $sth_glob->fetchrow_array();
-    my @pciarray = split(',',$pciids);
+    my @pciarray=();
+    if (index($pciids, ",") != -1) {
+        @pciarray = split(',',$pciids);
+    }
+    if (index($pciids, ";") != -1) {
+        @pciarray = split(';',$pciids);
+    }
     return @pciarray;
 
 }
@@ -1651,7 +1695,7 @@ sub storescan_laptop_probability {
 
 sub calculate_laptop_probability {
     
-    print "-----> Calculate Laptop Prob: ";
+    print "-----> Calculate Laptop Probability: ";
     $probability = 0;
 
 
@@ -1673,7 +1717,7 @@ sub calculate_laptop_probability {
         #stop already here
         #print "Rule 1: Name found \n-------->$title \n";
         storescan_laptop_probability($sid, $probability);
-        print "Laptop found \n";
+        print "100% - Laptop found \n";
         return $probability;
     }
     
@@ -1764,4 +1808,19 @@ sub article_type_is_mainboard {
     #    \n";
     
     return $mainboard;
+}
+
+sub rescan_all {
+    # get list of all session IDs
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT DISTINCT sid FROM `lhgscansessions`";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute();
+    
+    while (@sids = $sth_glob->fetchrow_array() ) {
+        my $sid=$sids[0];
+        system($0,$sid,"-r");
+    }
+
 }
