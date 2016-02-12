@@ -45,6 +45,8 @@ $cpu0 = implode("\n",$new_cpulines);
 
   $new_taglist = lhg_taglist_by_title( $title );
   $taglist = array_merge( $taglist, $new_taglist );
+  $tagstring = lhg_convert_tag_array_to_string( $taglist );
+
 
 
   #
@@ -68,7 +70,7 @@ $cpu0 = implode("\n",$new_cpulines);
 			'post_author' => 1,
 			'post_title' =>  $title,
 			'post_category' => array($category),
-                        'tags_input' => $taglist,
+                        'tags_input' => $tagstring,
 		);
         global $wpdb;
 	#$post_if = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title'");
@@ -247,6 +249,7 @@ The following hardware components are part of the '.$title.' and are supported b
 
   $new_taglist = lhg_taglist_by_title( $title );
   $taglist = array_merge( $taglist, $new_taglist );
+  $tagstring = lhg_convert_tag_array_to_string( $taglist );
 
 
 
@@ -263,7 +266,7 @@ The following hardware components are part of the '.$title.' and are supported b
 			'post_author' => 1,
 			'post_title' =>  $title,
 			'post_category' => array($category),
-                        'tags_input' => $taglist,
+                        'tags_input' => $tagstring,
 		);
         global $wpdb;
 	#$post_if = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title'");
@@ -376,6 +379,8 @@ function lhg_create_pci_article ($title, $sid, $id ) {
 
   $new_taglist = lhg_taglist_by_title( $title );
   $taglist = array_merge( $taglist, $new_taglist );
+  $tagstring = lhg_convert_tag_array_to_string( $taglist );
+
 
 
   #print "Article creation started";
@@ -391,7 +396,7 @@ function lhg_create_pci_article ($title, $sid, $id ) {
 			'post_author' => 1,
 			'post_title' =>  $title,
 			'post_category' => array($category),
-                        'tags_input' => $taglist,
+                        'tags_input' => $tagstring,
 		);
         global $wpdb;
 	#$post_if = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title'");
@@ -519,6 +524,7 @@ The xxx is a ???. It is automatically recognized and fully supported by the Linu
 
   $new_taglist = lhg_taglist_by_title($title);
   $taglist = array_merge( $taglist, $new_taglist );
+  $tagstring = lhg_convert_tag_array_to_string( $taglist );
 
   #print "<br>Title: $title <br> ScanID: $sid<br>";
 
@@ -531,7 +537,7 @@ The xxx is a ???. It is automatically recognized and fully supported by the Linu
 			'post_author' => 1,
 			'post_title' =>  "<!--:us-->".$title."<!--:-->",
 			'post_category' => array($category),
-                        'tags_input' => $taglist,
+                        'tags_input' => $tagstring,
 		);
         global $wpdb;
 	#$post_if = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title'");
@@ -650,6 +656,8 @@ foreach(preg_split("/((\r?\n)|(\r\n?))/", $content) as $line){
 
   $new_taglist = lhg_taglist_by_title( $title );
   $taglist = array_merge( $taglist, $new_taglist );
+
+  $tagstring = lhg_convert_tag_array_to_string( $taglist );
   #print "newTags: "; var_dump( $taglist ); print "<br>";
 
 
@@ -686,7 +694,7 @@ It is automatically recognized and fully supported by the Linux kernel:
 			'post_author' => 1,
 			'post_title' =>  $title,
 			'post_category' => $category_array,
-                        'tags_input' => $taglist,
+                        'tags_input' => $tagstring,
 		);
         global $wpdb;
 	#$post_if = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title'");
@@ -1520,11 +1528,27 @@ function lhg_get_mainboard_fingerprint ( $sid  ) {
 		if ($is_onboard == "yes")  { array_push( $pci_obl , $pciid); }
 
 	}
-        $pcistring = implode(";",$pci_obl);
+        #use , as separator!
+        $pcistring = implode(",",$pci_obl);
         return $pcistring;
         #print "PCI-Onboard: "; var_dump( $pci_obl );
 
 }
+
+
+function lhg_convert_tag_array_to_string ( $taglist  ) {
+  # convert tag id array to string of tag names
+  $tagstring = "";
+  foreach ($taglist as $a_tag) {
+          $tag = get_tag ($a_tag);
+          $tag_as_string = $tag->name;
+          $tagstring .= $tag_as_string.",";
+  }
+  $tagstring = substr($tagstring,0,-1);
+  #print "Tagstring: $tagstring<br>";
+  return $tagstring;
+}
+
 
 function lhg_category_by_title ( $title  ) {
   $catlist = array();
@@ -1554,7 +1578,7 @@ function lhg_taglist_by_title ( $title  ) {
      	array_push ( $taglist , 882);
   }
 
-  # Mainboard
+  # Mainboard / Laptop
   if (preg_match('/Fujitsu/i',$title)) array_push ( $taglist , 755);
   if (preg_match('/Fujitsu/i',$title)) array_push ( $taglist , 756);
   if (preg_match('/Dell/i',$title)) array_push ( $taglist , 712);
@@ -1563,6 +1587,10 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/MSI /i',$title)) array_push ( $taglist , 539);
   if (preg_match('/Asus/i',$title)) array_push ( $taglist , 497);
   if (preg_match('/Lifebook/i',$title)) array_push ( $taglist , 756);
+  if (preg_match('/Hewlett-Packard/i',$title)) array_push ( $taglist , 439);
+  if (preg_match('/Compaq/i',$title)) array_push ( $taglist , 952);
+  if (preg_match('/Compaq Presario/i',$title)) array_push ( $taglist , 197);
+  if (preg_match('/Notebook/i',$title)) array_push ( $taglist , 197);
 
   # USB
   if (preg_match('/Laser/',$title)) array_push ( $taglist , 681);
@@ -1571,6 +1599,7 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Trust/',$title)) array_push ( $taglist , 644);
   if (preg_match('/Seagate/',$title)) array_push ( $taglist , 904);
   if (preg_match('/Logitech/',$title)) array_push ( $taglist , 361);
+  if (preg_match('/Logilink/',$title)) array_push ( $taglist , 523);
 
   if (preg_match('/Mouse/',$title)) {
      array_push ( $taglist , 634);
@@ -1587,6 +1616,8 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/TSSTcorp/',$title)) array_push ( $taglist , 465);
   if (preg_match('/CDDVD/',$title)) array_push ( $taglist , 146);
   if (preg_match('/CDDVD/',$title)) array_push ( $taglist , 326);
+  if (preg_match('/DVD RW/',$title)) array_push ( $taglist , 146);
+  if (preg_match('/DVD RW/',$title)) array_push ( $taglist , 326);
   if (preg_match('/DVD+-RW/',$title)) array_push ( $taglist , 331);
   if (preg_match('/DVD+-RW/',$title)) array_push ( $taglist , 582);
   if (preg_match('/MATSHITA/i',$title)) array_push ( $taglist , 985);
@@ -1596,6 +1627,7 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/ DRW-/i',$title)) array_push ( $taglist , 331);
   if (preg_match('/DVD writer/i',$title)) array_push ( $taglist , 582);
   if (preg_match('/ External/i',$title)) array_push ( $taglist , 333);
+  if (preg_match('/Optiarc/',$title)) array_push ( $taglist , 754);
 
   #Hitachi
   if (preg_match('/HTS[0-9][0-9]/',$title)) array_push ( $taglist , 905);
@@ -1604,3 +1636,4 @@ function lhg_taglist_by_title ( $title  ) {
 
         return $taglist;
 }
+
