@@ -1336,6 +1336,9 @@ print "<h2>Unknown Hardware</h2>";
 
                         if ( ($usbid != "") && (strpos($title, "Matching Hub") > 0) ) { $skip = 1; $num_skip ++; }
                         if ( ($usbid != "") && (strpos($title, "root hub") > 0) ) { $skip = 1; $num_skip ++; }
+                        # Skip "Intel Corp."
+                        if ( ($usbid == "8087:8000") ) { $skip = 1; $num_skip ++; }
+                        if ( ($usbid == "8087:8008") ) { $skip = 1; $num_skip ++; }
 
                         if ($skip == 0) {
 
