@@ -3,19 +3,23 @@
 function lhg_create_cpu_article ($title, $sid ) {
 
   global $lhg_price_db;
+  global $cpus_from_library;
   $category = 874;
   $taglist = array( 874);
 
-$url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=cpuinfo.txt";
-$content = file_get_contents($url);
+  # Download only once for speed improvement
+  if ( $cpus_from_library == "" ) {
+	$url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=cpuinfo.txt";
+	$content = file_get_contents($url);
+	$cpus_from_library = explode("\n\n",$content);
+  }
 
-$cpus = explode("\n\n",$content);
-#print "<br>Dump:".var_dump($cpus)."<br>";
-$cpu0 = $cpus[0];
+  #print "<br>Dump:".var_dump($cpus)."<br>";
+  $cpu0 = $cpus_from_library[0];
 
-$new_cpulines = array();
-$cpulines = explode("\n",$cpu0);
-foreach ($cpulines as $cpuline) {
+  $new_cpulines = array();
+  $cpulines = explode("\n",$cpu0);
+  foreach ($cpulines as $cpuline) {
         $length= strlen($cpuline);
 
         #print "L: $length :".$cpuline."<br>";
@@ -31,7 +35,7 @@ foreach ($cpulines as $cpuline) {
                 #print "CPL: $cpuline ---- <br>";
         }
         array_push($new_cpulines, $cpuline);
-}
+  }
 
 $cpu0 = implode("\n",$new_cpulines);
 
@@ -154,26 +158,41 @@ function lhg_create_mainboard_article ($title, $sid ) {
 	$taglist = array( 450 );
   }
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
-  $lspci_content = file_get_contents($url);
+  # Download only once for speed improvement
+  global $lspci_content_from_library;
+  global $dmesg_content_from_library;
+  global $lsb_content_from_library;
+  global $version_content_from_library;
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
-  $dmesg_content = file_get_contents($url);
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsb_release.txt";
-  $lsb_content = file_get_contents($url);
+  if ( $lspci_content_from_library == "" ) {
+	$url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
+  	$lspci_content_from_library = file_get_contents($url);
+  }
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=version.txt";
-  $version_content = file_get_contents($url);
+  if ( $dmesg_content_from_library == "" ) {
+	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+	  $dmesg_content_from_library = file_get_contents($url);
+  }
 
-$lspci = explode("\n\n",$lspci_content);
+  if ( $lsb_content_from_library == "" ) {
+	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsb_release.txt";
+	  $lsb_content_from_library = file_get_contents($url);
+  }
+
+  if ( $version_content_from_library == "" ) {
+	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=version.txt";
+       	  $version_content_from_library = file_get_contents($url);
+  }
+
+$lspci = explode("\n\n",$lspci_content_from_library);
 #print "<br>Dump:".var_dump($lspci)."<br>";
 $lspci0 = $lspci[0];
 $lspci0 = str_replace("\n\n","",$lspci0);
 
 
 	# create filtered and unfiltered list of all PCI IDs as array $pci_array_all
-	$lspci_array = explode("\n",$lspci_content);
+	$lspci_array = explode("\n",$lspci_content_from_library);
         $pcilist = array();
 
         foreach ($lspci_array as $line) {
@@ -199,13 +218,13 @@ $lspci0 = str_replace("\n\n","",$lspci0);
 #print "cont: <pre>".$cpu0."</pre>";
 
   # DMI entry
-  $dmesg_content_array = split("\n",$dmesg_content);
+  $dmesg_content_array = split("\n",$dmesg_content_from_library);
   $dmi_array = preg_grep("/DMI: /",$dmesg_content_array);
   $dmi_line = implode("\n",$dmi_array);
   $dmi_line = str_replace("[    0.000000]","",$dmi_line);
 
   # Distribution
-  $lsb_content_array = split("\n",$lsb_content);
+  $lsb_content_array = split("\n",$lsb_content_from_library);
   $lsb_array = preg_grep("/Description/",$lsb_content_array);
   $distribution = implode(" ",$lsb_array);
   $distribution = str_replace("Description:","",$distribution);
@@ -215,7 +234,7 @@ $lspci0 = str_replace("\n\n","",$lspci0);
 
 
   # Kernel version
-  $version_content_array = split("\n",$version_content);
+  $version_content_array = split("\n",$version_content_from_library);
   $version_array = preg_grep("/Linux version/",$version_content_array);
   $version_line = $version_array[0];
   $version_line = str_replace("Linux version ","",$version_line);
@@ -352,17 +371,21 @@ The following hardware components are part of the '.$title.' and are supported b
 function lhg_create_pci_article ($title, $sid, $id ) {
 
   global $lhg_price_db;
+  global $lspci_content_from_library;
   $otitle = $title;
 
   $category = "";
   $taglist = array( );
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
-  $content = file_get_contents($url);
+  if ( $lspci_content_from_library == "" ) {
+	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
+	  $lspci_content_from_library = file_get_contents($url);
+  }
+
 
   // ToDo: grab relevant PCI lines
 
-  $lspci = explode("\n\n",$content);
+  $lspci = explode("\n\n",$lspci_content_from_library);
   #print "<br>Dump:".var_dump($cpus)."<br>";
   $lspci0 = $lspci[0];
 
@@ -469,21 +492,23 @@ function lhg_create_pci_article ($title, $sid, $id ) {
 function lhg_create_drive_article ($title, $sid, $id ) {
 
   global $lhg_price_db;
+  global $dmesg_content_from_library;
+
+
   $category = 478;
   $taglist = array( 584);
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+  if ( $dmesg_content_from_library == "" ) {
+	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+	  #extract relevant dmesg output
+          $dmesg_content_from_library = file_get_contents($url);
+	  #$pos = strpos($content, $title);
+	  #$line = substr($content,$pos,300);
+	  #print "dmesgline: ".$line."<br>";
+  }
 
 
-  #extract relevant dmesg output
-
-  $content = file_get_contents($url);
-  #$pos = strpos($content, $title);
-  #$line = substr($content,$pos,300);
-  #print "dmesgline: ".$line."<br>";
-
-
-  $dmesg = explode("\n",$content);
+  $dmesg = explode("\n",$dmesg_content_from_library);
   $find = array_keys( $dmesg, $title);
 
   $keyword = $title;
@@ -609,33 +634,42 @@ The xxx is a ???. It is automatically recognized and fully supported by the Linu
 
 function lhg_create_usb_article ($title, $sid, $usbid ) {
 
+  # Library download timeout settings
+  ini_set('default_socket_timeout', 5);
+
   global $lhg_price_db;
+  global $lsusb_content_from_library;
+  global $dmesg_content_from_library;
   #$category = 478;
   $taglist = array( 156 );
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsusb.txt";
-  $content = file_get_contents($url);
-  if ($content === false) {
-        throw new Exception('Failed to open ' . $url);
+  if ( $lsusb_content_from_library == "" ) {
+	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsusb.txt";
+	  $lsusb_content_from_library = file_get_contents($url);
+  	if ($lsusb_content_from_library === false) {
+	        throw new Exception('Failed to open ' . $url);
+	  }
   }
 
 #extract lsusb line
 
-foreach(preg_split("/((\r?\n)|(\r\n?))/", $content) as $line){
+foreach(preg_split("/((\r?\n)|(\r\n?))/", $lsusb_content_from_library) as $line){
     if ( strpos( $line, $usbid) > 0 ) $lsusbOutput = $line;
 } 
-if ($lsusbOutput == "") $lsusbOutput = $content;
+if ($lsusbOutput == "") $lsusbOutput = $lsusb_content_from_library;
 #extract relevant dmesg output
 
 
-  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
-  $content = file_get_contents($url);
-  if ($content === false) {
-        throw new Exception('Failed to open ' . $url);
+  if ( $dmesg_content_from_library == "" ) {
+	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+	  $dmesg_content_from_library = file_get_contents($url);
+  	if ($dmesg_content_from_library === false) {
+        	throw new Exception('Failed to open ' . $url);
+	  }
   }
 
 #1 get usb port number: search line where USB ID is present:
-foreach(preg_split("/((\r?\n)|(\r\n?))/", $content) as $line){
+foreach(preg_split("/((\r?\n)|(\r\n?))/", $dmesg_content_from_library) as $line){
     if ( ( strpos( $line, substr($usbid,0,4) ) > 0 ) &&
          ( strpos( $line, substr($usbid,-4) ) > 0 ) ) {
                 $pos_start = strpos($line,"]");
@@ -647,7 +681,7 @@ foreach(preg_split("/((\r?\n)|(\r\n?))/", $content) as $line){
 } 
 
 #2 get all relevant lines
-foreach(preg_split("/((\r?\n)|(\r\n?))/", $content) as $line){
+foreach(preg_split("/((\r?\n)|(\r\n?))/", $dmesg_content_from_library) as $line){
     if ( strpos( $line, $usbline) > 0 ) $dmesgOutput .= substr($line,$pos_start+2)."\r\n";
 } 
 
