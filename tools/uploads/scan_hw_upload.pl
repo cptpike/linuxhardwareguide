@@ -843,6 +843,16 @@ sub get_linux_distribution {
         }
         
     }
+    
+    print "Error: Distribution not recognized ... fallback 1\n";
+    # Works partially for 
+    if ($dist eq "") {
+        $kversion = get_kernel_version();
+        if ($kversion  =~ /-ARCH/) {
+            $dist = "Arch Linux";
+        }
+    }
+
     print "Distribution: $dist \n";
     return $dist;
 }
