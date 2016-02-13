@@ -1625,6 +1625,8 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Compaq/i',$title)) array_push ( $taglist , 952);
   if (preg_match('/Compaq Presario/i',$title)) array_push ( $taglist , 197);
   if (preg_match('/Notebook/i',$title)) array_push ( $taglist , 197);
+  if (preg_match('/Optiplex/i',$title)) array_push ( $taglist , 997);
+  if (preg_match('/Optiplex/i',$title)) array_push ( $taglist , 830); #Desktop PC
 
   # USB
   if (preg_match('/Laser/',$title)) array_push ( $taglist , 681);
