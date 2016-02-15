@@ -1636,6 +1636,9 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Seagate/',$title)) array_push ( $taglist , 904);
   if (preg_match('/Logitech/',$title)) array_push ( $taglist , 361);
   if (preg_match('/Logilink/',$title)) array_push ( $taglist , 523);
+  if (preg_match('/Microsoft/',$title)) array_push ( $taglist , 612);
+  if (preg_match('/Keyboard/',$title)) array_push ( $taglist , 630);
+  if (preg_match('/Wired/',$title)) array_push ( $taglist , 1009);
 
   if (preg_match('/Mouse/',$title)) {
      array_push ( $taglist , 634);
