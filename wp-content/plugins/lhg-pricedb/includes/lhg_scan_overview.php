@@ -368,17 +368,17 @@ function lhg_store_login_data ( $sid ) {
         $date = time();
         $user_ID = get_current_user_id();
 
-#        print "IP: $ip<br>
-#        Date: $date<br>
-#        UID: $user_ID<br>
-#        SID: $sid<br>
-#        ";
+        #print "IP: $ip<br>
+        #Date: $date<br>
+        #UID: $user_ID<br>
+        #SID: $sid<br>
+        #";
 
         if ($user_ID != 1) {
 		global $lhg_price_db;
-        	$sql = "INSERT INTO `lhgscan_login` ( date, ip, sid, user_id ) VALUES ( ?, ?, ?, ?)";
-                $safe_sql = $lhg_price_db->prepare($sql, $date, $ip, $sid, $user_ID);
-    		$inser = $lhg_price_db->query($safe_sql);
+        	$sql = "INSERT INTO `lhgscan_login` ( date, ip, sid, user_id ) VALUES ( '$date', '$ip', '$sid', '$user_id')";
+                #$safe_sql = $lhg_price_db->prepare($sql, $date, $ip, $sid, $user_ID);
+    		$inser = $lhg_price_db->query($sql);
 	}
 }
 

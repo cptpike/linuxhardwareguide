@@ -1625,6 +1625,8 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Compaq/i',$title)) array_push ( $taglist , 952);
   if (preg_match('/Compaq Presario/i',$title)) array_push ( $taglist , 197);
   if (preg_match('/Notebook/i',$title)) array_push ( $taglist , 197);
+  if (preg_match('/Optiplex/i',$title)) array_push ( $taglist , 997);
+  if (preg_match('/Optiplex/i',$title)) array_push ( $taglist , 830); #Desktop PC
 
   # USB
   if (preg_match('/Laser/',$title)) array_push ( $taglist , 681);
@@ -1634,6 +1636,9 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Seagate/',$title)) array_push ( $taglist , 904);
   if (preg_match('/Logitech/',$title)) array_push ( $taglist , 361);
   if (preg_match('/Logilink/',$title)) array_push ( $taglist , 523);
+  if (preg_match('/Microsoft/',$title)) array_push ( $taglist , 612);
+  if (preg_match('/Keyboard/',$title)) array_push ( $taglist , 630);
+  if (preg_match('/Wired/',$title)) array_push ( $taglist , 1009);
 
   if (preg_match('/Mouse/',$title)) {
      array_push ( $taglist , 634);
