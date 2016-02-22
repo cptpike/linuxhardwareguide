@@ -87,6 +87,8 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/korora-logo.jpg";
         if ( strpos($distribution,"Arch Linux") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/arch-linux-logo.png";
+        if ( strpos($distribution,"openSUSE") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/OpenSUSE_Logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
