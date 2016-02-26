@@ -18,6 +18,7 @@ require_once(plugin_dir_path(__FILE__).'/includes/lhg.conf');
 
 require_once(plugin_dir_path(__FILE__).'includes/lhg_widget_supplier_overview.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_widget_featured_article.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_widget_article_summary.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_shop_button.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_pricedb_functions.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_scan_overview.php');
@@ -517,6 +518,124 @@ function lhg_create_article_image( $image_url , $image_title ) {
 }
 
 
+# Store ratings of different language servers in central database
+# Will allow combining ratings accross servers
+function lhg_store_ratings ( $post_id, $post_ratings_users, $post_ratings_score, $post_ratings_value ) {
 
+	global $lang;
+    	global $lhg_price_db;
+        global $wpdb;
+
+        #echo "<br>HERE: $lang - ";
+
+        if ($lang != "de") {
+                # find id corresponding to post_id
+
+		$sql = "SELECT id FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+    		$id = $lhg_price_db->get_var($sql);
+
+                if ($id != "0") {
+                	#echo "ID: $id";
+	                # store values
+        	        $sql = "UPDATE lhgtransverse_posts SET  `post_ratings_users_com` = %s, `post_ratings_score_com` = %s, `post_ratings_value_com` = %s WHERE id = %s";
+	        	$safe_sql = $lhg_price_db->prepare($sql, $post_ratings_users, $post_ratings_score, $post_ratings_value, $id);
+	    		$result = $lhg_price_db->query($safe_sql);
+
+	        	//Count categories of rating
+		        $get_rates = $wpdb->get_results("SELECT rating_rating FROM $wpdb->ratings WHERE rating_postid = $post_id");
+	        	$rating1=0;
+	        	$rating2=0;
+		        $rating3=0;
+			$rating4=0;
+			$rating5=0;
+		        $rating_total=0;
+
+	        	foreach($get_rates as $get_rate){
+	        		$rating_total++;
+		        	if ($get_rate->rating_rating == 1 ) $rating1++;
+	        		if ($get_rate->rating_rating == 2 ) $rating2++;
+				if ($get_rate->rating_rating == 3 ) $rating3++;
+				if ($get_rate->rating_rating == 4 ) $rating4++;
+		        	if ($get_rate->rating_rating == 5 ) $rating5++;
+			}
+
+	        	$sql = "UPDATE lhgtransverse_posts SET  `post_ratings_1_com` = %s, `post_ratings_2_com` = %s, `post_ratings_3_com` = %s, `post_ratings_4_com` = %s, `post_ratings_5_com` = %s WHERE id = %s";
+		        $safe_sql = $lhg_price_db->prepare($sql, $rating1, $rating2, $rating3, $rating4, $rating5, $id);
+	    		$result = $lhg_price_db->query($safe_sql);
+
+		}
+	}
+
+        if ($lang == "de") {
+                # find id corresponding to post_id
+
+		$sql = "SELECT id FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+    		$id = $lhg_price_db->get_var($sql);
+
+                if ($id != "0") {
+                	#echo "ID: $id";
+	                # store values
+        	        $sql = "UPDATE lhgtransverse_posts SET  `post_ratings_users_de` = %s, `post_ratings_score_de` = %s, `post_ratings_value_de` = %s WHERE id = %s";
+	        	$safe_sql = $lhg_price_db->prepare($sql, $post_ratings_users, $post_ratings_score, $post_ratings_value, $id);
+	    		$result = $lhg_price_db->query($safe_sql);
+
+	        	//Count categories of rating
+		        $get_rates = $wpdb->get_results("SELECT rating_rating FROM $wpdb->ratings WHERE rating_postid = $post_id");
+	        	$rating1=0;
+	        	$rating2=0;
+		        $rating3=0;
+			$rating4=0;
+			$rating5=0;
+		        $rating_total=0;
+
+	        	foreach($get_rates as $get_rate){
+	        		$rating_total++;
+		        	if ($get_rate->rating_rating == 1 ) $rating1++;
+	        		if ($get_rate->rating_rating == 2 ) $rating2++;
+				if ($get_rate->rating_rating == 3 ) $rating3++;
+				if ($get_rate->rating_rating == 4 ) $rating4++;
+		        	if ($get_rate->rating_rating == 5 ) $rating5++;
+			}
+
+	        	$sql = "UPDATE lhgtransverse_posts SET  `post_ratings_1_de` = %s, `post_ratings_2_de` = %s, `post_ratings_3_de` = %s, `post_ratings_4_de` = %s, `post_ratings_5_de` = %s WHERE id = %s";
+		        $safe_sql = $lhg_price_db->prepare($sql, $rating1, $rating2, $rating3, $rating4, $rating5, $id);
+	    		$result = $lhg_price_db->query($safe_sql);
+
+		}
+	}
+
+}
+
+# Returns the rating data combined over all servers
+function lhg_get_post_ratings_data ( $post_id ) {
+
+                global $lang;
+                global $lhg_price_db;
+
+
+        	if ($lang != "de") {
+			$safe_sql = "SELECT * FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+                        $sql = $lhg_price_db-> prepare($safe_sql);
+                        $result = $lhg_price_db->get_results($sql);
+
+                        #var_dump($result[0]->id);
+                        #print "<br>".$lhg_price_db->last_error."-----<br>";
+
+	                #if ($id != "0") {
+			#	$sql = "SELECT * FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		    	#	$result = $lhg_price_db->query($sql);
+
+        		        $post_ratings_data['ratings_users'] = intval($result[0]->post_ratings_users_de + $result[0]->post_ratings_users_com);
+			        $post_ratings_data['ratings_score'] = intval($result[0]->post_ratings_score_de + $result[0]->post_ratings_score_com);
+			        if ($post_ratings_data['ratings_users'] != 0) $post_ratings_data['ratings_average'] = floatval($post_ratings_data['ratings_score'] / $post_ratings_data['ratings_users']);
+			        if ($post_ratings_data['ratings_users'] == 0) $post_ratings_data['ratings_average'] = 0;
+
+			#}
+
+                }
+
+                #var_dump($post_ratings_data);
+                return $post_ratings_data;
+}
 
 ?>

@@ -1,0 +1,24 @@
+#autocomplete,
+#custom_title,
+#readmore {
+  border:solid 1px #DFDFDF;
+  background-color:#F9F9F9;
+  -webkit-border-horizontal-spacing:0;
+  -webkit-border-vertical-spacing:0;
+  margin:0;
+  padding-left:3px;
+  padding-right:3px;
+  width:100%;
+  clear:both;
+}
+
+#language.manage-column.column-language{
+        width: 7%;
+}
+
+.new-comment-alarm {
+	color: #008D00 !important;
+	float: left;
+        font-weight: bold;
+}
+
