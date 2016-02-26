@@ -6,7 +6,50 @@ function lhg_sanity_checks ( ) {
         echo "<h2>Test 1: Redcoon Products</h2>";
         echo "Sanity Check:<br>Look for Products at Redcoon.de, copy to .it & .nl<br>";
         lhg_sanity_redcoon();
+
+        echo "<h2>Update all ratings</h2>";
+        #echo "Sanity Check:<br>Look for Products at Redcoon.de, copy to .it & .nl<br>";
+        lhg_sanity_ratings();
+
 }
+
+function lhg_sanity_ratings ( ) {
+
+        global $lang;
+    	global $lhg_price_db;
+
+	#write for com pages only
+	if ($lang != "de") {
+
+    		$sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE `status_com` != 'draft'";
+	    	$results = $lhg_price_db->get_results($sql);
+
+        	foreach ($results as $result) {
+
+                	if ($result->postid_com != 0) {
+
+                                $pid = intval($result->postid_com);
+
+                        	$post_ratings_users   = get_post_meta($result->postid_com, 'ratings_users');
+				$post_ratings_score   = get_post_meta($result->postid_com, 'ratings_score');
+				$post_ratings_average = get_post_meta($result->postid_com, 'ratings_average');
+
+                                # ignore empty ratings
+	                	if ( ($post_ratings_users[0] != 0 ) && ($post_ratings_users[0] != "" )) {
+        		                print "Post ID ".$result->postid_com." -> ".$post_ratings_users[0].", ".$post_ratings_score[0].", ".$post_ratings_average[0]."<br>";
+
+                                        lhg_store_ratings ( $pid,
+                                        $post_ratings_users[0],
+                                        $post_ratings_score[0],
+                                        $post_ratings_average[0] );
+				}
+			}
+
+		}
+	}
+
+}
+
 
 function lhg_sanity_redcoon ( ) {
         #echo "Searching for SID 1";
