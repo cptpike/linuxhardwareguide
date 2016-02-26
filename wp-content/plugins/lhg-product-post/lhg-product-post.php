@@ -1476,7 +1476,7 @@ function awsImageGrabber($imgurl, $class=""){
 		 return $text;
 	  }
 	function aws_prodinpost_addadminhead(){
-	  echo '<link rel="stylesheet" href="'.WP_PLUGIN_URL.'/amazon-product-in-a-post-plugin/css/amazon-product-in-a-post-styles-icons.css" type="text/css" media="screen" />'."\n";
+	  echo '<link rel="stylesheet" href="'.WP_PLUGIN_URL.'/lhg-product-post/css/amazon-product-in-a-post-styles-icons.css" type="text/css" media="screen" />'."\n";
 	}
 	function aws_prodinpost_addhead(){
 		global $aws_plugin_version;
@@ -1487,11 +1487,11 @@ function awsImageGrabber($imgurl, $class=""){
 		}else{ //use default styles
 		       // echo '<link rel="stylesheet" href="'.get_bloginfo('url').'/index.php?apipp_style=default" type="text/css" media="screen" />'."\n";
 		}
-		echo '<link rel="stylesheet" href="'.WP_PLUGIN_URL.'/amazon-product-in-a-post-plugin/css/amazon-lightbox.css" type="text/css" media="screen" />'."\n";
+		echo '<link rel="stylesheet" href="'.WP_PLUGIN_URL.'/lhg-product-post/css/amazon-lightbox.css" type="text/css" media="screen" />'."\n";
 		echo '<'.'!-- End Amazon Product In a Post Plugin Styles & Scripts-->'."\n";
 	}
 	function add_appip_jquery(){
-		wp_register_script('appip-amazonlightbox', WP_PLUGIN_URL . '/amazon-product-in-a-post-plugin/js/amazon-lightbox.js');
+		wp_register_script('appip-amazonlightbox', WP_PLUGIN_URL . '/lhg-product-post/js/amazon-lightbox.js');
 		wp_enqueue_script('jquery'); 
 		wp_enqueue_script('appip-amazonlightbox'); 
 	}
@@ -1954,7 +1954,7 @@ function affilinet() {
 
         $region=get_region();
 
-        $path="/var/www/wordpress/wp-content/plugins/amazon-product-in-a-post-plugin";
+        $path="/var/www/wordpress/wp-content/plugins/lhg-product-post";
 
 	if (is_array($ProductID)) {
         	//echo "Is array!";
