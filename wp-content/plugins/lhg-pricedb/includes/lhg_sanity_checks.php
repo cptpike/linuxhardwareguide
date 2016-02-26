@@ -47,6 +47,34 @@ function lhg_sanity_ratings ( ) {
 
 		}
 	}
+	if ($lang == "de") {
+
+    		$sql = "SELECT postid_de FROM `lhgtransverse_posts` WHERE `status_com` != 'draft'";
+	    	$results = $lhg_price_db->get_results($sql);
+
+        	foreach ($results as $result) {
+
+                	if ($result->postid_de != 0) {
+
+                                $pid = intval($result->postid_de);
+
+                        	$post_ratings_users   = get_post_meta($result->postid_de, 'ratings_users');
+				$post_ratings_score   = get_post_meta($result->postid_de, 'ratings_score');
+				$post_ratings_average = get_post_meta($result->postid_de, 'ratings_average');
+
+                                # ignore empty ratings
+	                	if ( ($post_ratings_users[0] != 0 ) && ($post_ratings_users[0] != "" )) {
+        		                print "Post ID ".$result->postid_de." -> ".$post_ratings_users[0].", ".$post_ratings_score[0].", ".$post_ratings_average[0]."<br>";
+
+                                        lhg_store_ratings ( $pid,
+                                        $post_ratings_users[0],
+                                        $post_ratings_score[0],
+                                        $post_ratings_average[0] );
+				}
+			}
+
+		}
+	}
 
 }
 

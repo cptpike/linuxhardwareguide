@@ -613,8 +613,8 @@ function lhg_get_post_ratings_data ( $post_id ) {
                 global $lhg_price_db;
 
 
-        	if ($lang != "de") {
-			$safe_sql = "SELECT * FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+        	if ($lang != "de") $safe_sql = "SELECT * FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+        	if ($lang == "de") $safe_sql = "SELECT * FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
                         $sql = $lhg_price_db-> prepare($safe_sql);
                         $result = $lhg_price_db->get_results($sql);
 
@@ -632,7 +632,6 @@ function lhg_get_post_ratings_data ( $post_id ) {
 
 			#}
 
-                }
 
                 #var_dump($post_ratings_data);
                 return $post_ratings_data;
