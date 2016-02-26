@@ -1,0 +1,7 @@
+.wp_one_post_widget a { font-weight:bold;}
+
+.wp_one_post_widget .left {float: left;margin-right:5px;}
+
+.wp_one_post_widget .right {float: right;margin-left:5px;}
+
+.wp_one_post_widget .top {clear:both;display:block;margin:0 auto 5px auto;}
