@@ -66,11 +66,11 @@ function lhg_article_scans_overview () {
                         $date = date_i18n( get_option( 'date_format' ), $result0->scandate );
                         $date_array[$counter]= $result0->scandate;
                         $logo = get_distri_logo($result0->distribution);
-
+                        $tooltiptext ="Distribution: ".$result0->distribution."\nKernel: ".$result0->kversion;
 
                         $output_tmp_array[$counter] .= '<tr>
                         <td width="30">'."
-                        <div class=\"scan-overview-distri-logo\"><img src=\"".$logo.'" width="30" ></div>
+                        <div class=\"scan-overview-distri-logo\"><img src=\"".$logo.'" width="30" alt="'.$tooltiptext.'" title="'.$tooltiptext.'" ></div>
                         </td><td>'.$result0->distribution."</td>
                         <td>".$result0->kversion."</td>
                         <td><a href=\"./hardware-profile/system-".$result0->pub_id."\">".$date."</a></td>
@@ -220,8 +220,11 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 	                print "<tr>";
         	        print "<td>$date </td>";
                 	print '<td><a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a> (<a href="/hardware-profile/system-'.$pub_id.'">pub</a>)</td>';
-	                print '<td>
-                          <img src="'.$distrilogo .'" width=20>
+
+                        $tooltiptext ="Distribution: ".preg_replace( "/\r|\n/", "", $resN->distribution)."\nKernel: ".preg_replace( "/\r|\n/", "",$resN->kversion);
+
+                        print '<td>
+                          <img src="'.$distrilogo .'" alt="'.$tooltiptext.'" title="'.$tooltiptext.'" width=20>
                           '.$maillogo." "
                           .$commentavail." "
                           .$ratingavail. " "
