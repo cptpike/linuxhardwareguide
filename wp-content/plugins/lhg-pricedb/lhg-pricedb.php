@@ -637,4 +637,50 @@ function lhg_get_post_ratings_data ( $post_id ) {
                 return $post_ratings_data;
 }
 
+# Store comment counting in priceDB
+function lhg_store_comment_numbers ( $comment_id, $comment_approved) {
+        if ($comment_approved === 1) {
+                $comment = get_comment( $comment_id );
+                $post_id = $comment->comment_post_ID;
+                $lhg_store_comment_numbers_by_post_id ( $post_id );
+
+	}
+}
+
+
+# Store comment counting in priceDB by post ID
+add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
+function lhg_store_comment_numbers_by_post_id ( $post_id ) {
+
+        global $lang;
+        global $lhg_price_db;
+
+        #print "PID: $post_id<br>";
+        if ($lang == "de") $p_region_array = array( "de" );
+        if ($lang != "de") $p_region_array = array( "com", "ca", "co.uk", "fr", "es", "it", "nl", "in", "co.jp", "cn");
+
+	if ($post_id != "0") {
+        	foreach ( $p_region_array as $p_region) {
+                	$n_comment = lhg_comments_number_language( $p_region, $p_region , 0 , $post_id, "return_number");
+
+        	        #echo "ID: $id";
+	        	# store values
+                        $sql = "";
+        	        if ( $p_region == "de" )    $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_de` = %s WHERE postid_de = %s";
+        	        if ( $p_region == "com" )   $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_com` = %s WHERE postid_com = %s";
+        	        if ( $p_region == "fr" )    $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_fr` = %s WHERE postid_com = %s";
+        	        if ( $p_region == "es" )    $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_es` = %s WHERE postid_com = %s";
+        	        if ( $p_region == "it" )    $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_it` = %s WHERE postid_com = %s";
+        	        if ( $p_region == "nl" )    $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_nl` = %s WHERE postid_com = %s";
+        	        if ( $p_region == "co.jp" ) $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_co_jp` = %s WHERE postid_com = %s";
+        	        if ( $p_region == "cn" )    $sql = "UPDATE lhgtransverse_posts SET `post_comments_num_cn` = %s WHERE postid_com = %s";
+
+		        $safe_sql = $lhg_price_db->prepare($sql, $n_comment, $post_id);
+		    	$result = $lhg_price_db->query($safe_sql);
+
+                	if ($post_id == 3120) print "store=> PID: $post_id, Reg: $p_region, Num: $n_comment <br>";
+		}
+	}
+}
+
 ?>
