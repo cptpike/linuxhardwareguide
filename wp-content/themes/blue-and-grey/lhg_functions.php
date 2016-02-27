@@ -93,6 +93,8 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/Manjaro-logo.png";
         if ( strpos($distribution,"ALT Linux") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/alt-linux-logo.png";
+        if ( strpos($distribution,"Simply Linux") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/simply-linux-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
