@@ -649,6 +649,7 @@ function lhg_store_comment_numbers ( $comment_id, $comment_approved) {
 
 
 # Store comment counting in priceDB by post ID
+# extract from wpdb -> store in priceDB
 add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
 function lhg_store_comment_numbers_by_post_id ( $post_id ) {
 
@@ -661,7 +662,10 @@ function lhg_store_comment_numbers_by_post_id ( $post_id ) {
 
 	if ($post_id != "0") {
         	foreach ( $p_region_array as $p_region) {
-                	$n_comment = lhg_comments_number_language( $p_region, $p_region , 0 , $post_id, "return_number");
+                        # Do not extract data from PriceDB
+                        #$n_comment = lhg_comments_number_language( $p_region, $p_region , 0 , $post_id, "return_number");
+                        # instead get data from local WPDB
+                        $n_comment = lhg_comments_number_from_wpdb( $p_region, $post_id );
 
         	        #echo "ID: $id";
 	        	# store values

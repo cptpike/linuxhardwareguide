@@ -813,6 +813,23 @@ function lhg_comment_language_filter ( $post_ID, $user_ID , $lang , $region ) {
         return $j;
 }
 
+# exctract comment number from WPDB
+# needed to fill db from scratch
+function lhg_comments_number_from_wpdb( $region , $post_ID) {
+
+                global $lang;
+                global $wpdb;
+
+                $comments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND (comment_approved = '1')  ORDER BY comment_date_gmt", $post->ID) );
+
+        	//need number here
+                $user_ID = 0;
+	        $number = lhg_comment_language_filter ( $post_ID, $user_ID , $lang , $region );
+
+		return $number;
+
+}
+
 function lhg_comments_number_language( $comment_lang, $region , $user_ID , $post_ID, $more = false) {
 
 		global $txt_no_respo;
