@@ -678,7 +678,7 @@ function lhg_store_comment_numbers_by_post_id ( $post_id ) {
 		        $safe_sql = $lhg_price_db->prepare($sql, $n_comment, $post_id);
 		    	$result = $lhg_price_db->query($safe_sql);
 
-                	if ($post_id == 3120) print "store=> PID: $post_id, Reg: $p_region, Num: $n_comment <br>";
+                	#if ($post_id == 3120) print "store=> PID: $post_id, Reg: $p_region, Num: $n_comment <br>";
 		}
 	}
 }
