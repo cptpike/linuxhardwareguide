@@ -733,6 +733,49 @@ function lhg_get_comments_number ( $post_ID  ) {
 
 }
 
+//get number of comments associated with language from priceDB
+function lhg_get_comment_number_by_language ( $post_id, $user_ID , $lang , $region ) {
+        global $lhg_price_db;
+
+        #print "LG: $lang - REG: $region <br>";
+
+        #on .de server
+        $number = "-";
+        if ($lang == "de") {
+		if ( $region == "de" )    $sql = "SELECT post_comments_num_de    FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "com" )   $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "co.uk" ) $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "ca" )    $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "fr" )    $sql = "SELECT post_comments_num_fr    FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "es" )    $sql = "SELECT post_comments_num_es    FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "it" )    $sql = "SELECT post_comments_num_it    FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "nl" )    $sql = "SELECT post_comments_num_nl    FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "in" )    $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "co.jp" ) $sql = "SELECT post_comments_num_co_jp FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+		if ( $region == "cn" )    $sql = "SELECT post_comments_num_cn    FROM `lhgtransverse_posts` WHERE postid_de = ".$post_id;
+	}
+
+        if ($lang == "en") {
+		if ( $region == "de" )    $sql = "SELECT post_comments_num_de    FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "com" )   $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "co.uk" ) $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "ca" )    $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "fr" )    $sql = "SELECT post_comments_num_fr    FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "es" )    $sql = "SELECT post_comments_num_es    FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "it" )    $sql = "SELECT post_comments_num_it    FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "nl" )    $sql = "SELECT post_comments_num_nl    FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "in" )    $sql = "SELECT post_comments_num_com   FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "co.jp" ) $sql = "SELECT post_comments_num_co_jp FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+		if ( $region == "cn" )    $sql = "SELECT post_comments_num_cn    FROM `lhgtransverse_posts` WHERE postid_com = ".$post_id;
+	}
+
+        #print "SQL: $sql<br>";
+
+    	$number = $lhg_price_db->get_var($sql);
+        return $number;
+}
+
+
 //calcualte number of comments valid for given language/region combination
 function lhg_comment_language_filter ( $post_ID, $user_ID , $lang , $region ) {
 
@@ -770,14 +813,14 @@ function lhg_comment_language_filter ( $post_ID, $user_ID , $lang , $region ) {
         return $j;
 }
 
-function lhg_comments_number_language( $comment_lang, $region , $user_ID , $more = false) {
+function lhg_comments_number_language( $comment_lang, $region , $user_ID , $post_ID, $more = false) {
 
 		global $txt_no_respo;
                 global $txt_one_resp;
                 global $lang;
                 #global $region;
 
-                $post_ID = get_the_ID();
+                #$post_ID = get_the_ID();
 
                 //echo "PID: $post_ID";
                 //echo "UID: $user_ID";
@@ -786,7 +829,9 @@ function lhg_comments_number_language( $comment_lang, $region , $user_ID , $more
 		//$comments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND (comment_approved = '1' OR ( user_id = %d AND comment_approved = '0' ) )  ORDER BY comment_date_gmt", $post->ID, $user_ID));
 
         //need number here
-        $number = lhg_comment_language_filter ( $post_ID, $user_ID , $lang , $region );
+        #$number = lhg_comment_language_filter ( $post_ID, $user_ID , $lang , $region );
+        $number = lhg_get_comment_number_by_language ( $post_ID, $user_ID , $lang , $region );
+        if ($more == "return_number") return $number;
 
         #print "DEB: $number<br>";
 
