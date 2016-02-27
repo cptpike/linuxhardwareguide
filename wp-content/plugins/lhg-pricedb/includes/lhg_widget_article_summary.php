@@ -727,6 +727,10 @@ $before_widget";
 	#$selected    ='<div class="pricetop" style="border: 1px solid #2b8fc3; background-color: #eee; margin: 3px 3px 3px 3px; padding-top: 3px;">';
         #$selectedEnd ='</div>';
 
+        # Debug:
+        #lhg_store_comment_numbers_by_post_id( $post_id );
+
+
 
         echo $vspacer;
         echo "<b>$txt_select:</b><br />";
@@ -1549,12 +1553,14 @@ function lhg_country_row ($p_region, $URLC, $URLD, $posturlcom, $posturlde){
         echo '<td class="ct_comment">';
         # comment number
         #not yet implemented for "de"
-        if ($p_region == "de"){
-	        echo "-";
-	}else{
-        	lhg_comments_number_language( $p_region, $p_region , 0 , "shortversion");
-	}
+        #if ($p_region == "de"){
+	#        echo "-";
+	#}else{
+        	lhg_comments_number_language( $p_region, $p_region , 0 , $post->ID, "shortversion");
+	#}
         echo '</td></tr>';
+
+
 }
 
 
