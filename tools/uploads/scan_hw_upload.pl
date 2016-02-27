@@ -714,6 +714,8 @@ sub create_db_metadata {
     }
     
     #if ($uid ne "") {
+    if ($uid eq " \\n"){ $uid = "none"; }
+    if ($uid eq "")  { $uid = "none"; }
         print "UID: $uid \n";
     #    $lhg_db = DBI->connect($database, $user, $pw);
     #    $myquery = "INSERT INTO `lhgscansessions` (uid) VALUES (?)";   
@@ -844,9 +846,9 @@ sub get_linux_distribution {
         
     }
     
-    print "Error: Distribution not recognized ... fallback 1\n";
     # Works partially for 
     if ($dist eq "") {
+        print "Error: Distribution not recognized ... fallback 1\n";
         $kversion = get_kernel_version();
         if ($kversion  =~ /-ARCH/) {
             $dist = "Arch Linux";
