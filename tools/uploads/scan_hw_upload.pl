@@ -845,11 +845,35 @@ sub get_linux_distribution {
         }
         
     }
+    close FILE_R;
     
-    # Works partially for 
+    # identify by /etc/*-release output 
     if ($dist eq "") {
         print "Error: Distribution not recognized ... fallback 1\n";
-        $kversion = get_kernel_version();
+        open(FILE_R, "<", "/var/www/uploads/".$sid."/lsb_release.txt");
+        while ( <FILE_R> ) {
+        #print "Line: $_";
+        $pos = index($_,"NAME=");
+        
+        if ($pos == 0) {
+            $dist = substr($_,$pos+6,-2);
+            #remove leading " "
+            #while (index($dist,"\t") == 0) {
+            #    $pos2 = index($dist," ");
+            #    $dist = substr($dist,1);
+            #}
+            #    print "POS: $pos \n";
+            #$dist =
+        #    ($version, $null) = split(/ /,$version_tmp);
+            #print "D: $dist \n";
+
+        }
+        }
+    }
+    
+    # Recognize by kernel - not very reliable
+    if ($dist eq "") {
+        print "Error: Distribution not recognized ... fallback 2\n";
         if ($kversion  =~ /-ARCH/) {
             $dist = "Arch Linux";
         }
