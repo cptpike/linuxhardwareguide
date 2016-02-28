@@ -752,6 +752,8 @@ $before_widget";
           )
         {
 
+
+
 		$comURL = get_post_meta($post->ID,'COM_URL',true);
 		$deURL  = get_post_meta($post->ID,'DE_URL',true);
         	if ($comURL != "") $posturlcom = $comURL;
@@ -764,6 +766,12 @@ $before_widget";
                 //translation still missing -> redirect to main page
                 if ( ($comURL == "") and ($post->ID > 2599) and ($lang == "de")) $posturlcom = "";
                 if ( ($deURL == "")  and ($post->ID > 2599) and ($lang == "en")) $posturlde = "";
+
+                # on de server get com link from priceDB
+                if ($lang == "de") {
+	                $com = lhg_get_com_post_URL( $postID );
+        	        $comURL == $com;
+	        }
         }
 
         //remove language selection for .de
@@ -801,7 +809,7 @@ $before_widget";
 
         //$URLC="http://192.168.3.113"; //Debug
 
-        if ($region != "de")  {
+        if (1 == 1)  {
 
         echo '<div class="countrytable"><table border="0">
         	<tr class="countrytable_header">
