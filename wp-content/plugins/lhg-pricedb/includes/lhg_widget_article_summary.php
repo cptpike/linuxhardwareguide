@@ -1520,7 +1520,12 @@ function lhg_country_row ($p_region, $URLC, $URLD, $posturlcom, $posturlde){
         #print "URLD: $URLD -- $posturlde<br>";
         print "<tr $selected>";
         #print "PID: $post->ID";
-        $price = lhg_db_get_cheapest_price_by_region($post->ID, $p_region);
+
+        # get the correct postid for .com and .de server
+        $relevant_postid = $post->ID;
+        if ($lang == "de") $relevant_postid = lhg_get_postid_de_from_com( $post->ID );
+
+        $price = lhg_db_get_cheapest_price_by_region($relevant_postid, $p_region);
 	$price = lhg_float_to_currency_string( $price , $p_region );
 
         if ($price == 0) {
