@@ -496,6 +496,18 @@ function lhg_get_postid_de_from_com( $postid_com ) {
         return ( $postid_de );
 }
 
+function lhg_get_postid_com_from_de( $postid_de ) {
+
+
+        global $lhg_price_db;
+        $sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE postid_de = ".$postid_de;
+	$result = $lhg_price_db->get_var($sql);
+
+        $postid_com = $result;
+
+        return ( $postid_com );
+}
+
 
 function lhg_voted_donation (  ) {
 
