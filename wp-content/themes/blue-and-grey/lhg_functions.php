@@ -3006,6 +3006,10 @@ global $txt_opw_rating_overview;
 global $txt_opw_hardware;
 global $txt_opw_registered;
 
+//Scan overview widget
+global $txt_Rating;//     	= "Bewertung";
+global $txt_user_rating_for_setup;
+
 
 //comments.php
 global $txt_no_respo;   	//= "No responses";
@@ -3293,6 +3297,7 @@ $txt_summary    	= "Summary";
 $txt_supplier  		= "Supplier";
 $txt_cheapest_supplier 	= "Cheapest supplier";
 $txt_rating     	= "rating";
+$txt_Rating     	= "Rating";
 $txt_ratings    	= "ratings";
 $txt_select     	= "Select country &amp; currency";
 $txt_sim_tags   	= "Similar tags";
@@ -3308,6 +3313,8 @@ $txt_opw_average_rating = "Average ratings";
 $txt_opw_rating_overview= "Rating overview";
 $txt_opw_hardware       = "Hardware";
 $txt_opw_registered	= "Registered Linux users";
+
+$txt_user_rating_for_setup = "The user provided the following rating for this hardware:";
 
 
 //comments.php
@@ -3639,6 +3646,7 @@ if ($lang == "de") {
 	$txt_supplier 		= "Anbieter";
         $txt_cheapest_supplier 	= "G&uuml;nstigster Anbieter";
         $txt_rating     	= "Bewertung";
+        $txt_Rating     	= $txt_rating; #"Bewertung";
         $txt_ratings    	= "Bewertungen";
         $txt_select     	= "Select country &amp; currency";
         $txt_sim_tags   	= "Verwandte Begriffe";
@@ -3654,6 +3662,9 @@ if ($lang == "de") {
 	$txt_opw_rating_overview= "&Uuml;bersicht Bewertung";
 	$txt_opw_hardware       = "Hardware";
 	$txt_opw_registered	= "Registerierte Linux-Nutzer";
+
+	$txt_user_rating_for_setup = "Folgende Bewertung wurde vom Benutzer der Hardware-Konfiguration abgegeben:";
+
 
         //comments.php
         $txt_no_respo   	= "Keine Antworten";
@@ -3978,6 +3989,7 @@ if ($region == "nl") {
 	$txt_supplier 		= "Provider";
         $txt_cheapest_supplier 	= "Bestseller";
         $txt_rating     	= "Assessment";
+        $txt_Rating     	= $txt_rating; #"Assessment";
         $txt_ratings    	= "Beoordelingen";
         $txt_select     	= "Select country &amp; currency";
         $txt_sim_tags   	= "Gerelateerde termen";
@@ -3993,6 +4005,9 @@ if ($region == "nl") {
 	$txt_opw_rating_overview= "Overzicht Rating";
 	$txt_opw_hardware       = "Hardware";
 	$txt_opw_registered	= "Geregistreerd Linux User";
+
+	$txt_user_rating_for_setup = "De gebruiker op voorwaarde dat de volgende waardering voor dit hardware-installatie:";
+
 
         //comments.php
         $txt_no_respo   	= "Geen reacties";
@@ -4029,6 +4044,7 @@ if ($region == "nl") {
 	$txt_Compat  	= $txt_compat;
         $txt_with       = "big";
         $txt_rating     = "beoordeling";
+        $txt_Rating     = "Beoordeling";
         $txt_ratings    = "beoordelingen";
         $txt_price      = "Prijs";
         $txt_out_of_stock = "niet beschikbaar";
@@ -4308,6 +4324,7 @@ if ($region == "fr") {
 	$txt_supplier 		= "Vendeur"; #checked by Valentin C.
         $txt_cheapest_supplier   = "Vendeur le moins cher";
         $txt_rating     	= "&Eacute;valuation";
+        $txt_Rating     	= $txt_rating; #"&Eacute;valuation";
         $txt_ratings    	= "&eacute;valuations";
         $txt_sim_tags   	= "Filtres similaires"; #checked by Valentin C.
         $txt_combine_tags 	= "Appliquer les filtres"; #checked by Valentin C.
@@ -4322,6 +4339,9 @@ if ($region == "fr") {
 	$txt_opw_rating_overview= "Apercu des &eacute;valuations";
 	$txt_opw_hardware       = "Mat&eacute;riel";
 	$txt_opw_registered	= "Utilisateurs de Linux enregistrés ";
+
+	$txt_user_rating_for_setup = "L'utilisateur a fourni la note suivante pour cette configuration matérielle:";
+
 
 	//amazon-product-in-a-post.php
 	$txt_compat  	= "Examen de compatibilit&eacute; avec Linux"; #checked by Valentin C.
@@ -4572,6 +4592,7 @@ if ($region == "es") {
 	$txt_supplier  		= "Suministrador";
 	$txt_cheapest_supplier 	= "Proveedor m�s barato";
 	$txt_rating     	= "valoraci&oacute;n";
+	$txt_Rating     	= "Valoraci&oacute;n";
 	$txt_ratings    	= "valoraciones";
 	$txt_select     	= "Select country &amp; currency";
 	$txt_sim_tags   	= "Etiquetas similares";
@@ -4587,6 +4608,9 @@ if ($region == "es") {
 	$txt_opw_rating_overview= "Visi&oacute;n general de valoraciones";
 	$txt_opw_hardware       = "Hardware";
 	$txt_opw_registered	= "Usarios de Linux registrados";
+
+	$txt_user_rating_for_setup = "El usuario proporciona los siguientes comentarios para esta configuración de hardware:";
+
 
 	//related posts thumbnails
 	$txt_rpt_creation="Creado el";
@@ -4839,6 +4863,7 @@ if ($region == "it") {
 	$txt_supplier  		= "Fornitore";
 	$txt_cheapest_supplier 	= "Cheapest fornitore";
 	$txt_rating     	= "valutazione";
+	$txt_Rating     	= "Valutazione";
 	$txt_ratings    	= "valutazioni";
 	$txt_select     	= "Select country &amp; currency";
 	$txt_sim_tags   	= "Tag simili";
@@ -4854,6 +4879,9 @@ if ($region == "it") {
 	$txt_opw_rating_overview= "Panoramica dei valutazioni";
 	$txt_opw_hardware       = "Hardware";
 	$txt_opw_registered	= "Utenti registrati Linux";
+
+	$txt_user_rating_for_setup = "L'utente ha fornito il seguente voto per questa configurazione hardware:";
+
 
 	//related posts thumbnails
 	$txt_rpt_creation="Creato il";
@@ -5115,6 +5143,7 @@ if ($region == "cn") {
 	$txt_Compat  	= "回顾Linux的兼容性";
 	$txt_with       = "同";
 	$txt_rating     = "等级";
+	$txt_Rating     = $txt_rating;
 	$txt_ratings    = "等级";
 	$txt_price      = "P价格";
 	$txt_out_of_stock = "缺货";
@@ -5137,6 +5166,9 @@ if ($region == "cn") {
 	$txt_amz_asin   = "Amazon Product ASIN (ISBN-10)";
 	//$txt_amz_title  = "Amazon Product Information";
 	$txt_amz_tooltip_not_loggedin = "只有Linux兼容的额定此页面上，而不是产品的总体质量。如果您使用本产品使用Linux，请率和分享您的经验，在此页（底部）的注释区域支持其他的Linux用户。";
+
+	$txt_user_rating_for_setup = “用户提供了以下的评价为这个硬件设置：”;
+
 
 	//header.php
 	$txt_reg   = "挂号";
@@ -5339,6 +5371,9 @@ if ($region == "co.jp") {
 	$txt_reg   = "登録";
 	$txt_login = "ログイン";
 
+	$txt_user_rating_for_setup = " 「ユーザーは、このハードウェアのセットアップについては、以下の評価を与えました：";
+
+
         //footer.php
 	$txt_follow_twitter = "フォローたちをTwitterで";
 	$txt_mail_us = "メールを送信";
@@ -5372,6 +5407,7 @@ $txt_compat  	= "Linuxの互換性";
 $txt_Compat  	= "Linuxの互換性の検討";
 $txt_with       = "とともに";
 $txt_rating     = "考課";
+$txt_Rating     = $txt_rating;
 $txt_ratings    = "考課";
 $txt_price      = "考課";
 $txt_out_of_stock = "在庫切れ";
