@@ -12,7 +12,7 @@ function lhg_article_scans_overview () {
         global $txt_scan_results;
         global $txt_scan_title;
         global $txt_scan_text;
-        global $txt_rating;
+        global $txt_Rating;
 
         $sql = "SELECT sid FROM `lhghwscans` WHERE postid = \"".$pid."\"";
     	$ids = $lhg_price_db->get_results($sql);
@@ -28,7 +28,7 @@ function lhg_article_scans_overview () {
                 <td></td>
         	<td><div class="article-scantable-header">'.$txt_scan_distribution.'</div></td>
         	<td><div class="article-scantable-header">'.$txt_scan_kernel.'</div></td>
-        	<td><div class="article-scantable-header">'.$txt_rating.'</div></td>
+        	<td><div class="article-scantable-header">'.$txt_Rating.'</div></td>
         	<td><div class="article-scantable-header">'.$txt_scan_scandate.'</div></td>
         </tr>
                 ';
@@ -450,13 +450,20 @@ function lhg_get_rating_by_scan( $sid , $postid) {
 # create star image from rating
 function lhg_create_rating_img( $rating ) {
 
-        if ($rating < 0) return "-";
+        global $txt_user_rating_for_setup;
+        global $txt_out_of;
+
+                if ($rating < 0) return "-";
 
         for($j=1; $j <= 5; $j++) {
 		if($j <= $rating) {
-			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crystal/rating_on.gif').'" alt="'.sprintf(_n('User rate this setup %s star', 'User Rate this setup %s stars', $rating, 'wp-postratings'), $rating).__(' out of ', 'wp-postratings').' 5" title="'.sprintf(_n('User rate this setup %s star', 'User rate this setup %s stars', $rating, 'wp-postratings'), $rating).__(' out of ', 'wp-postratings').'5" class="post-ratings-image" />';
+			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crystal/rating_on.gif').'" alt="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" title="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" class="post-ratings-image" />';
 		} else {
-			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crysta/rating_off.gif').'" alt="'.sprintf(_n('User rate this setup %s star', 'User Rate this setup %s stars', $rating, 'wp-postratings'), $rating).__(' out of ', 'wp-postratings').' 5" title="'.sprintf(_n('User rate this setup %s star', 'User rate this setup %s stars', $rating, 'wp-postratings'), $rating).__(' out of ', 'wp-postratings').'5" class="post-ratings-image" />';
+			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crysta/rating_off.gif').'" alt="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" title="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" class="post-ratings-image" />';
 		}
 	}
         return $output;
