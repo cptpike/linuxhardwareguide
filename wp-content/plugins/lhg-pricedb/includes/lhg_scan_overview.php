@@ -72,7 +72,7 @@ function lhg_article_scans_overview () {
                         $date_array[$counter]= $result0->scandate;
                         $logo = get_distri_logo($result0->distribution);
 
-                        $tooltiptext ="Distribution: ".preg_replace( "/\r|\n/", "", $result0->distribution)."\nKernel: ".preg_replace( "/\r|\n/", "",$result0->kversion);
+                        $tooltiptext = $txt_scan_distribution.": ".preg_replace( "/\r|\n/", "", $result0->distribution)."\n".$txt_scan_kernel.": ".preg_replace( "/\r|\n/", "",$result0->kversion);
 
                         $output_tmp_array[$counter] .= '<tr>
                         <td width="30">'."
