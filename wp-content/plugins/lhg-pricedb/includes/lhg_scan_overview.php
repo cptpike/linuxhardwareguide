@@ -461,7 +461,7 @@ function lhg_create_rating_img( $rating ) {
                         $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" title="'.
                         $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" class="post-ratings-image" />';
 		} else {
-			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crysta/rating_off.gif').'" alt="'.
+			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crystal/rating_off.gif').'" alt="'.
                         $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" title="'.
                         $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" class="post-ratings-image" />';
 		}
