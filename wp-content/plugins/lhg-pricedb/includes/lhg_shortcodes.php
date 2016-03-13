@@ -24,6 +24,15 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_it = "un masterizzatore DVD";
 	}
 
+        if ( (strpos($title_orig,"Flash Drive") > 0 ) &&
+	     (strpos($title_orig,"USB") > 0 ) ) {
+	        $drive_type = "USB flash drive";
+        	$drive_type_de = "ein USB-Memorystick";
+        	$drive_type_fr = "un lecteur flash USB";
+        	$drive_type_es = "una unidad flash USB";
+        	$drive_type_it = "un flash drive USB";
+	}
+
         if (strpos($title_orig,"SSD,") > 0 ) {
 	        $drive_type = "SSD";
         	$drive_type_de = "eine SSD";
