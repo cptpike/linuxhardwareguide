@@ -1,6 +1,68 @@
 <?php
 
 add_shortcode( 'lhg_hplip', 'lhg_hplip_shortcode');
+add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
+
+function lhg_drive_intro_shortcode($attr) {
+        global $lang;
+        global $region;
+
+        # Printer name = $printer_name
+	$title=translate_title(get_the_title());
+	$title_orig=get_the_title();
+	$s=explode("(",$title);
+	$drive_name=trim($s[0]);
+
+        # Printer type
+        $printer_type = "";
+        $printer_type_de = " ";
+        if (strpos($title_orig,"DVD Writer") > 0 ) {
+	        $drive_type = "DVD writer";
+        	$drive_type_de = "einen DVD-Brenner";
+        	$drive_type_fr = "un graveur de DVD";
+        	$drive_type_es = "una grabadora de DVD";
+        	$drive_type_it = "un masterizzatore DVD";
+	}
+
+        if (strpos($title_orig,"SSD,") > 0 ) {
+	        $drive_type = "SSD";
+        	$drive_type_de = "eine SSD";
+        	$drive_type_fr = "un SSD";
+        	$drive_type_es = "un SSD";
+        	$drive_type_it = "un SSD";
+	}
+
+        if (strpos($title_orig,"Harddisk,") > 0 ) {
+	        $drive_type = "harddisk";
+        	$drive_type_de = "eine Festplatte";
+        	$drive_type_fr = "un disque dur";
+        	$drive_type_es = "un disco duro";
+        	$drive_type_it = "un disco rigido";
+	}
+
+        if (preg_match("/([0-9][0-9][0-9].*GB|[0-9].*TB|[0-9].[0-9].*TB)/i",$title_orig,$match) == 1 ) {
+                $match = $match[0];
+	        $drive_type .= " with $match storage capacity";
+        	$drive_type_de = " mit $match Speciherkapazit&auml;t";
+        	$drive_type_fr = " avec une capacité de stockage de $match";
+        	$drive_type_es = " con capacidad de almacenamiento de $match";
+        	$drive_type_it = " con capacità di memorizzazione di $match";
+	}
+
+        $output = "The ".$drive_name." is a ".$drive_type.". It is automatically recognized and fully supported by the Linux kernel:";
+        $output_de = "Beim ".$drive_name." handelt es sich um ".$drive_type_de.". Er wird automatisch vom Linux-Kernel erkannt und vollst&auml;ndig unterst&uuml;zt:";
+        $output_fr = "Le ".$drive_name." est ".$drive_type_fr.". Il est reconnaît automatiquement et entièrement pris en charge par le noyau Linux:";
+        $output_es = "La ".$drive_name." es ".$drive_type_es.". Es reconocida automáticamente y totalmente soportado por el núcleo Linux";
+        $output_it = "La ".$drive_name." è ".$drive_type_it.". E 'riconosce automaticamente e pienamente supportato dal kernel Linux: ";
+
+	if ($lang == "de") $output = $output_de;
+	if ($region == "fr") $output = $output_fr;
+	if ($region == "es") $output = $output_es;
+	if ($region == "it") $output = $output_it;
+
+        return $output;
+}
+
 
 function lhg_hplip_shortcode($attr) {
         global $lang;
