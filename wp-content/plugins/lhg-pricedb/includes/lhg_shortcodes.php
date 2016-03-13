@@ -22,6 +22,12 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_fr = "un graveur de DVD";
         	$drive_type_es = "una grabadora de DVD";
         	$drive_type_it = "un masterizzatore DVD";
+	}elseif (strpos($title_orig,"DVD") > 0 ) {
+	        $drive_type = "DVD drive";
+        	$drive_type_de = "ein DVD-Laufwerk";
+        	$drive_type_fr = "un lecteur de DVD";
+        	$drive_type_es = "una unidad de DVD";
+        	$drive_type_it = "un drive DVD";
 	}
 
         if ( (strpos($title_orig,"Flash Drive") > 0 ) &&
