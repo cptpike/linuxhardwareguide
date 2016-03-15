@@ -16,7 +16,7 @@ function lhg_drive_intro_shortcode($attr) {
         # Printer type
         $printer_type = "";
         $printer_type_de = " ";
-        if (strpos($title_orig,"DVD Writer") > 0 ) {
+        if ( (strpos($title_orig,"DVD Writer") > 0 ) or (strpos($title_orig,"DVD-Brenner") > 0 )) {
 	        $drive_type = "DVD writer";
         	$drive_type_de = "einen DVD-Brenner";
         	$drive_type_fr = "un graveur de DVD";
@@ -47,7 +47,7 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_it = "un SSD";
 	}
 
-        if (strpos($title_orig,"Harddisk,") > 0 ) {
+        if ( (strpos($title_orig,"Harddisk,") > 0 ) or (strpos($title_orig,"Festplatte,") > 0 ) ) {
 	        $drive_type = "harddisk";
         	$drive_type_de = "eine Festplatte";
         	$drive_type_fr = "un disque dur";
