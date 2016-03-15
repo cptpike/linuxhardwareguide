@@ -58,14 +58,14 @@ function lhg_drive_intro_shortcode($attr) {
         if (preg_match("/([0-9][0-9][0-9]?GB|[0-9]?TB|[0-9]?GB|[0-9][0-9]?GB|[0-9].[0-9]?TB)/i",$title_orig,$match) == 1 ) {
                 $match = $match[0];
 	        $drive_type .= " with $match storage capacity";
-        	$drive_type_de = " mit $match Speciherkapazit&auml;t";
+        	$drive_type_de = " mit $match Speicherkapazit&auml;t";
         	$drive_type_fr = " avec une capacité de stockage de $match";
         	$drive_type_es = " con capacidad de almacenamiento de $match";
         	$drive_type_it = " con capacità di memorizzazione di $match";
 	}
 
         $output = "The ".$drive_name." is a ".$drive_type.". It is automatically recognized and fully supported by the Linux kernel:";
-        $output_de = "Beim ".$drive_name." handelt es sich um ".$drive_type_de.". Er wird automatisch vom Linux-Kernel erkannt und vollst&auml;ndig unterst&uuml;zt:";
+        $output_de = "Die ".$drive_name." ist eine ".$drive_type_de.". Er wird automatisch vom Linux-Kernel erkannt und vollst&auml;ndig unterst&uuml;zt:";
         $output_fr = "Le ".$drive_name." est ".$drive_type_fr.". Il est reconnaît automatiquement et entièrement pris en charge par le noyau Linux:";
         $output_es = "La ".$drive_name." es ".$drive_type_es.". Es reconocida automáticamente y totalmente soportado por el núcleo Linux";
         $output_it = "La ".$drive_name." è ".$drive_type_it.". E 'riconosce automaticamente e pienamente supportato dal kernel Linux: ";
