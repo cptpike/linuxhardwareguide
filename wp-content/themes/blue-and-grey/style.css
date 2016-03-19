@@ -2585,3 +2585,7 @@ div#my_popup{
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
+.top-thread-row .wp-post-image {
+	max-width: 30px;
+        max-height: 30px;
+}
