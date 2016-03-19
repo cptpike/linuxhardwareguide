@@ -2589,3 +2589,8 @@ div#my_popup{
 	max-width: 30px;
         max-height: 30px;
 }
+
+.popular-post .wp-post-image {
+        max-width: 30px;
+        max-height: 30px;
+}
