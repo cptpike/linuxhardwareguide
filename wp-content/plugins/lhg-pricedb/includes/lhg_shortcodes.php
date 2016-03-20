@@ -28,6 +28,8 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_fr = "un lecteur de DVD";
         	$drive_type_es = "una unidad de DVD";
         	$drive_type_it = "un drive DVD";
+                $genus_de = "neutral";
+
 	}
 
         if ( (strpos($title_orig,"Flash Drive") > 0 ) &&
@@ -37,6 +39,8 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_fr = "un lecteur flash USB";
         	$drive_type_es = "una unidad flash USB";
         	$drive_type_it = "un flash drive USB";
+		$genus_de = "male";
+
 	}
 
         if (strpos($title_orig,"SSD,") > 0 ) {
@@ -45,6 +49,7 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_fr = "un SSD";
         	$drive_type_es = "un SSD";
         	$drive_type_it = "un SSD";
+                $genus_de = "female";
 	}
 
         if ( (strpos($title_orig,"Harddisk,") > 0 ) or (strpos($title_orig,"Festplatte,") > 0 ) ) {
@@ -53,19 +58,24 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_fr = "un disque dur";
         	$drive_type_es = "un disco duro";
         	$drive_type_it = "un disco rigido";
+                $genus_de = "female";
 	}
 
         if (preg_match("/([0-9]{1,3} GB|[0-9]{1,3}GB|[0-9]{1,3}TB|[0-9]{1,3} TB|[0-9].[0-9]TB|[0-9].[0-9]?TB)/i",$title_orig,$match) == 1 ) {
                 $match = $match[0];
 	        $drive_type .= " with $match storage capacity";
-        	$drive_type_de = " mit $match Speicherkapazit&auml;t";
-        	$drive_type_fr = " avec une capacité de stockage de $match";
-        	$drive_type_es = " con capacidad de almacenamiento de $match";
-        	$drive_type_it = " con capacità di memorizzazione di $match";
+        	$drive_type_de .= " mit $match Speicherkapazit&auml;t";
+        	$drive_type_fr .= " avec une capacité de stockage de $match";
+        	$drive_type_es .= " con capacidad de almacenamiento de $match";
+        	$drive_type_it .= " con capacità di memorizzazione di $match";
 	}
 
+        if ($genus_de == "female") $ErSieEs = "Sie";
+        if ($genus_de == "male") $ErSieEs = "Er";
+        if ($genus_de == "neutral") $ErSieEs = "Es";
+
         $output = "The ".$drive_name." is a ".$drive_type.". It is automatically recognized and fully supported by the Linux kernel:";
-        $output_de = "Die ".$drive_name." ist eine ".$drive_type_de.". Er wird automatisch vom Linux-Kernel erkannt und vollst&auml;ndig unterst&uuml;zt:";
+        $output_de = "Die ".$drive_name." ist eine ".$drive_type_de.". $ErSieEs wird automatisch vom Linux-Kernel erkannt und vollst&auml;ndig unterst&uuml;zt:";
         $output_fr = "Le ".$drive_name." est ".$drive_type_fr.". Il est reconnaît automatiquement et entièrement pris en charge par le noyau Linux:";
         $output_es = "La ".$drive_name." es ".$drive_type_es.". Es reconocida automáticamente y totalmente soportado por el núcleo Linux";
         $output_it = "La ".$drive_name." è ".$drive_type_it.". E 'riconosce automaticamente e pienamente supportato dal kernel Linux: ";
