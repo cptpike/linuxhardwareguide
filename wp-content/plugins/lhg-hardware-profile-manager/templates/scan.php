@@ -210,6 +210,30 @@ if ($email != "") $userknown = 1;
 $buttontext = "Submit";
 if ($userknown == 1) $buttontext = "Update";
 print "";
+
+
+#Hide Popup section if public profile is shown
+if ($show_public_profile == 1) {
+echo '
+		<script src="https://cdn.rawgit.com/vast-engineering/jquery-popup-overlay/1.7.11/jquery.popupoverlay.js"></script>
+
+                <script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+		      $("#my_popup").hide();
+                      $("[id^=details-hw-]").hide();
+
+                });
+
+                /*]]> */
+                </script>
+
+';
+}
+
+
 if ($show_public_profile != 1) {
 echo '
 	<script src="https://cdn.rawgit.com/vast-engineering/jquery-popup-overlay/1.7.11/jquery.popupoverlay.js"></script>
