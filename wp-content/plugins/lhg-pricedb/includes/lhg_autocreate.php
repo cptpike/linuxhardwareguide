@@ -1765,7 +1765,7 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
 
 
 	$args['ID'] = $pid;
-        $args['post_title' ] = $newtitle;
+        $args['post_title' ] =  "<!--:us-->".$newtitle."<!--:-->";
         wp_update_post( $args );
 
         return $newtitle;
