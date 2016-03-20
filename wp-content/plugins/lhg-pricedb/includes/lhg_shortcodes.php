@@ -55,7 +55,7 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_it = "un disco rigido";
 	}
 
-        if (preg_match("/([0-9][0-9][0-9]?GB|[0-9]?TB|[0-9]?GB|[0-9][0-9]?GB|[0-9].[0-9]?TB)/i",$title_orig,$match) == 1 ) {
+        if (preg_match("/([0-9]{1,3} GB|[0-9]{1,3}GB|[0-9]{1,3}TB|[0-9]{1,3} TB|[0-9].[0-9]TB|[0-9].[0-9]?TB)/i",$title_orig,$match) == 1 ) {
                 $match = $match[0];
 	        $drive_type .= " with $match storage capacity";
         	$drive_type_de = " mit $match Speicherkapazit&auml;t";
