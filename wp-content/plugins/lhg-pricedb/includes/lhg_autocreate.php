@@ -1191,6 +1191,12 @@ function lhg_show_translate_process($postid) {
 
         $result_content = str_replace("<!--:us-->","",$result_content);
         $result_content = str_replace("<!--:-->","",$result_content);
+        # for safety reasons we had to replace chars when storing them in PriceDB. Now we need to
+        # revert this (normally only for the [code] block but we do not distinguish text and code yet - ToDo!)
+        $result_content = str_replace("&lt;","<",$result_content);
+        $result_content = str_replace("&gt;",">",$result_content);
+        $result_content = str_replace("&quot;","\"",$result_content);
+        $result_content = str_replace("&amp;","&",$result_content);
 
         #
         # guess AMAZON ID
