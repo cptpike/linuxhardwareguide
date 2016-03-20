@@ -248,7 +248,7 @@ $lspci0 = str_replace("\n\n","",$lspci0);
 [code lang="plain" title="dmesg | grep DMI"]
 '.$dmi_line.'
 [/code]
-under '.$distribution.' with Linux kernel version '.$version.'.
+under '.trim($distribution).' with Linux kernel version '.trim($version).'.
 
 ';
 
@@ -1166,7 +1166,17 @@ function lhg_show_translate_process($postid) {
 
           $catid = get_category_by_slug($cat_slug);
           #var_dump ($catid);
-	  array_push($category_ids, $catid->cat_ID );
+
+          # 1. auto recognition by slug
+          if ( ($catid->cat_ID) != "") array_push($category_ids, $catid->cat_ID );
+
+          # 2. not all categories are found by english slugs.
+          # No use for automatic detection. We simply identify them manually here:
+          if ($cat_slug == "cctv" ) array_push($category_ids, 663);
+          if ($cat_slug == "internal" ) array_push($category_ids, 335);
+          if ($cat_slug == "ultrabook" ) array_push($category_ids, 589);
+          if ($cat_slug == "all-in-one-printer" ) array_push($category_ids, 368);
+          if ($cat_slug == "external" ) array_push($category_ids, 333);
 
 	}
 
