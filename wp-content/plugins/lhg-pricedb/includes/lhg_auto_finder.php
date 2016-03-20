@@ -304,7 +304,7 @@ function lhg_correct_drive_name ( $pid, $sid ) {
 
         $my_post = array(
       		'ID'           => $pid,
-      		'post_title'   => $corr
+		'post_title' =>  "<!--:us-->".$corr."<!--:-->"
  	 );
          wp_update_post ( $my_post );
 
