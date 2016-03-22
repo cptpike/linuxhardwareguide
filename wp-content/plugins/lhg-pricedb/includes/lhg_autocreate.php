@@ -1750,6 +1750,8 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( stristr($string, "LGA 1155") != false ) array_push($props,"Socket LGA 1155");
         if ( stristr($string, "Quad-Core") != false ) array_push($props,"Quad Core");
         if ( preg_match("/[0-9] MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
+        # Sometimes CPU title do not have the word "Cache"
+        if ( ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/[0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
         if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_unshift($props, $match[0]);
         if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_unshift($props, "Harddisk");
         if ( preg_match("/DVD.*RW/i", $string, $match) == 1 ) array_unshift($props, "DVD Writer");
@@ -1789,9 +1791,20 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
 }
 
 function lhg_update_categories_by_string($pid, $string, $mode)  {
-        # use category by title
+
+        # get existing categories
+        $categories = get_the_category( $pid );
+
+        # use category by title to extract additional categories
         $categories_array = lhg_category_by_title( $string );
-        wp_set_post_categories ( $pid, $categories_array, true);
+
+        # merge both lists
+        foreach ($categories as $category) {
+                array_push($categories_array, $category->term_id);
+	}
+
+        # update article
+        wp_set_post_categories ( $pid, $categories_array, true );
 
 }
 
@@ -1937,6 +1950,9 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Core I7/i',$title)) array_push ( $taglist , 372);
   if (preg_match('/Core I7/i',$title)) array_push ( $taglist , 372);
   if (preg_match('/LGA 1155/i',$title)) array_push ( $taglist , 532);
+  if (preg_match('/LGA1155/i',$title)) array_push ( $taglist , 532);
+  if (preg_match('/LGA1156/i',$title)) array_push ( $taglist , 988);
+  if (preg_match('/LGA 1156/i',$title)) array_push ( $taglist , 988);
 
   if (preg_match('/AMD/',$title)) array_push ( $taglist , 520);
   if (preg_match('/Sempron/',$title)) array_push ( $taglist , 875);
