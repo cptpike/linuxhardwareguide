@@ -467,10 +467,23 @@ function lhg_create_article_image( $image_url , $image_title ) {
 
   file_put_contents($local_file, fopen($image_url, 'r'));
 
+  #      print "<br>loc file: $local_file";
+
   $im = @imagecreatefromjpeg($local_file);
   list($width, $height) = getimagesize($local_file);
 
   #print "<br>BxH = $width x $height";
+
+  #if ( ($width < 130)  ){
+  #      print "too small width!!<br>";
+  #      imagecopyresized( $im, $im, 0, 0, 0, 0, 130, $height, $width, $heigth);
+  #
+  #        list($width, $height) = getimagesize($im);
+  #	print "<br>New BxH = $width x $height";
+  #
+  #}
+
+
 
   if ( ($width != 130) or ($height != 130) ){
   	#rescaling necessary !!
@@ -480,17 +493,20 @@ function lhg_create_article_image( $image_url , $image_title ) {
         $backgroundColor = imagecolorallocate($newimage, 255, 255, 255);
 	imagefill($newimage, 0, 0, $backgroundColor);
 
-        if ($width > 130) {
+        #if ($width > 130) {
            	#print "<br>Scale width: ".$w_new/$width;
-                $scaling = $w_new/$width;
-                if ($height * $scaling > 130 ) $scaling = $h_new/height;
+        $scaling = $w_new/$width;
+        if ($height * $scaling > 130 ) $scaling = $h_new/$height;
 
                 #print "Scaling: ".$scaling;
                 #imagecopyresized($newimage, $im, ($w_new - ($width*$scaling))/2, ($h_new - ($height*$scaling))/2, 0, 0, $width*$scaling, $height*$scaling,
                 #                               $width , $height  );
-                imagecopyresampled($newimage, $im, ($w_new - ($width*$scaling))/2, ($h_new - ($height*$scaling))/2, 0, 0, $width*$scaling, $height*$scaling,
-                                               $width , $height  );
-	}
+
+        # Resize image (130x130) and copy to white background
+        imagecopyresampled($newimage, $im, ($w_new - ($width*$scaling))/2, ($h_new - ($height*$scaling))/2, 0, 0,
+        					$width*$scaling, $height*$scaling,
+                                                $width , $height  );
+	#}
 
 	$im = $newimage;
 
@@ -511,6 +527,7 @@ function lhg_create_article_image( $image_url , $image_title ) {
 
     $picdir = "/var/www/wordpress";
     $created_gif_url = "/wp-uploads/autoimage/".$image_title.".gif";
+    #print "<br>URL: $created_gif_url<br>";
     imagegif($im, $picdir.$created_gif_url);
     imagedestroy($im);
 

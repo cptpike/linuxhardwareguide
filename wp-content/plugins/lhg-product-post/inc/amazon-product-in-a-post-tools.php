@@ -74,10 +74,62 @@ global $appipBulidBox;
 		echo '<br /><label for="amazon-product-single-asin"><b>' . __($txt_amz_asin, 'appplugin' ) . '</b></label> ';
 
                 global $txt_amz_getfrom;
-		echo '<br />&nbsp;&nbsp;<input type="text" name="amazon-product-single-asin" id="amazon-product-single-asin" value="'.get_post_meta($post->ID, 'amazon-product-single-asin', true).'" /> <i>'.$txt_amz_getfrom.'</i><br /><br />';
+		#echo '<br />&nbsp;&nbsp;<input type="text" name="amazon-product-single-asin" id="amazon-product-single-asin" value="'.get_post_meta($post->ID, 'amazon-product-single-asin', true).'" /> <i>'.$txt_amz_getfrom.'</i><br /><br />';
+
+
+echo '
+                 <script type="text/javascript">
+                 /* <![CDATA[ */
+
+                 jQuery(document).ready( function($) {
+
+                               $(\'a.ajax-amazon-update\').click(function(){
+
+                                 //var link = this;
+                                 var link = $("#amz-info-reload-box");
+
+                                 //change link text
+                                 $(link).html(\'<img src="/wp-uploads/2015/11/loading-circle.gif">\');
+
+                                 var asin = $("#amazon-product-single-asin").val();
+                                 //var asin = 55x;
+
+                                 var post_id = '.$post->ID.';
+
+                                 //prepare Ajax data:
+                                 var data ={
+                                         action: \'lhg_amazon_update_ajax\',
+                                         post_id:  post_id,
+                                         test: 5,
+                                         asin: asin
+                                 };
+
+
+                                 //load & show server output
+                                 $.get(\'/wp-admin/admin-ajax.php\', data, function(data){
+                                         //$(link).after(data).remove;
+                                         $(link).html(data);
+
+                                 });
+
+                                 //prevent default behavior
+                                 return false;
+
+			       });
+
+                                $(\'a.ajax-amazon-update\').trigger(\'click\');
+
+			 });
+
+                 /*]]> */
+                 </script>
+
+
+                 <br />&nbsp;&nbsp;<input type="text" name="amazon-product-single-asin" id="amazon-product-single-asin" value="'.get_post_meta($post->ID, 'amazon-product-single-asin', true).'" /> <a href="" class="ajax-amazon-update button"><i class="icon-refresh"></i>&nbsp;Refresh</a> <div id="amz-info-reload-box">Empty</div> <i>'.$txt_amz_getfrom.'</i><br /><br />';
 
 
                 if ( ($lang != "de") and (current_user_can("delete_posts") ) ){ //allow to update identification markers (only on com a.t.m.)
+
 
                 	$library_usbid = lhg_get_usbid($post->ID);
 	                $library_pciid = lhg_get_pciid($post->ID);
@@ -97,6 +149,117 @@ global $appipBulidBox;
 
 	
 	}
+
+         #
+         #
+         #### AJAX handlers
+         #
+         #
+
+         //update of Amazon information - for logged in users
+         add_action('wp_ajax_lhg_amazon_update_ajax', 'lhg_amazon_update_ajax');
+         function lhg_amazon_update_ajax() {
+                 $pid = absint( $_REQUEST['post_id'] );
+                 $asin = $_REQUEST['asin'] ;
+
+               $output = lhg_aws_get_price($asin,"com");
+                 list($image_url_com, $product_url_com, $price_com , $product_title) = split(";;",$output);
+
+                 $product_title = str_replace("Title: ","", $product_title);
+
+               $output = lhg_aws_get_price($asin,"fr");
+                 list($image_url_fr, $product_url_fr, $price_fr) = split(";;",$output);
+
+               $output = lhg_aws_get_price($asin,"de");
+                 list($image_url_de, $product_url_de, $price_de) = split(";;",$output);
+
+                 $image_url_com   = str_replace("Image: ","", $image_url_com);
+                 $product_url_com = str_replace("URL: ","", $product_url_com);
+                 $price_com = str_replace("Price: ","", $price_com);
+
+                 $product_url_de = str_replace("URL: ","", $product_url_de);
+                 $price_de = str_replace("Price: ","", $price_de);
+
+                 $product_url_fr = str_replace("URL: ","", $product_url_fr);
+                 $price_fr = str_replace("Price: ","", $price_fr);
+
+                $success_image_com = ($price_com != "")? '<span class="amz-ajax-found">found</div>' : '<div class="amz-ajax-not-found">not found</div>';;
+                 $success_image_fr  = ($price_fr  != "")? '<span class="amz-ajax-found">found</div>' : '<div class="amz-ajax-not-found">not found</div>';;
+                 $success_image_de  = ($price_de  != "")? '<span class="amz-ajax-found">found</div>' : '<div class="amz-ajax-not-found">not found</div>';;
+
+                 #
+                 #### add image to article, if icon empty
+                 #
+                 if ($image_url_com == "") {
+                       $scaled_image_url = "/wp-uploads/2013/03/noimage130.jpg";
+               }else{
+
+                       $scaled_image_url = lhg_create_article_image( $image_url_com, $product_title );
+                         $si_filename = str_replace("/wp-uploads/","",$scaled_image_url);
+
+                       if ( !has_post_thumbnail( $pid ) ) {
+
+                                 $file = "/var/www/wordpress".$scaled_image_url;
+                               #print "PID: $pid";
+                               #print "<br>Store Thumbnail!";
+                               #print "<br>SIURL: $scaled_image_url";
+
+                               $wp_filetype = wp_check_filetype($file, null );
+
+                               $attachment = array(
+                                   'post_mime_type' => $wp_filetype['type'],
+                                   'post_title' => sanitize_title($product_title),
+                                   'post_content' => '',
+                                   'post_status' => 'inherit'
+                               );
+
+                               #  var_dump($attachment);
+
+                               $attach_id = wp_insert_attachment( $attachment, $si_filename, $pid );
+                                 #print "AID: ".$attach_id;
+                                 require_once(ABSPATH . 'wp-admin/includes/image.php');
+                               $attach_data = wp_generate_attachment_metadata( $attach_id, $si_filename );
+                               wp_update_attachment_metadata( $attach_id, $attach_data );
+                               set_post_thumbnail( $pid, $attach_id );
+
+                       }
+
+                 }
+                echo '<div class="amz-ajax-image"><a href="'.$product_url_com.'"><img src="'.$scaled_image_url.'"/></a></div>';
+
+                 echo '
+                 <div class="ajax-amazon-table">
+                 <table ><tr>
+
+                 <td>Region</td> <td>status</td>  <td>Price</td> <td> URL </td>
+
+                 </tr>
+                 <td>com</td> <td><span class="amz-ajax-return">'.$success_image_com.'</span></td>
+                 <td> '.$price_com.'</td>
+                 <td> (<a href="'.$product_url_com.'">visit</a>) </td>
+                 </tr>
+
+                 </tr>
+                 <td>fr</td> <td><span class="amz-ajax-return">'.$success_image_fr.'</span></td>
+                 <td> '.$price_fr.'</td>
+                 <td> (<a href="'.$product_url_fr.'">visit</a>) </td>
+                 </tr>
+
+                 </tr>
+                 <td>de</td> <td><span class="amz-ajax-return">'.$success_image_de.'</span></td>
+                 <td> '.$price_de.'</td>
+                 <td> (<a href="'.$product_url_de.'">visit</a>) </td>
+                 </tr>
+
+                 </table>
+                 </div>';
+
+
+                 die();
+         }
+
+
+
 	
 	/* When the post is saved, saves our custom data */
 	function amazonProductInAPostSavePostdata($post_id, $post) {
