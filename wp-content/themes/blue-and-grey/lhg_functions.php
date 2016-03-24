@@ -95,6 +95,10 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/alt-linux-logo.png";
         if ( strpos($distribution,"Simply Linux") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/simply-linux-logo.png";
+        if ( strpos($distribution,"Kali ") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/kalilinux-logo.png";
+        if ( strpos($distribution,"Raspbian ") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/raspbian-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
