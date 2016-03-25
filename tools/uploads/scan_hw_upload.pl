@@ -848,6 +848,12 @@ sub get_linux_distribution {
     close FILE_R;
     
     if ($dist ne "") {
+        
+        # Clean Gentoo name
+        if ( index($dist,"NAME=") == 0) {
+            $dist = substr($dist,$pos+6);
+        }
+
         print "Distribution: $dist \n";
         return $dist;
     }
