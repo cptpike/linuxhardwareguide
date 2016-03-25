@@ -847,9 +847,20 @@ sub get_linux_distribution {
     }
     close FILE_R;
     
+    if ($dist ne "") {
+        
+        # Clean Gentoo name
+        if ( index($dist,"NAME=") == 0) {
+            $dist = substr($dist,$pos+6);
+        }
+
+        print "Distribution: $dist \n";
+        return $dist;
+    }
+    
     # identify by /etc/*-release output 
     if ($dist eq "") {
-        print "Error: Distribution not recognized ... fallback 1\n";
+        print "Error: Distribution not recognized ... fallback 1";
         open(FILE_R, "<", "/var/www/uploads/".$sid."/lsb_release.txt");
         while ( <FILE_R> ) {
         #print "Line: $_";
@@ -869,16 +880,32 @@ sub get_linux_distribution {
 
         }
         }
+        close FILE_R;
     }
     
+    # identify by miscellaneous output 
+    if ($dist eq "") {
+        print ",2";
+        open(FILE_R, "<", "/var/www/uploads/".$sid."/lsb_release.txt");
+        
+        while ( <FILE_R> ) {
+            if ($_  =~ /ALT Linux/) {
+                $dist = "ALT Linux";
+                break;
+            }
+        }
+        close FILE_R;
+    }
+
     # Recognize by kernel - not very reliable
     if ($dist eq "") {
-        print "Error: Distribution not recognized ... fallback 2\n";
+        print ",3";
         if ($kversion  =~ /-ARCH/) {
             $dist = "Arch Linux";
         }
     }
-
+    
+    print "\n";
     print "Distribution: $dist \n";
     return $dist;
 }
