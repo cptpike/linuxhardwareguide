@@ -32,6 +32,7 @@ function lhg_db_get_cheapest_price_by_region($postid, $search_region) {
         #echo "RG: $region";
         #print "PID: $postid<br>";
         if ( ($search_region == "de") && ($region != "de") ) $postid = lhg_get_postid_de_from_com( $postid );
+        if ( ($search_region != "de") && ($region == "de") ) $postid = lhg_get_postid_com_from_de( $postid );
         #print "PID2: $postid<br>";
         $shopids = lhg_return_shop_ids($search_region);
 

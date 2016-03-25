@@ -12,6 +12,7 @@ function lhg_article_scans_overview () {
         global $txt_scan_results;
         global $txt_scan_title;
         global $txt_scan_text;
+        global $txt_Rating;
 
         $sql = "SELECT sid FROM `lhghwscans` WHERE postid = \"".$pid."\"";
     	$ids = $lhg_price_db->get_results($sql);
@@ -27,6 +28,7 @@ function lhg_article_scans_overview () {
                 <td></td>
         	<td><div class="article-scantable-header">'.$txt_scan_distribution.'</div></td>
         	<td><div class="article-scantable-header">'.$txt_scan_kernel.'</div></td>
+        	<td><div class="article-scantable-header">'.$txt_Rating.'</div></td>
         	<td><div class="article-scantable-header">'.$txt_scan_scandate.'</div></td>
         </tr>
                 ';
@@ -41,6 +43,9 @@ function lhg_article_scans_overview () {
 	        $sql = "SELECT id, distribution, kversion, pub_id, scandate FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
     		$result = $lhg_price_db->get_results($sql);
 
+                $rating = lhg_get_rating_by_scan($sid , $pid);
+
+                $ratingimage = lhg_create_rating_img( $rating );
 
 		#var_dump($result);
                 #print "--<br>";
@@ -67,12 +72,14 @@ function lhg_article_scans_overview () {
                         $date_array[$counter]= $result0->scandate;
                         $logo = get_distri_logo($result0->distribution);
 
+                        $tooltiptext = $txt_scan_distribution.": ".preg_replace( "/\r|\n/", "", $result0->distribution)."\n".$txt_scan_kernel.": ".preg_replace( "/\r|\n/", "",$result0->kversion);
 
                         $output_tmp_array[$counter] .= '<tr>
                         <td width="30">'."
-                        <div class=\"scan-overview-distri-logo\"><img src=\"".$logo.'" width="30" ></div>
+                        <div class=\"scan-overview-distri-logo\"><img src=\"".$logo.'" width="30" alt="'.$tooltiptext.'" title="'.$tooltiptext.'" ></div>
                         </td><td>'.$result0->distribution."</td>
                         <td>".$result0->kversion."</td>
+                        <td>".$ratingimage."</td>
                         <td><a href=\"./hardware-profile/system-".$result0->pub_id."\">".$date."</a></td>
                         </tr>";
                         $findings++;
@@ -220,8 +227,11 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 	                print "<tr>";
         	        print "<td>$date </td>";
                 	print '<td><a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a> (<a href="/hardware-profile/system-'.$pub_id.'">pub</a>)</td>';
-	                print '<td>
-                          <img src="'.$distrilogo .'" width=20>
+
+                        $tooltiptext ="Distribution: ".preg_replace( "/\r|\n/", "", $resN->distribution)."\nKernel: ".preg_replace( "/\r|\n/", "",$resN->kversion);
+
+                        print '<td>
+                          <img src="'.$distrilogo .'" alt="'.$tooltiptext.'" title="'.$tooltiptext.'" width=20>
                           '.$maillogo." "
                           .$commentavail." "
                           .$ratingavail. " "
@@ -404,5 +414,60 @@ function lhg_getUserIP()
 
     return $ip;
 }
+
+function lhg_get_rating_by_scan( $sid , $postid) {
+        # get IPs and dates corresponding to raters of postid
+        global $lhg_price_db;
+        global $wpdb;
+	$results = $wpdb->get_results("SELECT * FROM $wpdb->ratings WHERE rating_postid = $postid");
+
+        # check if corresponds to logged in user in priceDB
+        foreach ($results as $result) {
+                $ip = ($result->rating_ip);
+                $date = ($result->rating_timestamp);
+                #$ip = $result[0]->rating_ip;
+
+                #print "Search for IP: $ip<br> - date: $date<br>";
+
+		$scan_results = $lhg_price_db->get_results("SELECT * FROM `lhgscan_login` WHERE ip = '$ip'");
+	        foreach ($scan_results as $scan_result) {
+	                # check rating dates for match
+                        $logindate= $scan_result->date;
+                        #print "Logindate: $logindate<br>";
+                        # check if rating and login were by same user in 10h time window
+                        # return corresponding rating
+                        if ( ( abs( $date - $logindate)) < 60*60*10 ) return ($result->rating_rating);
+
+
+	        }
+        }
+
+        # no rating found
+        return -1;
+
+}
+
+# create star image from rating
+function lhg_create_rating_img( $rating ) {
+
+        global $txt_user_rating_for_setup;
+        global $txt_out_of;
+
+                if ($rating < 0) return "-";
+
+        for($j=1; $j <= 5; $j++) {
+		if($j <= $rating) {
+			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crystal/rating_on.gif').'" alt="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" title="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" class="post-ratings-image" />';
+		} else {
+			$output .= '<img src="'.plugins_url('wp-postratings/images/stars_crystal/rating_off.gif').'" alt="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" title="'.
+                        $txt_user_rating_for_setup." ".$rating." ".$txt_out_of.' 5" class="post-ratings-image" />';
+		}
+	}
+        return $output;
+}
+		       
 
 ?>

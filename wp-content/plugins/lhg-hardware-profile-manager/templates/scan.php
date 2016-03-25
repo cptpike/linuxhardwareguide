@@ -1,7 +1,5 @@
 <?php
 
-
-
 require_once(plugin_dir_path(__FILE__)."uid.php");
 require_once(plugin_dir_path(__FILE__)."../../lhg-pricedb/includes/lhg_autocreate.php");
 
@@ -120,6 +118,7 @@ $sid = substr($urlpath,$hwscanpos+23);
 # store login data
 # we need this info to link scan results with users
 # and ratings with kernel versions
+
  if ($show_public_profile != 1) {
 	lhg_store_login_data( $sid );
  }
@@ -211,8 +210,34 @@ if ($email != "") $userknown = 1;
 $buttontext = "Submit";
 if ($userknown == 1) $buttontext = "Update";
 print "";
+
+
+#Hide Popup section if public profile is shown
+if ($show_public_profile == 1) {
+echo '
+		<script src="https://cdn.rawgit.com/vast-engineering/jquery-popup-overlay/1.7.11/jquery.popupoverlay.js"></script>
+
+                <script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+		      $("#my_popup").hide();
+                      $("[id^=details-hw-]").hide();
+
+                });
+
+                /*]]> */
+                </script>
+
+';
+}
+
+
 if ($show_public_profile != 1) {
 echo '
+	<script src="https://cdn.rawgit.com/vast-engineering/jquery-popup-overlay/1.7.11/jquery.popupoverlay.js"></script>
+
                 <script type="text/javascript">
                 /* <![CDATA[ */
 
@@ -1233,6 +1258,105 @@ print "<h2>Unknown Hardware</h2>";
 
                 jQuery(document).ready( function($) {
 
+                      //Popup handler
+		      $("#my_popup").popup({
+                        onclose: function() { $("#my_popup_contents").empty();},
+                        opacity: 0.3,
+                        transition: "all 0.3s"
+                      });
+
+
+                                // binding for elements not existing at page load
+                                // amazon suggestion selected
+                                $(document.body).on("click","[id^=autocreate-]", function() {
+
+
+                                    var option = $(this).attr(\'id\').substring(11,12);
+                                    var id = $(this).attr(\'id\').substring(13);
+                                    var pid = $("#PID-"+id).val();
+
+                                    var asin1 = $("#ASIN1-"+id).val();
+                                    var title1 = $("#TITLE1-"+id).val();
+                                    var imgurl1 = $("#IMGURL1-"+id).val();
+                                    var produrl1 = $("#PRODURL1-"+id).val();
+
+                                    var asin2 = $("#ASIN2-"+id).val();
+                                    var title2 = $("#TITLE2-"+id).val();
+                                    var imgurl2 = $("#IMGURL2-"+id).val();
+                                    var produrl2 = $("#PRODURL2-"+id).val();
+
+                                    var asin3 = $("#ASIN3-"+id).val();
+                                    var title3 = $("#TITLE3-"+id).val();
+                                    var imgurl3 = $("#IMGURL3-"+id).val();
+                                    var produrl3 = $("#PRODURL3-"+id).val();
+
+                                    var session = "'.$sid.'";
+                                    //var area = $("#updatearea-"+id);
+                                    var area= $("#my_popup");
+
+                                    //alert("Pressed:"+id);
+
+                                    if (option == 1) { $("#url-"+id).val(produrl1); }
+                                    if (option == 2) { $("#url-"+id).val(produrl2); }
+                                    if (option == 3) { $("#url-"+id).val(produrl3); }
+                                    $("#scan-comments-"+id).click();
+                                    $("#rating_"+pid+"_5").click();
+
+	                            var data ={
+                                        action: \'lhg_update_article_by_amazon_search\',
+                                        id: id,
+                                        pid: pid,
+
+                                        asin1: asin1,
+                                        asin2: asin2,
+                                        asin3: asin3,
+
+                                        title1: title1,
+                                        title2: title2,
+                                        title3: title3,
+
+                                        imgurl1: imgurl1,
+                                        imgurl2: imgurl2,
+                                        imgurl3: imgurl3,
+
+                                        produrl1: produrl1,
+                                        produrl2: produrl2,
+                                        produrl3: produrl3,
+
+                                        //asin2: asin2,
+                                        //asin3: asin3,
+                                        option: option,
+                                        session: session
+                                    };
+
+                                    $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                       //currently no visual feedback
+
+                                       //Debug:
+                                       //$(area).append("Response update: "+response);
+                                       //$(area).append("Produrl1: "+produrl1);
+
+                                    });
+
+                                    // var cnt = $("#my_popup_wrapper").contents();
+				    // $("#my_popup_wrapper").remove();
+                                    // $("#my_popup_background").replaceWith(cnt);
+
+                                   //Disabled for debugging
+                                       $("#my_popup_close").click();
+                                       $("#my_popup_contents").empty();
+
+                                    //$("#my_popup").popup({
+				    //      background: false
+				    //    });
+                                    // $("#my_popup").toggle();
+
+                                    return false;
+
+                                });
+
+
+
                                 // Show further scan details on request
 
                                 $("[id^=show-details-hw-]").each(function(){
@@ -1285,6 +1409,7 @@ print "<h2>Unknown Hardware</h2>";
                                         comment: comment
                                 };
 
+
                                 //$(box).append("Debug: "+asinURL);
 
 
@@ -1323,11 +1448,85 @@ print "<h2>Unknown Hardware</h2>";
                                 });
 
 
+                                //
+                                // auto-finder click handling
+                                //
+
+				$(\'[id^="finder-"]\').click(function(){
+
+                                        $("#my_popup").popup("show");
+
+                                        var indicator_html = \'<div id="scan-load-area">Searching for hardware...<img class="scan-load-button" id="auto_search_ongoing" src="/wp-uploads/2015/11/loading-circle.gif" /></div>\';
+
+	                                var clickedlink = this;
+        	                        var id = $(clickedlink).attr(\'id\').substring(7);
+                	                var pid = $(clickedlink).attr(\'name\').substring(4);
+                                        //var area = $("#updatearea-"+id);
+                                        var area= $("#my_popup_contents");
+                                        $(area).append(indicator_html);
+                                        //$(area).append("Test-> PID: "+pid+" ID: "+id);
+
+
+	                                //prepare Ajax data:
+        	                        var session = "'.$sid.'";
+                                	var data ={
+                                        	action: \'lhg_amazon_finder_ajax\',
+                                                session: session,
+	                                        id: id,
+        	                                pid: pid
+	                                };
+
+
+	                                //load & show server output
+        	                        $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+                                  	      //Debug:
+                                                $("#scan-load-area").remove();
+                                        	$(area).append(response);
+	                                });
+
+        				return false;
+                                });
+
                 });
+
+
 
                 /*]]> */
                 </script>';
 
+
+print '
+<!-- Add an optional button to open the popup -->
+
+  <!-- Add content to the popup -->
+  <div id="my_popup">
+
+    <div id="my_popup_contents">
+
+    </div>
+
+
+    <!-- Add an optional button to close the popup -->
+    <button class="my_popup_close" id="my_popup_close">Close</button>
+
+  </div>
+
+  ';
+
+
+	# JQuery code which updates article if selected
+	print '
+                <script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+
+                });
+
+                /*]]> */
+                </script>';
 
 
                 echo '<table id="registration">';
@@ -1581,6 +1780,7 @@ print '
 
                             if (current_user_can('publish_posts') ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
+                                print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
 	                    }
                          echo "
                           </span>
@@ -1598,6 +1798,7 @@ print '
 
                               if (current_user_can('publish_posts') ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
+                                print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
 	                      }
 
                           echo "

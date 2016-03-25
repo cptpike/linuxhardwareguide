@@ -248,7 +248,7 @@ $lspci0 = str_replace("\n\n","",$lspci0);
 [code lang="plain" title="dmesg | grep DMI"]
 '.$dmi_line.'
 [/code]
-under '.$distribution.' with Linux kernel version '.$version.'.
+under '.trim($distribution).' with Linux kernel version '.trim($version).'.
 
 ';
 
@@ -494,8 +494,6 @@ function lhg_create_drive_article ($title, $sid, $id ) {
   global $lhg_price_db;
   global $dmesg_content_from_library;
 
-
-  $category = 478;
   $taglist = array( 584);
 
   if ( $dmesg_content_from_library == "" ) {
@@ -509,12 +507,148 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 
 
   $dmesg = explode("\n",$dmesg_content_from_library);
+
+  #get full dmesg line
+  #error_log("Title: $title");
+  $title_regexp= trim($title);
+  $title_regexp = str_replace("/",".",$title_regexp);
+  $title_regexp = str_replace("-",".",$title_regexp);
+  $dmesg_lines = preg_grep("/".$title_regexp."/i",$dmesg);
+  if (count($dmesg_lines) > 0)
+  foreach ($dmesg_lines as $dmesg_line) {
+        $full_title = $dmesg_line;
+  }
+
+  # ATA drive
+  if (strpos($title, "ATA ") !== false ) {
+	  # 1. get HDD name
+	  $dmesg_lines = preg_grep("/".$title."/i",$dmesg);
+	  foreach ($dmesg_lines as $dmesg_line) {
+        	$strpos = strpos($dmesg_line,"ATA ");
+	        if ($strpos > 0) {
+        		$searchstring0 = substr($dmesg_line, $strpos+4);
+	                $tmp = explode( " ", trim( $searchstring0 ) );
+	                $searchstring = $tmp[0];
+                        break;
+		}
+	  }
+
+	  # 2. get scsi ID
+	  $dmesg_lines_array = preg_grep("/scsi(.*)".$searchstring."/i",$dmesg );
+          foreach ($dmesg_lines_array as $line) $dmesg_line = $line;
+          #$dmesg_line = $dmesg_lines_array[0];
+          #print "dmla:<br>";
+          #var_dump($dmesg_lines_array);
+          #print "dml:<br>";
+          #var_dump($dmesg_line);
+	  preg_match("/scsi(.*)[0-9]\:[0-9]\:[0-9]\:[0-9]/i", $dmesg_line, $scsi_match_array);
+	  preg_match("/[0-9]\:[0-9]\:[0-9]\:[0-9]/i", $dmesg_line, $scsi_nr_array);
+          $scsi_nr = $scsi_nr_array[0];
+          #error_log("dmesg_line: $dmesg_line");
+          #print "scsiNR: $scsi_nr --- $dmesg_line<br>";
+          #var_dump($scsi_nr);
+          #print "dmesg_line: $dmesg_line<br>";
+          #var_dump($dmesg_lines);
+
+          # 3. get ata ID
+          $ata_lines_array = preg_grep("/ata[0-9].[0-9][0-9](.*)".$searchstring."/i", $dmesg);
+          foreach ($ata_lines_array as $line) $ata_line = $line;
+	  preg_match("/ata[0-9].[0-9][0-9]/i", $ata_line, $ata_nr_array);
+          $ata_nr = $ata_nr_array[0];
+          #print "ATANR: $ata_nr<br>";
+
+          # 4. get device file name
+	  $device_array = preg_grep("/sd ".$scsi_nr."/i",$dmesg );
+          foreach ($device_array as $line) $device_line = $line;
+	  preg_match("/\[s..\]/i", $device_line, $device_name_array);
+          $device_name = $device_name_array[0];
+          $device_name_raw = substr($device_name,1,-1);
+          #print "DNAme RAW:".$device_name_raw."<br>";
+          #var_dump($device_array);
+
+#          print "
+#1: $ata_nr<br>
+#2: $device_name<br>
+#3: $device_name_raw<br>
+#4: ".substr($ata_nr,0,4)."<br>
+#5: $scsi_nr<br>"
+#;
+          # 5. extract all relevant lines
+	  $dmesg_outputs = preg_grep("/(".$ata_nr."|\[".$device_name_raw."\]|".$device_name_raw."|".substr($ata_nr,0,4)."|".$scsi_nr.")/i", $dmesg);
+          $clean_dmesg_outputs = array();
+          foreach($dmesg_outputs as $dmesg_output){
+                #$tmp = explode("] ", $dmesg_output);
+                if ( strpos( $dmesg_output , "Stopping disk" ) !== false ) break;
+                array_push( $clean_dmesg_outputs, substr( $dmesg_output, 15) );
+	  }
+
+          $dmesgOutput = join("\n",$clean_dmesg_outputs);
+  }
+
+  # CD-ROM drive
+  if (strpos($full_title, "CD-ROM ") !== false ) {
+
+	  # 1. get scsi ID
+	  $dmesg_lines_array = preg_grep("/".$title."/i",$dmesg );
+          foreach ($dmesg_lines_array as $line) $dmesg_line = $line;
+          #$dmesg_line = $dmesg_lines_array[0];
+          #print "dmla:<br>";
+          #var_dump($dmesg_lines_array);
+          #print "dml:<br>";
+          #var_dump($dmesg_line);
+	  preg_match("/scsi(.*)[0-9]\:[0-9]\:[0-9]\:[0-9]/i", $dmesg_line, $scsi_match_array);
+	  preg_match("/[0-9]\:[0-9]\:[0-9]\:[0-9]/i", $dmesg_line, $scsi_nr_array);
+          $scsi_nr = $scsi_nr_array[0];
+          #error_log("SCSI NR: $scsi_nr");
+
+          # get ata ID based on last identifier of drive (should be drive id)
+          #error_log("TRG: $title_regexp");
+          $tmp = explode(" ",$title_regexp);
+          $tmp2 = array_reverse($tmp);
+          $ata_lines_array = preg_grep("/ata[0-9].[0-9][0-9](.*)".$tmp2[0]."/i", $dmesg);
+          foreach ($ata_lines_array as $line) $ata_line = $line;
+	  preg_match("/ata[0-9].[0-9][0-9]/i", $ata_line, $ata_nr_array);
+          $ata_nr = $ata_nr_array[0];
+          if ($ata_nr == "") $ata_nr = "ERROR_NO_ATA_NR_FOUND";
+          #error_log("ATANR: $ata_line -> $ata_nr");
+
+
+          # extract all relevant lines
+	  $dmesg_outputs = preg_grep("/(".$ata_nr."|cdrom\: |".$scsi_nr.")/i", $dmesg);
+          $oldline = "";
+          $clean_dmesg_outputs = array();
+          foreach($dmesg_outputs as $dmesg_output){
+                #$tmp = explode("] ", $dmesg_output);
+
+                # check if this line is a repetition
+                if ( substr( $dmesg_output, 15) != $oldline )
+                array_push( $clean_dmesg_outputs, substr( $dmesg_output, 15) );
+                $oldline = substr( $dmesg_output, 15);
+	  }
+
+          $dmesgOutput = join("\n",$clean_dmesg_outputs);
+          #error_log("OUT: $dmesgOutput");
+
+	  # Get Identifier String from Dmesg output
+	  $drive_id_array = preg_grep("/ ANSI: 5/i",$clean_dmesg_outputs );
+	  foreach ($drive_id_array as $line) $drive_id = $line;
+
+	  $pos = strpos($drive_id, "0: ");
+	  $drive_identifier = substr($drive_id,$pos+3);
+	  #error_log("DriveID: $drive_identifier");
+	  #lhg_create_new_DB_entry_post ( $newPostID, "drive", $drive_identifier );
+
+  }
+
+
+
+
   $find = array_keys( $dmesg, $title);
 
   $keyword = $title;
   foreach($dmesg as $key => $arrayItem){
         if( stristr( $arrayItem, $keyword ) ){
-            #print "Key: $key - ".$dmesg[$key]."<br>";
+            #error_log( "Key: $key - ".$dmesg[$key] );
             $foundkey = $key;
             break;
         }
@@ -534,8 +668,7 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 		#print "URL: $url<br>";
 		#print "cont: <pre>".$cpu0."</pre>";
 
-  $article = '
-The xxx is a ???. It is automatically recognized and fully supported by the Linux kernel:
+  $article = '[lhg_drive_intro]
 [code lang="plain" title="dmesg"]
 '.$dmesgOutput.'
 [/code]
@@ -551,6 +684,11 @@ The xxx is a ???. It is automatically recognized and fully supported by the Linu
   $taglist = array_merge( $taglist, $new_taglist );
   $tagstring = lhg_convert_tag_array_to_string( $taglist );
 
+  # set category
+  #$category = 478;
+  $category_array = lhg_category_by_title ( $title  );
+  array_push( $category_array, 478);
+
   #print "<br>Title: $title <br> ScanID: $sid<br>";
 
 	#$title = $title;
@@ -561,7 +699,7 @@ The xxx is a ???. It is automatically recognized and fully supported by the Linu
 			'post_type' => 'post',
 			'post_author' => 1,
 			'post_title' =>  "<!--:us-->".$title."<!--:-->",
-			'post_category' => array($category),
+			'post_category' => $category_array,
                         'tags_input' => $tagstring,
 		);
         global $wpdb;
@@ -604,10 +742,9 @@ The xxx is a ???. It is automatically recognized and fully supported by the Linu
   }
   #print "<br>done<br>";
 
-  # extract Drive identifier
+  #error_log("PID: $newPostID -> $drive_identifier");
 
-
-
+  if ($drive_identifier != "")
   lhg_create_new_DB_entry_post ( $newPostID, "drive", $drive_identifier );
   # get Amazon ID, if available
   $amzid = lhg_get_AMZ_ID_from_scan ( $sid, "drive", $id );
@@ -1029,7 +1166,17 @@ function lhg_show_translate_process($postid) {
 
           $catid = get_category_by_slug($cat_slug);
           #var_dump ($catid);
-	  array_push($category_ids, $catid->cat_ID );
+
+          # 1. auto recognition by slug
+          if ( ($catid->cat_ID) != "") array_push($category_ids, $catid->cat_ID );
+
+          # 2. not all categories are found by english slugs.
+          # No use for automatic detection. We simply identify them manually here:
+          if ($cat_slug == "cctv" ) array_push($category_ids, 663);
+          if ($cat_slug == "internal" ) array_push($category_ids, 335);
+          if ($cat_slug == "ultrabook" ) array_push($category_ids, 589);
+          if ($cat_slug == "all-in-one-printer" ) array_push($category_ids, 368);
+          if ($cat_slug == "external" ) array_push($category_ids, 333);
 
 	}
 
@@ -1044,6 +1191,12 @@ function lhg_show_translate_process($postid) {
 
         $result_content = str_replace("<!--:us-->","",$result_content);
         $result_content = str_replace("<!--:-->","",$result_content);
+        # for safety reasons we had to replace chars when storing them in PriceDB. Now we need to
+        # revert this (normally only for the [code] block but we do not distinguish text and code yet - ToDo!)
+        $result_content = str_replace("&lt;","<",$result_content);
+        $result_content = str_replace("&gt;",">",$result_content);
+        $result_content = str_replace("&quot;","\"",$result_content);
+        $result_content = str_replace("&amp;","&",$result_content);
 
         #
         # guess AMAZON ID
@@ -1569,6 +1722,198 @@ function lhg_get_mainboard_fingerprint ( $sid  ) {
 
 }
 
+function lhg_update_title_by_string($pid, $string, $mode)  {
+
+        $title = get_the_title( $pid );
+        $titlearray = explode("(",$title);
+        $title_main = $titlearray[0];
+        $title_prop = $titlearray[1];
+        $title_prop = str_replace(")", "", $title_prop);
+
+        $props = explode(",",$title_prop);
+        #print "TITLE: $title_main + $title_prop<br>";
+
+        # get props by taglist
+        $tagarray = lhg_taglist_by_title ( $string );
+        foreach ($tagarray as $tagnr)  {
+
+		$result = get_term_by('id', $tagnr, 'post_tag');
+        	$tag_name = $result->name;
+                #print "NAme: $tag_name";
+
+                #check if already part of title. Only add to properties if not
+                if ( stristr($title_main, $tag_name) == false ) array_push($props,$tag_name);
+
+	}
+
+        # search for special word
+        if ( stristr($string, "LGA 1155") != false ) array_push($props,"Socket LGA 1155");
+        if ( stristr($string, "Quad-Core") != false ) array_push($props,"Quad Core");
+        if ( preg_match("/[0-9] MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
+        # Sometimes CPU title do not have the word "Cache"
+        if ( ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/[0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
+        if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_unshift($props, $match[0]);
+        if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_unshift($props, "Harddisk");
+        if ( preg_match("/DVD.*RW/i", $string, $match) == 1 ) array_unshift($props, "DVD Writer");
+        if ( preg_match("/DVD/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
+        if ( preg_match("/Optical Drive/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
+        if ( preg_match("/Dual Layer/i", $string, $match) == 1 ) array_push($props, "Dual Layer");
+        if ( preg_match("/SSD/i", $string, $match) == 1 ) $props = array_diff( $props, array("Harddisk") );
+        if ( preg_match("/SSD/i", $string, $match) == 1 ) array_unshift($props, "SSD");
+
+
+        # Order: HDD first, size, rest
+        #if ($mode = "drive")
+
+        # clean strings in array (remove spaces)
+        $props_tmp = array();
+        foreach ($props as $prop)  {
+                if (trim($prop) != "") array_push($props_tmp, trim($prop) );
+	}
+
+        $props = array_unique($props_tmp);
+
+        #error_log("Props: ".join("< ",$props) );
+
+        # Clean main title
+        $title_main = str_replace(" CPU", "", $title_main);
+
+        $newtitle = $title_main." (".join(", ",$props).")";
+        $newtitle = sanitize_text_field( $newtitle );
+
+
+	$args['ID'] = $pid;
+        $args['post_title' ] =  "<!--:us-->".$newtitle."<!--:-->";
+        wp_update_post( $args );
+
+        return $newtitle;
+        #print "New: $newtitle<br>";
+}
+
+function lhg_update_categories_by_string($pid, $string, $mode)  {
+
+        # get existing categories
+        $categories = get_the_category( $pid );
+
+        # use category by title to extract additional categories
+        $categories_array = lhg_category_by_title( $string );
+
+        # merge both lists
+        foreach ($categories as $category) {
+                array_push($categories_array, $category->term_id);
+	}
+
+        # update article
+        wp_set_post_categories ( $pid, $categories_array, true );
+
+}
+
+function lhg_update_tags_by_string($pid, $string, $mode)  {
+        # Extend the list of article tags by matching tags associated with the string, e.g. title
+        #print "<br>Update tags PID: $pid -> $string<br>";
+
+        #$tags = wp_get_post_tags($pid);
+        $tags = get_tags( $pid );
+
+        #print "Old Tags:";
+        #print_r($tags);
+
+        # investigate string
+        $words = explode(" ", $string);
+        $foundtags = array();
+        $foundtags_slugs = array();
+
+        $oldword = $word;
+        foreach ($words as $word) {
+                if ($word != " ") {
+
+	                $result = get_term_by('slug', $word, 'post_tag');
+        	        #print "Word: $word<br>";#$result<br>";
+
+                	#check if we have a corresponding tag
+	                foreach ($tags as $tag) {
+        	                $tag_name = $tag->name;
+                                $tag_slug = $tag->slug;
+                	        #var_dump( $tag );
+
+                                #1. check if word exists as tag
+                                #
+                                #
+                        	if ( strcasecmp( $tag_name , $word ) == 0 ) {
+                                        array_push( $foundtags, $tag_name );
+                                        array_push( $foundtags_slugs, $tag_slug );
+                                        #print "&nbsp;&nbsp; $tag_name == $word";
+	                        	#print "1W FOUND<br>";
+
+                                        break;
+				}else {
+                	                #print "<br>";
+                        	}
+
+        			#2. check combination of two words
+	                        #
+                                #
+                                #print "2W: $oldword $word<br>";
+                                #print "&nbsp; --> $tag_name<br>";
+                        	if ( strcasecmp( $tag_name , $oldword." ".$word ) == 0 ) {
+                                        array_push( $foundtags, $tag_name );
+                                        array_push( $foundtags_slugs, $tag_slug );
+                                        #print "&nbsp;&nbsp; $tag_name == $oldword $word";
+	                        	#print "2W FOUND<br>";
+                                        break;
+				}else {
+                	                #print "<br>";
+                        	}
+
+
+
+	                }
+
+                        $oldword = $word;
+
+                }
+	}
+
+        #
+        # Scan for miscellaneous word
+        #
+        # Use the tag recognition
+        $tagids = lhg_taglist_by_title ( $string );
+        #error_log("Tagids: ".join(",",$tagids) );
+        foreach ($tagids as $tagid)  {
+                $tagslug = get_term_by('id',$tagid,'post_tag');
+                $result = $tagslug->slug;
+                array_push ( $foundtags_slugs, $result );
+        }
+
+
+        $foundtags_slugs = array_unique($foundtags_slugs);
+
+	# SSD is no harddisk
+  	if (preg_match('/SSD/',$string)) $foundtags_slugs = array_diff( $foundtags_slugs , array("harddisk") );
+
+        # Debug
+        $out = join(", ",$foundtags_slugs);
+        #error_log( "Res: $out" );
+        #var_dump($foundtags_slugs);
+
+
+        #
+        # Add tags to post
+        #
+
+        foreach ($foundtags_slugs as $foundslug) {
+                #print "<br>adding: $foundslug";
+                wp_set_post_tags( $pid, $foundslug, true);
+        }
+
+        $tags = wp_get_post_tags($pid);
+        #print "<br>New Tags:";
+        #print_r($tags);
+        return $tags;
+
+}
+
 
 function lhg_convert_tag_array_to_string ( $taglist  ) {
   # convert tag id array to string of tag names
@@ -1589,6 +1934,7 @@ function lhg_category_by_title ( $title  ) {
 
   if (preg_match('/DVD writer/i',$title)) array_push ( $catlist , 478);
   if (preg_match('/ External/i',$title)) array_push ( $catlist , 333);
+  if (preg_match('/ SSD/i',$title)) array_push ( $catlist , 583);
 
   return $catlist;
 }
@@ -1596,7 +1942,18 @@ function lhg_category_by_title ( $title  ) {
 function lhg_taglist_by_title ( $title  ) {
         $taglist = array();
 
+  #error_log("Title: $title");
+
   # CPU
+  if (preg_match('/Processor/i',$title)) array_push ( $taglist , 874);
+  if (preg_match('/Core I7/i',$title)) array_push ( $taglist , 878);
+  if (preg_match('/Core I7/i',$title)) array_push ( $taglist , 372);
+  if (preg_match('/Core I7/i',$title)) array_push ( $taglist , 372);
+  if (preg_match('/LGA 1155/i',$title)) array_push ( $taglist , 532);
+  if (preg_match('/LGA1155/i',$title)) array_push ( $taglist , 532);
+  if (preg_match('/LGA1156/i',$title)) array_push ( $taglist , 988);
+  if (preg_match('/LGA 1156/i',$title)) array_push ( $taglist , 988);
+
   if (preg_match('/AMD/',$title)) array_push ( $taglist , 520);
   if (preg_match('/Sempron/',$title)) array_push ( $taglist , 875);
   if (preg_match('/Pentium/',$title)) array_push ( $taglist , 881);
@@ -1651,6 +2008,7 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Seagate/',$title)) array_push ( $taglist , 904);
   if (preg_match('/Western Digital/',$title)) array_push ( $taglist , 854);
   if (preg_match('/SSD/',$title)) array_push ( $taglist , 583);
+
   if (preg_match('/Intel/',$title)) array_push ( $taglist , 372);
   if (preg_match('/TSSTcorp/',$title)) array_push ( $taglist , 465);
   if (preg_match('/CDDVD/',$title)) array_push ( $taglist , 146);
@@ -1667,11 +2025,15 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/DVD writer/i',$title)) array_push ( $taglist , 582);
   if (preg_match('/ External/i',$title)) array_push ( $taglist , 333);
   if (preg_match('/Optiarc/',$title)) array_push ( $taglist , 754);
+  if (preg_match('/SATA /i',$title)) array_push ( $taglist , 346);
+  if (preg_match('/3.5 /i',$title)) array_push ( $taglist , 903);
 
   #Hitachi
   if (preg_match('/HTS[0-9][0-9]/',$title)) array_push ( $taglist , 905);
   if (preg_match('/HDS[0-9][0-9]/',$title)) array_push ( $taglist , 905);
 
+  # SSD is no harddisk
+  if (preg_match('/SSD/',$title)) $taglist = array_diff( $taglist , array(584) );
 
         return $taglist;
 }
