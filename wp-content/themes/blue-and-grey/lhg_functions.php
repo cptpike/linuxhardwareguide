@@ -103,6 +103,8 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/ultimate-edition-logo.png";
         if ( strpos($distribution,"Gentoo") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/gentoo-logo.png";
+        if ( strpos($distribution,"Linux From Scratch") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linux-from-scratch-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
