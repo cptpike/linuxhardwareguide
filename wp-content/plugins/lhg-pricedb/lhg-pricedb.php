@@ -660,7 +660,8 @@ function lhg_store_comment_numbers ( $comment_id, $comment_approved) {
         if ($comment_approved === 1) {
                 $comment = get_comment( $comment_id );
                 $post_id = $comment->comment_post_ID;
-                $lhg_store_comment_numbers_by_post_id ( $post_id );
+                lhg_store_comment_numbers_by_post_id ( $post_id );
+                #error_log("Comment: $post_id ");
 
 	}
 }
@@ -668,7 +669,8 @@ function lhg_store_comment_numbers ( $comment_id, $comment_approved) {
 
 # Store comment counting in priceDB by post ID
 # extract from wpdb -> store in priceDB
-add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
+#add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
+#add_action('wp_insert_comment','lhg_store_comment_numbers',99,2);
 function lhg_store_comment_numbers_by_post_id ( $post_id ) {
 
         global $lang;
