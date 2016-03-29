@@ -1,5 +1,11 @@
 <?php
 
+# Store comment counting in priceDB by post ID
+# extract from wpdb -> store in priceDB
+add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
+
+
+
 // ini_set( 'display_errors', 1 );
 // error_reporting(-1);
 
