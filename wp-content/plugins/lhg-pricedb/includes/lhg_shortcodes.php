@@ -32,6 +32,16 @@ function lhg_drive_intro_shortcode($attr) {
 
 	}
 
+        if ( preg_match("/blu.ray/i",$title_orig) == 1 )  {
+	        $drive_type = "Blu-Ray drive";
+        	$drive_type_de = "ein Blu-Ray Laufwerk";
+        	$drive_type_fr = "un graveur de Blu-Ray";
+        	$drive_type_es = "una grabadora de Blu-Ray";
+        	$drive_type_it = "un masterizzatore Blu-Ray";
+                $genus_de = "neutral";
+	}
+
+
         if ( (strpos($title_orig,"Flash Drive") > 0 ) &&
 	     (strpos($title_orig,"USB") > 0 ) ) {
 	        $drive_type = "USB flash drive";
