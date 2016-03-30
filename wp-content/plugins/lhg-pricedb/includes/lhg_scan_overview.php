@@ -15,7 +15,7 @@ function lhg_article_scans_overview () {
         global $txt_Rating;
 
 	$pid = get_the_ID();
-        if ($lang == "de") $pid = lhg_get_com_post_URL( $pid );
+        if ($lang == "de") $pid = lhg_get_postid_com_from_de( $pid );
 
 
         $sql = "SELECT sid FROM `lhghwscans` WHERE postid = \"".$pid."\"";
