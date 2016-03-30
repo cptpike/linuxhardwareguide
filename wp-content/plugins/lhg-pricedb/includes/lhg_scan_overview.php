@@ -3,7 +3,9 @@
 function lhg_article_scans_overview () {
 
 	$pid = get_the_ID();
+        if ($lang == "de") $pid = lhg_get_com_post_URL( $pid );
 
+        global $lang;
 	global $lhg_price_db;
         global $txt_scan_distribution;
         global $txt_scan_kernel;
@@ -63,6 +65,10 @@ function lhg_article_scans_overview () {
                 #if ($pid == 21006) print "USTR: $uniquestring - ";
                 #if ($pid == 21006) print "kn: ". $known ."<br>";
 
+                # ToDo: Scan overview currently only available on .com servers:
+                $url_prefix = "./";
+                if ($lang == "de") $url_prefix = "http://www.linux-hardware-guide.com";
+
                 if ( !is_int($known) ) {
 	          #if ($pid == 21006) print "AA<br>";
                    # Unique combination
@@ -80,7 +86,7 @@ function lhg_article_scans_overview () {
                         </td><td>'.$result0->distribution."</td>
                         <td>".$result0->kversion."</td>
                         <td>".$ratingimage."</td>
-                        <td><a href=\"./hardware-profile/system-".$result0->pub_id."\">".$date."</a></td>
+                        <td><a href=\"".$url_prefix."/hardware-profile/system-".$result0->pub_id."\">".$date."</a></td>
                         </tr>";
                         $findings++;
                         $counter++;
@@ -96,7 +102,7 @@ function lhg_article_scans_overview () {
         if ($counter > 1) $txt_results = $counter." ".$txt_scan_results;
 
         $output = "";
-        $output .= "<h2>$txt_scan_title - $txt_results </h2>";
+        $output .= "<h2>$txt_scan_title ($txt_results) </h2>";
 	$output .= $txt_scan_text;
         #'This hardware component was used by Linux users under the following system configurations. These results were collected by our <a href="./add-hardware">Scan Tool</a>:';
 
