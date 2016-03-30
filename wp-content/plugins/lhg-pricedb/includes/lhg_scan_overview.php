@@ -2,8 +2,6 @@
 
 function lhg_article_scans_overview () {
 
-	$pid = get_the_ID();
-        if ($lang == "de") $pid = lhg_get_com_post_URL( $pid );
 
         global $lang;
 	global $lhg_price_db;
@@ -15,6 +13,10 @@ function lhg_article_scans_overview () {
         global $txt_scan_title;
         global $txt_scan_text;
         global $txt_Rating;
+
+	$pid = get_the_ID();
+        if ($lang == "de") $pid = lhg_get_com_post_URL( $pid );
+
 
         $sql = "SELECT sid FROM `lhghwscans` WHERE postid = \"".$pid."\"";
     	$ids = $lhg_price_db->get_results($sql);
