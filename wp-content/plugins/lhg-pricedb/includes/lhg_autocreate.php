@@ -2060,6 +2060,7 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("Writer"," Brenner",$title);
 	$title = str_replace("External","Extern",$title);
 	$title = str_replace("Hard Drive","Festplatte",$title);
+	$title = str_replace("Hard Disk","Festplatte",$title);
 	$title = str_replace("Inch","Zoll",$title);
 
         return $title;
