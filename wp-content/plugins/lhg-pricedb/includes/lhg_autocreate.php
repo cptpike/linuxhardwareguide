@@ -2069,6 +2069,7 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("internal","Intern",$title);
 	$title = str_replace("Flash Drive","Memory-Stick",$title);
 	$title = str_replace("Low-Profile","Kleine Abmessungen",$title);
+	$title = str_replace("Motherboard","Mainboard",$title);
 
         return $title;
 }
