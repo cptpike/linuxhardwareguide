@@ -2067,6 +2067,8 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("DVD Player","DVD-Laufwerk",$title);
 	$title = str_replace("Internal","Intern",$title);
 	$title = str_replace("internal","Intern",$title);
+	$title = str_replace("Flash Drive","Memory-Stick",$title);
+	$title = str_replace("Low-Profile","Kleine Abmessungen",$title);
 
         return $title;
 }
