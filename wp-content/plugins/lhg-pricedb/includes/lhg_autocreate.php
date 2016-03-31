@@ -1098,7 +1098,9 @@ function lhg_store_categories_in_db(){
 }
 
 function lhg_show_translate_process($postid) {
-	global $lhg_price_db;
+        global $lang;
+        global $lhg_price_db;
+
 
 	echo "<h3>Start Auto-translate:</h3> ";
 
@@ -1126,13 +1128,15 @@ function lhg_show_translate_process($postid) {
           $de_tag = $lhg_price_db->get_var($safe_sql);
 
           #fallback
-          print "ERROR: tag ($tagarray_s) not found -> fallback used<br>";
+          #print "ERROR: tag ($tagarray_s) not found -> fallback used<br>";
           if ($de_tag == "") $de_tag = $tagarray_s;
 
           $tmp = get_term_by('slug', $de_tag , 'post_tag');
           #var_dump($tmp); print "<br>";
 	  array_push($tagarray_ids, $tmp->term_id );
 	  array_push($tagarray_names, $tmp->name );
+
+          if ($tmp->term_id == "") print "ERROR: tag ".$tmp->name."not found <br>";
 	}
 
         #
@@ -1142,6 +1146,8 @@ function lhg_show_translate_process($postid) {
 	$sql = "SELECT `title_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
         $safe_sql = $lhg_price_db->prepare($sql, $postid);
         $result_title = $lhg_price_db->get_var($safe_sql);
+
+        if ($lang == "de") $result_title_de = lhg_translate_title_en_to_de( $result_title );
 
         #
         # get icon
@@ -1207,7 +1213,8 @@ function lhg_show_translate_process($postid) {
         $amazon_id = $lhg_price_db->get_var($safe_sql);
 
 	#var_dump($result_title);
-        print "<br>Title: $result_title<br>";
+        print "<br>Title: $result_title";
+        print "<br>New title: $result_title_de<br>";
         print "<br>Icon: $result_icon<br>";
         print "Tags: $result_tags  -> ".implode(",",$tagarray_ids)."<br>";
         print "<br>Categories: $result_categories -> ".implode(",",$category_ids)."<br>";
@@ -1217,13 +1224,18 @@ function lhg_show_translate_process($postid) {
 
         print "<h3>Article created</h3>";
 
+        # use the translated title for new article
+        # translation depends on de->en or en->de
+        $result_title_translated = $result_title;
+        if ($lang == "de") $result_title_translated = $result_title_de;
+
 
 	$myPost = array(
 			'post_status' => 'draft',
                         'post_content' => $result_content,
 			'post_type' => 'post',
 			'post_author' => 1,
-			'post_title' =>  $result_title,
+			'post_title' =>  $result_title_translated,
 			'post_category' => $category_ids,
                         'tags_input' => $tagarray_names,
 		);
@@ -2036,5 +2048,15 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/SSD/',$title)) $taglist = array_diff( $taglist , array(584) );
 
         return $taglist;
+}
+
+
+# Automatic translation of article titles from English to German
+function lhg_translate_title_en_to_de( $title )  {
+
+	$title = str_replace("Socket","Sockel",$title);
+	$title = str_replace("socket","Sockel",$title);
+
+        return $title;
 }
 
