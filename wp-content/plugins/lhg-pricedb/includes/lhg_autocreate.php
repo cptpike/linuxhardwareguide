@@ -2056,6 +2056,9 @@ function lhg_translate_title_en_to_de( $title )  {
 
 	$title = str_replace("Socket","Sockel",$title);
 	$title = str_replace("socket","Sockel",$title);
+	$title = str_replace("Burner"," Brenner",$title);
+	$title = str_replace("Writer"," Brenner",$title);
+	$title = str_replace("External","Extern",$title);
 
         return $title;
 }
