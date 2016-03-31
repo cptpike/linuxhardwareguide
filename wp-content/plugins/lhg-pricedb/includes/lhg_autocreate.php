@@ -1183,6 +1183,7 @@ function lhg_show_translate_process($postid) {
           if ($cat_slug == "ultrabook" ) array_push($category_ids, 589);
           if ($cat_slug == "all-in-one-printer" ) array_push($category_ids, 368);
           if ($cat_slug == "external" ) array_push($category_ids, 333);
+          if ($cat_slug == "ssd" ) array_push($category_ids, 601);
 
 	}
 
@@ -2056,12 +2057,16 @@ function lhg_translate_title_en_to_de( $title )  {
 
 	$title = str_replace("Socket","Sockel",$title);
 	$title = str_replace("socket","Sockel",$title);
-	$title = str_replace("Burner"," Brenner",$title);
-	$title = str_replace("Writer"," Brenner",$title);
+	$title = str_replace(" Burner","-Brenner",$title);
+	$title = str_replace(" Writer","-Brenner",$title);
 	$title = str_replace("External","Extern",$title);
 	$title = str_replace("Hard Drive","Festplatte",$title);
 	$title = str_replace("Hard Disk","Festplatte",$title);
 	$title = str_replace("Inch","Zoll",$title);
+	$title = str_replace("DVD Drive","DVD-Laufwerk",$title);
+	$title = str_replace("DVD Player","DVD-Laufwerk",$title);
+	$title = str_replace("Internal","Intern",$title);
+	$title = str_replace("internal","Intern",$title);
 
         return $title;
 }
