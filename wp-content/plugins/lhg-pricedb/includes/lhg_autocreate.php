@@ -2086,6 +2086,9 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("Keyboard","Tastatur",$title);
 	$title = str_replace("Pen Tablet","Stift-Tablett",$title);
 	$title = str_replace("PCI Express","PCI-Express",$title);
+	$title = str_replace("Sound Card","Soundkarte",$title);
+	$title = str_replace("Card Reader","Karten-Lesegerät",$title);
+	$title = str_replace("Chipset","Chipsatz",$title);
 
         return $title;
 }
