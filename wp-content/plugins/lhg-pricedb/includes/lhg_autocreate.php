@@ -1186,6 +1186,7 @@ function lhg_show_translate_process($postid) {
           if ($cat_slug == "ssd" ) array_push($category_ids, 601);
           if ($cat_slug == "printer" ) array_push($category_ids, 323);
           if ($cat_slug == "laser-printer" ) array_push($category_ids, 488);
+          if ($cat_slug == "graphiccards" ) array_push($category_ids, 507);
 
 	}
 
@@ -2056,6 +2057,7 @@ function lhg_taglist_by_title ( $title  ) {
 
 # Automatic translation of article titles from English to German
 function lhg_translate_title_en_to_de( $title )  {
+        # ToDo: Translate only properties, not product ID
 
 	$title = str_replace("Socket","Sockel",$title);
 	$title = str_replace("socket","Sockel",$title);
@@ -2078,6 +2080,9 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("Copier","Kopierer",$title);
 	$title = str_replace("Color","Farbe",$title);
 	$title = str_replace("WiFi","WLAN",$title);
+	$title = str_replace("Graphics Card","Grafikkarte",$title);
+	$title = str_replace("Mouse","Maus",$title);
+	$title = str_replace("Keyboard","Tastatur",$title);
 
         return $title;
 }
