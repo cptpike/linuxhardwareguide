@@ -1187,6 +1187,7 @@ function lhg_show_translate_process($postid) {
           if ($cat_slug == "printer" ) array_push($category_ids, 323);
           if ($cat_slug == "laser-printer" ) array_push($category_ids, 488);
           if ($cat_slug == "graphiccards" ) array_push($category_ids, 507);
+          if ($cat_slug == "network" ) array_push($category_ids, 5);
 
 	}
 
@@ -2083,6 +2084,8 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("Graphics Card","Grafikkarte",$title);
 	$title = str_replace("Mouse","Maus",$title);
 	$title = str_replace("Keyboard","Tastatur",$title);
+	$title = str_replace("Pen Tablet","Stift-Tablett",$title);
+	$title = str_replace("PCI Express","PCI-Express",$title);
 
         return $title;
 }
