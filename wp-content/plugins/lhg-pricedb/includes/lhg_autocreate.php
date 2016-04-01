@@ -2087,7 +2087,8 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("Pen Tablet","Stift-Tablett",$title);
 	$title = str_replace("PCI Express","PCI-Express",$title);
 	$title = str_replace("Sound Card","Soundkarte",$title);
-	$title = str_replace("Card Reader","Karten-Lesegerät",$title);
+	$title = str_replace("Smart Card Reader","Smart-Card Leseger&auml;t",$title);
+	$title = str_replace("Card Reader","Karten-Leseger&auml;t",$title);
 	$title = str_replace("Chipset","Chipsatz",$title);
 
         return $title;
