@@ -1184,6 +1184,8 @@ function lhg_show_translate_process($postid) {
           if ($cat_slug == "all-in-one-printer" ) array_push($category_ids, 368);
           if ($cat_slug == "external" ) array_push($category_ids, 333);
           if ($cat_slug == "ssd" ) array_push($category_ids, 601);
+          if ($cat_slug == "printer" ) array_push($category_ids, 323);
+          if ($cat_slug == "laser-printer" ) array_push($category_ids, 488);
 
 	}
 
@@ -2070,6 +2072,7 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("Flash Drive","Memory-Stick",$title);
 	$title = str_replace("Low-Profile","Kleine Abmessungen",$title);
 	$title = str_replace("Motherboard","Mainboard",$title);
+	$title = str_replace("Laser Printer","Laser-Drucker",$title);
 
         return $title;
 }
