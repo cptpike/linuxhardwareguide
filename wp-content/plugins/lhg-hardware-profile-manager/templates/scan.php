@@ -1300,7 +1300,7 @@ print "<h2>Unknown Hardware</h2>";
                                     if (option == 2) { $("#url-"+id).val(produrl2); }
                                     if (option == 3) { $("#url-"+id).val(produrl3); }
                                     $("#scan-comments-"+id).click();
-                                    $("#rating_"+pid+"_5").click();
+                                    // $("#rating_"+pid+"_5").click();
 
 	                            var data ={
                                         action: \'lhg_update_article_by_amazon_search\',
@@ -1757,6 +1757,7 @@ print '
 
                             if (current_user_can('publish_posts') ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
+                                print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                    }
                         echo "
                           </span>
@@ -1781,6 +1782,7 @@ print '
                             if (current_user_can('publish_posts') ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
+                                print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                    }
                          echo "
                           </span>
@@ -1799,6 +1801,7 @@ print '
                               if (current_user_can('publish_posts') ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
+                                print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                      }
 
                           echo "
