@@ -707,4 +707,18 @@ function lhg_store_comment_numbers_by_post_id ( $post_id ) {
 	}
 }
 
+function lhg_get_rating_value( $post_id ) {
+        global $lang;
+        global $lhg_price_db;
+
+	if ($lang != "de") $ratings = $lhg_price_db->get_results("SELECT * FROM  `lhgtransverse_posts` WHERE postid_com = $post_id");
+	if ($lang == "de") $ratings = $lhg_price_db->get_results("SELECT * FROM  `lhgtransverse_posts` WHERE postid_de = $post_id");
+
+	$num_rates = $ratings[0]->post_ratings_users_com + $ratings[0]->post_ratings_users_de;
+        if ($num_rates == 0 ) $rating_avg = 0;
+        if ($num_rates != 0 ) $rating_avg = ( $ratings[0]->post_ratings_score_com + $ratings[0]->post_ratings_score_de ) / ( $num_rates ) ;
+
+        return $rating_avg;
+}
+
 ?>
