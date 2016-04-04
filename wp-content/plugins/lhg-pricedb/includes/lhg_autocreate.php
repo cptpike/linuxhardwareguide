@@ -1953,6 +1953,8 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/LGA1155/i',$title)) array_push ( $taglist , 532);
   if (preg_match('/LGA1156/i',$title)) array_push ( $taglist , 988);
   if (preg_match('/LGA 1156/i',$title)) array_push ( $taglist , 988);
+  if (preg_match('/LGA775/i',$title)) array_push ( $taglist , 537);
+  if (preg_match('/LGA 775/i',$title)) array_push ( $taglist , 537);
 
   if (preg_match('/AMD/',$title)) array_push ( $taglist , 520);
   if (preg_match('/Sempron/',$title)) array_push ( $taglist , 875);
