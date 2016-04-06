@@ -144,10 +144,15 @@ function lhg_amazon_price_to_float_chart ( $price, $region ) {
 
 }
 
-function lhg_amazon_price_to_float( $price, $region ) {
+function lhg_amazon_price_to_float( $price, $my_region ) {
 
+        global $region;
+        if ($my_region == "") $my_region = $region;
 
-        $price = lhg_remove_amazon_currency_symbol( $price, $region );
+        #print "OP(reg: $region): $price<br>";
+
+        //$currency_region = lhg_get_currency_region ( $price );
+        $price = lhg_remove_amazon_currency_symbol( $price, $my_region );
 
 	# thousand separator needs to be removed
         if ( (strpos($price,".") > ( strpos($price,",") ) ) ) $price = str_replace(",","",$price); 
@@ -160,11 +165,11 @@ function lhg_amazon_price_to_float( $price, $region ) {
         // EUR values e.g. 1.345,03 or 32,43
         if (
         (
-	 ($region=="de") or
-	 ($region=="fr") or
-	 ($region=="es") or
-	 ($region=="nl") or
-	 ($region=="it")
+	 ($my_region=="de") or
+	 ($my_region=="fr") or
+	 ($my_region=="es") or
+	 ($my_region=="nl") or
+	 ($my_region=="it")
 	 )
 
         //and
@@ -181,16 +186,29 @@ function lhg_amazon_price_to_float( $price, $region ) {
         //switch to US format
         //if ($region == "co.jp") $price = str_replace(",","",$price);
         //if ($region == "cn")    $price = str_replace(",","",$price);
-        if ( ($region == "de") or ($region == "es") or ($region == "fr") or ($region == "it") or ($region == "nl") ) $price = str_replace(".","",$price);
-        if ( ($region == "de") or ($region == "es") or ($region == "fr") or ($region == "it") or ($region == "nl") ) $price = str_replace(",",".",$price);
+        if ( ($my_region == "de") or ($my_region == "es") or ($my_region == "fr") or ($my_region == "it") or ($my_region == "nl") ) $price = str_replace(".","",$price);
+        if ( ($my_region == "de") or ($my_region == "es") or ($my_region == "fr") or ($my_region == "it") or ($my_region == "nl") ) $price = str_replace(",",".",$price);
 
         //remove thousand separator
-        $price = floatval ( str_replace(",","",$price) );
+        #$price = floatval ( str_replace(",","",$price) );
 
 	 }
 
         #print "P2F (reg: $region): $price<br>";
         return $price;
 }
+
+# Get region corresponding to currency. Works for amazon prices
+function lhg_get_currency_region ( $price ) {
+
+        if ( strpos("EUR", $price) > 0 ) $currency_region = "EUR";
+        if ( strpos("CDN$", $price) > 0 ) $currency_region = "CANADA";
+        if ( strpos("£", $price) > 0 ) $currency_region = "UK";
+        if ( strpos("ï¿¥", $price) > 0 ) $currency_region = "JAPAN";
+
+
+        return $currency_region;
+}
+
 
 ?>
