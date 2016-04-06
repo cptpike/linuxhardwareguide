@@ -157,6 +157,7 @@ function lhg_amazon_price_to_float( $price, $region ) {
         if (!is_numeric( substr( $price , 0 , 1) ) )
        		 $price = substr( $price, 1 );
 
+        // EUR values e.g. 1.345,03 or 32,43
         if (
         (
 	 ($region=="de") or
@@ -166,11 +167,11 @@ function lhg_amazon_price_to_float( $price, $region ) {
 	 ($region=="it")
 	 )
 
-        and
-        (
-        (strpos($price,".") > 0) and
-        (strpos($price,",") > 0)
-        )
+        //and
+        //(
+        //(strpos($price,".") > 0) and
+        //(strpos($price,",") > 0)
+        //)
         )
          {
 
@@ -187,6 +188,8 @@ function lhg_amazon_price_to_float( $price, $region ) {
         $price = floatval ( str_replace(",","",$price) );
 
 	 }
+
+        #print "P2F (reg: $region): $price<br>";
         return $price;
 }
 
