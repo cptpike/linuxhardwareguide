@@ -66,14 +66,20 @@ function lhg_show_supplier_square($shopid,$postid) {
         #if ($postid == 24875) echo "P: ".$products[0]["price"]." - S: ".$products[0]["shipping"]."<br>";
         #if ($postid == 40247 ) print "DEBUG: $url";
 
+        //prices for shipping and product are provided as float values
         $shipping  = $products[0]["shipping"];
         $price_net = $products[0]["price"];
 
-        $shipping = lhg_amazon_price_to_float( $shipping , $region );
-        $price_net = lhg_amazon_price_to_float( $price_net , $region );
+        #print "price_net: $price_net<br>";
+
+        //$shipping = lhg_amazon_price_to_float( $shipping , $region );
+        //$price_net = lhg_amazon_price_to_float( $price_net , $region );
+
+        #print "price_net2: $price_net<br>";
 
         $price = $shipping + $price_net;
         #if ($postid == 24875) echo "P: ".$price." - S: ".$shipping."<br>";
+        #print "price_sum: $price<br>";
 
 
 	$txt_button_string = $txt_buy_from." $name";
@@ -103,9 +109,11 @@ function lhg_show_supplier_square($shopid,$postid) {
         if ($region == "ca") $price_meta = "CAD";
         if ($region == "in") $price_meta = "INR";
         */
+        #print "price1: $price<br>";
 
         $price = lhg_float_to_currency_string( $price , $region );
         $currency = lhg_get_currency_symbol( $region );
+        #print "price2: $price<br>";
 
 
         echo "\n".'<div class="rating" style="border: 0px solid #222; width: 70%; text-align: center; margin: 0 auto;">';
@@ -281,7 +289,7 @@ function lhg_return_shop_ids($region) {
 
 function lhg_get_sorted_products($shopids_input,$productid, $region) {
 
-        global $region;
+        #global $region;
 
         //check if input is an array or single shop integer
         if (!is_array($shopids_input)) {
