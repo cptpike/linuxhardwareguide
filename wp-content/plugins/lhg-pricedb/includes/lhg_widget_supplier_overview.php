@@ -289,7 +289,7 @@ function lhg_return_shop_ids($region) {
 
 function lhg_get_sorted_products($shopids_input,$productid, $region) {
 
-        global $region;
+        #global $region;
 
         //check if input is an array or single shop integer
         if (!is_array($shopids_input)) {
