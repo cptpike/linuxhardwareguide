@@ -143,24 +143,41 @@ function lhg_scan_update_ajax() {
         $image_url_com     = str_replace("Image: ","", $image_url_com);
 
 
-        // ToDo:
-        // Write to DB!
+        # update article data by ASIN data
+        $mode = lhg_get_autocreate_mode($pid); 
+        lhg_update_tags_by_string($pid, $product_title, $mode);
+        lhg_update_categories_by_string($pid, $product_title, $mode);
+        lhg_update_title_by_string($pid, $product_title, $mode);
+        if ($mode == "drive") lhg_correct_drive_name($pid, $session);
+
+        # extract new Properties and new title coming from ASIN data
+        $newtitle = get_the_title( $pid );
+        $posttags = get_the_tags( $pid );
+        $properties_array = array();
+        if ($posttags) {
+  		foreach($posttags as $tag) {
+		   array_push( $properties_array, $tag->name);
+                   error_log("TAG: ".$tag->name);
+		}
+	}
+        $properties = join( ", " , $properties_array );
+        #error_log("PID: $pid - Title: $newtitle - Prop: $properties");
+
+
+        // Write extracted data to DB
         global $lhg_price_db;
 
 	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usercomment = %s WHERE id = %s ", $comment, $id);
-	#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 	$result = $lhg_price_db->query($myquery);
 
 	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET url = %s WHERE id = %s ", $asinURL, $id);
-	#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 	$result = $lhg_price_db->query($myquery);
 
 	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET imgurl = %s WHERE id = %s ", $image_url_com, $id);
-	#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 	$result = $lhg_price_db->query($myquery);
 
-	# Store asin in WPDB
 
+	# And Store asin in WPDB
 	$key = "amazon-product-single-asin";
   	$value = $asin;
 	if(get_post_meta($pid, $key, FALSE)) { //if the custom field already has a value
@@ -177,7 +194,9 @@ function lhg_scan_update_ajax() {
                 'data' => 'success',
                 'supplemental' => array(
 	        	'text' => "Debug: $pid - $id - $asin - $comment - SID: $session -- END",
-        	         'imgurl' => "$image_url_com"
+        	         'imgurl' => "$image_url_com",
+        	         'properties' => "$properties",
+        	         'newtitle' => "$newtitle"
                          //"http://www.linux-hardware-guide.com/wp-uploads/2014/11/LHG_Logo_circle-300x290.png"
         	        //'imgurl' => ""
                 ),
