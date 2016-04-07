@@ -1418,6 +1418,8 @@ print "<h2>Unknown Hardware</h2>";
 
                                         var imageurl     = $(response).find("supplemental imgurl").text();
                                         var responsetext = $(response).find("supplemental text").text();
+                                        var newtitle     = $(response).find("supplemental newtitle").text();
+                                        var properties   = $(response).find("supplemental properties").text();
 
 
                                         //Debug:
@@ -1439,6 +1441,8 @@ print "<h2>Unknown Hardware</h2>";
                                         $(button).attr("class","hwscan-comment-button-light");
                                         var indicatorid = "#button-load-".concat(id);
                                         $(indicatorid).remove();
+                                        $("#properties-"+id).text(properties);
+                                        $("#title-"+id).text(newtitle);
 
                                 });
 
@@ -1717,8 +1721,16 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
 		#$title = "Scantype: $scantype".$title;
                 print '<div class="subscribe-hwtext">';
                 print '   <div class="subscribe-hwtext-span"><b>'.$title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
-                if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") )
-                print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'<br>Meta tags: '.$meta_info.'</div>';
+
+                if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
+                	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
+                	print '
+                        	<div id="details-hw-'.$id.'" class="details">
+                    	    		<br>Properties: <span id="properties-'.$id.'">'.$meta_info.'</span>
+                	    		<br>Title: <span id="title-'.$id.'">'.$title_info.'</span>
+		        	</div>';
+                }
+
                 print '</div>';
 
 if ($show_public_profile != 1)
