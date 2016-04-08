@@ -1464,7 +1464,7 @@ print "<h2>Unknown Hardware</h2>";
                                         $("#title-"+id).text(newtitle);
 
                                         // show new title
-                                        $(\'#hidden-details-mb\').show("slow");
+	                                $(\'#details-hw-\'+id).show("slow");
 
 
                                 });
