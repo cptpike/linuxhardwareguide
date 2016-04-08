@@ -721,4 +721,19 @@ function lhg_get_rating_value( $post_id ) {
         return $rating_avg;
 }
 
+function lhg_get_properties_string ( $postid ) {
+
+        $posttags = get_the_tags( $postid );
+        $properties_array = array();
+        if ($posttags) {
+  		foreach($posttags as $tag) {
+		   array_push( $properties_array, $tag->name);
+                   error_log("TAG: ".$tag->name);
+		}
+	}
+        $properties = join( ", " , $properties_array );
+        return $properties;
+}
+
+
 ?>
