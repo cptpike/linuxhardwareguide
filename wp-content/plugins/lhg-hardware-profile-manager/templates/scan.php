@@ -1070,7 +1070,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
 				$(\'.pciid-column\').hide();
 				$(\'.mb-default-hidden\').hide();
                                 $(\'<a href id="toggleButton">Show hidden components</a>\').prependTo(\'#mainboard-show-more\');
-                                $(\'<a href id="show-more-mb">Show details</a>\').prependTo(\'#details-mb\');
+                                //$(\'<a href id="show-more-mb">Show details</a>\').prependTo(\'#details-mb\');
                                 $(\'#hidden-details-mb\').hide();
 
                                 $(\'#details-mb\').click(function(){
@@ -1266,6 +1266,23 @@ print "<h2>Unknown Hardware</h2>";
                       });
 
 
+                      // show additional properties from the beginning if amazon URL was provided
+                      // hide otherwise
+                      $("[id^=url-]").each(function(){
+                      	  var id = $(this).attr(\'id\').substring(4);
+
+                          url = $("#url-"+id).val();
+			  //$("#updatearea-8921").append("URL: "+url);
+			  //$("#updatearea-8921").append("POS: "+ url.toLowerCase().indexOf("amazon.") );
+                          if ( url.toLowerCase().indexOf("amazon.") >= 0 ) {
+                          	$(\'#details-hw-\'+id).show("slow");
+                                //$("#updatearea-8921").append( "FOUND!" );
+                          } else {
+                          	$(\'#details-hw-\'+id).hide();
+                          }
+                      });
+
+
                                 // binding for elements not existing at page load
                                 // amazon suggestion selected
                                 $(document.body).on("click","[id^=autocreate-]", function() {
@@ -1361,8 +1378,8 @@ print "<h2>Unknown Hardware</h2>";
 
                                 $("[id^=show-details-hw-]").each(function(){
                                 	var id = $(this).attr(\'id\').substring(16);
-	                                $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
-                                        $("#details-hw-"+id).hide();
+	                                // $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
+                                        // $("#details-hw-"+id).hide();
                                 });
                                 $("[id^=show-details-hw-]").click(function(){
                                 	var id = $(this).attr(\'id\').substring(16);
@@ -1376,6 +1393,8 @@ print "<h2>Unknown Hardware</h2>";
 
 
 
+
+                                // Submit a comment or an URL to a unknown hardware component
 
 				$(\'[name^="scan-comments-"]\').click(function(){
 
@@ -1443,6 +1462,10 @@ print "<h2>Unknown Hardware</h2>";
                                         $(indicatorid).remove();
                                         $("#properties-"+id).text(properties);
                                         $("#title-"+id).text(newtitle);
+
+                                        // show new title
+                                        $(\'#hidden-details-mb\').show("slow");
+
 
                                 });
 
@@ -1722,12 +1745,15 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
                 print '<div class="subscribe-hwtext">';
                 print '   <div class="subscribe-hwtext-span"><b>'.$title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
 
+                $title_info = get_the_title( $newPostID );
+                $properties_string = lhg_get_properties_string( $newPostID );
+
                 if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
                 	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
                 	print '
                         	<div id="details-hw-'.$id.'" class="details">
-                    	    		<br>Properties: <span id="properties-'.$id.'">'.$meta_info.'</span>
                 	    		<br>Title: <span id="title-'.$id.'">'.$title_info.'</span>
+                    	    		<br>Properties: <span id="properties-'.$id.'">'.$properties_string.'</span>
 		        	</div>';
                 }
 
