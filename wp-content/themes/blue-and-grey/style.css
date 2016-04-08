@@ -588,7 +588,7 @@ form#post_list_form{
 	border: 0px solid black; 
         vertical-align: middle;
         padding-top:8px;
-        padding-bottom:13px;
+        /* padding-bottom:13px; */
         margin-left: 64px;
         }        
 .hwprofile-cite{
@@ -2593,4 +2593,9 @@ div#my_popup{
 .popular-post .wp-post-image {
         max-width: 30px;
         max-height: 30px;
+}
+
+.details {
+        margin-top: -18px;
+        margin-left: 80px;
 }
