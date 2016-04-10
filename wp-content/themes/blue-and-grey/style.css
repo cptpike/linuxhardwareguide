@@ -2460,8 +2460,13 @@ input.hwscan-comment-button-green {
 }
 
 .attachmentFile {
-	border: 0px solid black;
+	border: 1px solid #d0d0d0;
         margin-left: 62px;
+        background: #f6f6f6;
+        margin-bottom: 8px;
+        padding: 6px;
+        min-width: 250px;
+        width: 80%;
 }
 
 .wp-one-summary {
