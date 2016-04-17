@@ -548,15 +548,17 @@ function lhg_donation_table_shortcode($attr) {
 
                 if (sizeof($list_uid) > 0)
 		foreach($list_uid as $uid){
-                	$user = get_userdata($uid);
-                        $name = $user->first_name." ".$user->last_name;
-                        $points = $list_points[$i];
-                        $avatar = get_avatar($uid, 40);
-                        $user_language_txt = lhg_get_locale_from_id ( $uid );
-        		$user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
-		        $total_karma = cp_getPoints( $uid ); //$num_com * 3 + $num_art * 50;
+                        # skip anonymously added posts, i.e. user = user-submitted-posts
+                        if ($uid != 12378){
+	                	$user = get_userdata($uid);
+        	                $name = $user->first_name." ".$user->last_name;
+                	        $points = $list_points[$i];
+                        	$avatar = get_avatar($uid, 40);
+	                        $user_language_txt = lhg_get_locale_from_id ( $uid );
+        			$user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
+			        $total_karma = cp_getPoints( $uid ); //$num_com * 3 + $num_art * 50;
 
-                        //registration date
+                        	//registration date
                         $regdate = date("d. M Y", strtotime(get_userdata( $uid ) -> user_registered ) );
 
                         //donates to
@@ -614,6 +616,7 @@ function lhg_donation_table_shortcode($attr) {
 
 </tr>';
 
+		}
 
                         $i++;
                         if ($i > $max_users_to_show-1) break;
