@@ -24,50 +24,6 @@ $lang_url_array = array('ca','zh','fr','in','it','ja'    ,'uk'  ,'es',''     ,'n
 global $donation_total;
 $donation_total = 30.00;
 
-global $donation;
-$donation = array(
-	1 => array (
-                "Name" => "Linux Foundation",
-                "NameShort" => "Linux FND",
-                "Percentage" => .50
-                ),
-
-	2 => array (
-                "Name" => "Open Source Initiative",
-                "NameShort" => "Open Source In.",
-                "Percentage" => .10
-                ),
-
-	3 => array (
-                "Name" => "Free Software Foundation",
-                "NameShort" => "Free Software FND",
-                "Percentage" => .10
-                ),
-
-	4 => array (
-                "Name" => "Apache Software Foundation",
-                "NameShort" => "Apache Software FND",
-                "Percentage" => .10
-                ),
-
-	5 => array (
-                "Name" => "RedHat Foundation",
-                "NameShort" => "RedHat FND",
-                "Percentage" => .20
-                ),
-
-	6 => array (
-                "Name" => "Linux Mint",
-                "NameShort" => "Linux Mint",
-                "Percentage" => .20
-                ),
-
-	7 => array (
-                "Name" => "Apache Software Foundation",
-                "Percentage" => .20
-                )
-
-             );
 
 
 function get_distri_logo( $distribution )  {
@@ -659,6 +615,7 @@ global $donation;
    <option value="5" <?php selected('5',$user_donation_target); ?>     ><?php echo $donation[5]["Name"]; ?></option>
    <option value="6" <?php selected('6',$user_donation_target); ?>     ><?php echo $donation[6]["Name"]; ?></option>
    <option value="7" <?php selected('7',$user_donation_target); ?>     ><?php echo $donation[7]["Name"]; ?></option>
+   <option value="8" <?php selected('8',$user_donation_target); ?>     ><?php echo $donation[8]["Name"]; ?></option>
 <?php
 
 }
