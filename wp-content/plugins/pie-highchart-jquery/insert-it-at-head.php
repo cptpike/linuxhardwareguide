@@ -176,7 +176,10 @@ function lhg_create_pie_script($scriptlang , $percent1, $percent2, $percent3, $d
 		$txt_chart_vote_by     	= "による投票";
 	}
 
-        list($top_donation_target_names, $top_donation_target_points) = lhg_return_donation_targets();
+        list($top_donation_target_names, $top_donation_target_points, $donation_users) = lhg_return_donation_targets();
+
+        print "Test:<br>";
+        var_dump($donation_users);
 
 $piechart=
 "
@@ -236,7 +239,7 @@ jQuery(function () {
         text: ''
         },
         tooltip: {
-    	    pointFormat: 'Quarterly Collected Points: {point.y:.2f}</b><br>Donation Percentage: {point.percentage:.0f}%'
+    	    pointFormat: 'Quarterly Collected Points: {point.y:.0f}</b><br>Donation Percentage: {point.percentage:.0f}%'
         },
         plotOptions: {
             pie: {
@@ -244,7 +247,7 @@ jQuery(function () {
                 cursor: 'pointer',
                 dataLabels: {
                     enabled: true,
-                    format: '<b>{point.name}: {point.percentage:.0f}%</b><br>Points: {point.y:.0f}',
+                    format: '<b>{point.name} </b><br>Points: {point.y:.0f}',
                     style: {
                         color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                     }
