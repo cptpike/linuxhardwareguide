@@ -593,7 +593,7 @@ function lhg_donation_table_shortcode($attr) {
 <td class="qrtly-3">
           <div class="userlist-displayname">
 		<a href="./hardware-profile/user'.$uid.'" class="recent-comments">
-	            	'.$user->user_nicename.'
+	            	'.$user->nickname.'
                 </a>
 
           </div>
