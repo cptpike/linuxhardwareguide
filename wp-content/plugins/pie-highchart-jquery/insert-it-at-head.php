@@ -244,7 +244,7 @@ jQuery(function () {
                 cursor: 'pointer',
                 dataLabels: {
                     enabled: true,
-                    format: '<b>{point.name}: {point.percentage:.0f}%</b><br>Points: {point.y:.2f}',
+                    format: '<b>{point.name}: {point.percentage:.0f}%</b><br>Points: {point.y:.0f}',
                     style: {
                         color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                     }
