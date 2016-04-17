@@ -107,8 +107,8 @@ function lhg_return_donation_results($startdate, $enddate) {
                 if ($donation_target == "") $donation_target = 1;
                 $donation_target_sum[$donation_target] += $points;
                 $donation_target_users[$donation_target] += 1;
-                $i++;
 		}
+                $i++;
 	}
 
 	return array($donation_target_sum, $donation_target_users);
