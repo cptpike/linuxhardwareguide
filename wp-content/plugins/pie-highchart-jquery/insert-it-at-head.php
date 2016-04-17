@@ -178,8 +178,8 @@ function lhg_create_pie_script($scriptlang , $percent1, $percent2, $percent3, $d
 
         list($top_donation_target_names, $top_donation_target_points, $donation_users) = lhg_return_donation_targets();
 
-        print "Test:<br>";
-        var_dump($donation_users);
+        #print "Test:<br>";
+        #var_dump($donation_users);
 
 $piechart=
 "
