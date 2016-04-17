@@ -80,8 +80,15 @@ $actual_link_mobile = "http://m.".str_replace("www.","",$_SERVER[HTTP_HOST]).$ur
 //	<a href="#"
 //        onclick=\'document.cookie="wpsmart_view_full_site=0;";window.location.href = "'.$actual_link.'";return false;\' id="view_full_site"><i class="icon-google-phone icon-large2"></i> <span class="footerlinks">Mobile optimized site</span></a>
 
+        global $code_version;
 	$output .= '
         <a href="'.$actual_link_mobile.'"><i class="icon-resize-small icon-large2"></i> <span class="footerlinks">'.$txt_for_mobile.'</span></a>
+
+	&nbsp;-&nbsp;
+
+	<a href="https://github.com/cptpike/linuxhardwareguide" target="_blank"><i class="icon-github-sign icon-large2"></i> <span class="footerlinks">Code base: '.$code_version.'</span></a>
+
+
 
         </p>';
         echo $output;
