@@ -2,6 +2,8 @@
 
 add_shortcode( 'lhg_hplip', 'lhg_hplip_shortcode');
 add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
+add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
+add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -495,5 +497,147 @@ function lhg_scan_overview_shortcode($attr) {
         #var_dump($identified_scans);
 
         $output .= "</table>";
+        return $output;
+}
+
+function lhg_donation_table_shortcode($attr) {
+
+	global $region;
+	global $top_users;
+        global $donation;
+        global $txt_cp_title;
+	global $txt_cp_karma;
+	global $txt_cp_points;
+	global $txt_cp_donates_to;
+	global $txt_cp_longtext;
+	global $txt_cp_language;
+
+                # How many users to show for ongoing quarter
+                $max_users_to_show = 5;
+
+
+                $langurl = lhg_get_lang_url_from_region( $region );
+
+		#extract($args, EXTR_SKIP);
+		#echo $before_widget;
+		//$title = empty($instance['title']) ? '&nbsp;' : apply_filters('widget_title', $instance['title']);
+                #$output .='<i class="icon-trophy menucolor"></i>&nbsp;'.$txt_cp_title;
+		#if ( !empty( $title ) ) { echo $before_title . $title . $after_title; };
+
+		//set default values
+		#if($instance['num'] == '' || $instance['num'] == 0) { $instance['num'] = 1; }
+		#if($instance['text'] == '') { $instance['text'] = '%user% (%points%)';}
+
+
+		# Show table of top users of ongoing Quarter
+		list($list_uid, $list_points) = cp_getAllQuarterlyPoints();
+
+                #print "<br>Users:";
+                #var_dump($list_uid);
+                $i = 0;
+
+                if (sizeof($list_uid) > 0) $output .= '<table id="quarterly-points-table">
+                <tr id="quarterly-points-header-row">
+                  <td class="qrtly-1" id="quarterly-points-1">Quarterly Points</td>
+                  <td class="qrtly-2" id="quarterly-points-2"></td>
+                  <td class="qrtly-3" id="quarterly-points-3">Username</td>
+                  <td class="qrtly-4" id="quarterly-points-3">Details</td>
+                  <td class="qrtly-5" id="quarterly-points-3">Total Points</td>
+                </tr>
+                ';
+
+                if (sizeof($list_uid) > 0)
+		foreach($list_uid as $uid){
+                	$user = get_userdata($uid);
+                        $name = $user->first_name." ".$user->last_name;
+                        $points = $list_points[$i];
+                        $avatar = get_avatar($uid, 40);
+                        $user_language_txt = lhg_get_locale_from_id ( $uid );
+        		$user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
+		        $total_karma = cp_getPoints( $uid ); //$num_com * 3 + $num_art * 50;
+
+                        //registration date
+                        $regdate = date("d. M Y", strtotime(get_userdata( $uid ) -> user_registered ) );
+
+                        //donates to
+			$donation_target = get_user_meta($uid,'user_donation_target',true);
+                        if ($donation_target == "") $donation_target = 1;
+
+                        //print_r($y);
+                        //if ($langurl != "") $langurl = "/".$langurl;
+
+
+
+	                #print "Name: ".$user->user_nicename." ($uid) - $points<br>";
+
+			$output .= '<tr>
+
+<td class="qrtly-1" >
+	    <div class="userlist-place-quarter">'.
+        	    ($points).' '.$txt_cp_points.'
+    	    </div>
+</td>
+
+
+<td class="quartery-points-avatar qrtly-2">
+<a href="./hardware-profile/user'.$uid.'" class="recent-comments">
+    <div class="userlist-avatar">'.
+      $avatar.'
+    </div>
+</a>
+</td>
+
+
+<td class="qrtly-3">
+          <div class="userlist-displayname">
+		<a href="./hardware-profile/user'.$uid.'" class="recent-comments">
+	            	'.$user->user_nicename.'
+                </a>
+
+          </div>
+</td>
+
+
+<td class="qrtly-4">
+    <div class="quarterly-points-userlist-details">
+      '.$txt_cp_donates_to.': '.$donation[$donation_target]["Name"].'<br>
+      '.$txt_cp_language.': '.$user_language_flag.'
+    </div>
+</td>
+
+<td class="qrtly-5">
+          <div class="quartly-points-totalpoints">
+	      '.$txt_cp_karma.': '.$total_karma.' '.$txt_cp_points.'<br>
+          </div>
+</td>
+
+
+</tr>';
+
+
+                        $i++;
+                        if ($i > $max_users_to_show-1) break;
+		}
+
+                if (sizeof($list_uid) > 0) $output .= "</table>";
+
+        return $output;
+
+}
+
+function lhg_donation_list_shortcode($attr) {
+        global $donation;
+
+        $output ="<ul>";
+        foreach ($donation as $key => $item){
+
+                $output .= "<li>".$item["Name"]."</li>";
+                #$donation_targets[$j] = $donation[$key]["Name"];
+                #$donation_points[$j] = $points;
+                #$j++;
+
+	}
+        $output .= "</ul>";
+
         return $output;
 }
