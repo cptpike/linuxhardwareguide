@@ -27,6 +27,7 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_autocreate.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_sanity_checks.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_shortcodes.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_auto_finder.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_donations.php');
 
 
 
