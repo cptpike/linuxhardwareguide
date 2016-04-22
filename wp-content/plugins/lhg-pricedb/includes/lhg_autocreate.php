@@ -1750,6 +1750,54 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         $props = explode(",",$title_prop);
         #print "TITLE: $title_main + $title_prop<br>";
 
+        # 1. Harddisk
+        if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_push($props, "Harddisk");
+        if ( preg_match("/[0-9][0-9][0-9] GB/i", $string, $match) == 1 ) array_push($props, "Harddisk");
+        if ( preg_match("/ [0-9].[0-9] TB/i", $string, $match) == 1 ) array_push($props, "Harddisk");
+        if ( preg_match("/ [0-9].[0-9]TB/i", $string, $match) == 1 ) array_push($props, "Harddisk");
+        if ( preg_match("/ [0-9] TB/i", $string, $match) == 1 ) array_push($props, "Harddisk");
+        if ( preg_match("/ [0-9]TB/i", $string, $match) == 1 ) array_push($props, "Harddisk");
+
+        # 2. Storage capacity
+        if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-2)." GB" );
+        if ( preg_match("/[0-9][0-9][0-9] GB/i", $string, $match) == 1 ) array_push($props, $match[0]);
+        if ( preg_match("/ [0-9].[0-9] TB/i", $string, $match) == 1 ) array_push($props, $match[0]);
+        if ( preg_match("/ [0-9].[0-9]TB/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-2)." TB" );
+        if ( preg_match("/ [0-9] TB/i", $string, $match) == 1 ) array_push($props, $match[0]);
+        if ( preg_match("/ [0-9]TB/i", $string, $match) == 1 ) array_push($props, $match[0]);
+
+
+        # search for special word
+        if ( stristr($string, "LGA 1155") != false ) array_push($props,"Socket 1155");
+        if ( stristr($string, "LGA1366") != false ) array_push($props,"Socket 1366");
+        if ( stristr($string, "LGA 1366") != false ) array_push($props,"Socket 1366");
+        if ( stristr($string, "Quad-Core") != false ) array_push($props,"Quad Core");
+        if ( preg_match("/ [0-9]{1} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
+        if ( preg_match("/ [0-9]{2} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
+        if ( preg_match("/ [0-9]{1}MB Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-8)." MB Cache" );
+        if ( preg_match("/ [0-9]{2}MB Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-8)." MB Cache" );
+
+        # Sometimes CPU title do not have the word "Cache"
+        if ( ( preg_match("/Cache/i", $string, $match) === false ) && ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/ [0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
+        if ( ( preg_match("/Cache/i", $string, $match) === false ) && ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/ [0-9][0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
+
+        if ( preg_match("/ [0-9][0-9][0-9][0-9]RPM/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-3)." RPM");
+        if ( preg_match("/ [0-9][0-9][0-9][0-9] RPM/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-3)." RPM");
+
+        if ( preg_match("/DVD.*RW/i", $string, $match) == 1 ) array_unshift($props, "DVD Writer");
+        if ( preg_match("/DVD/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
+        if ( preg_match("/ DVD /i", $string, $match) == 1 ) array_push($props, "DVD");
+        if ( preg_match("/ CD /i", $string, $match) == 1 ) array_push($props, "CD");
+        if ( preg_match("/Optical Drive/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
+        if ( preg_match("/Dual Layer/i", $string, $match) == 1 ) array_push($props, "Dual Layer");
+        if ( preg_match("/SSD/i", $string, $match) == 1 ) $props = array_diff( $props, array("Harddisk") );
+        if ( preg_match("/SSD/i", $string, $match) == 1 ) array_unshift($props, "SSD");
+        if ( preg_match("/Solid State Disk/i", $string, $match) == 1 ) array_unshift($props, "SSD");
+        if ( preg_match("/2.5\"/i", $string, $match) == 1 ) array_push($props, "2.5 Inch");
+        if ( preg_match("/3.5\"/i", $string, $match) == 1 ) array_push($props, "3.5 Inch");
+        if ( preg_match("/2.5-Inch/i", $string, $match) == 1 ) array_push($props, "2.5 Inch");
+        if ( preg_match("/3.5-Inch/i", $string, $match) == 1 ) array_push($props, "3.5 Inch");
+
         # get props by taglist
         $tagarray = lhg_taglist_by_title ( $string );
         foreach ($tagarray as $tagnr)  {
@@ -1763,21 +1811,6 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
 
 	}
 
-        # search for special word
-        if ( stristr($string, "LGA 1155") != false ) array_push($props,"Socket LGA 1155");
-        if ( stristr($string, "Quad-Core") != false ) array_push($props,"Quad Core");
-        if ( preg_match("/[0-9] MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
-        # Sometimes CPU title do not have the word "Cache"
-        if ( ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/[0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
-        if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_unshift($props, $match[0]);
-        if ( preg_match("/[0-9][0-9][0-9]GB/i", $string, $match) == 1 ) array_unshift($props, "Harddisk");
-        if ( preg_match("/DVD.*RW/i", $string, $match) == 1 ) array_unshift($props, "DVD Writer");
-        if ( preg_match("/DVD/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
-        if ( preg_match("/Optical Drive/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
-        if ( preg_match("/Dual Layer/i", $string, $match) == 1 ) array_push($props, "Dual Layer");
-        if ( preg_match("/SSD/i", $string, $match) == 1 ) $props = array_diff( $props, array("Harddisk") );
-        if ( preg_match("/SSD/i", $string, $match) == 1 ) array_unshift($props, "SSD");
-
 
         # Order: HDD first, size, rest
         #if ($mode = "drive")
@@ -1787,7 +1820,7 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         foreach ($props as $prop)  {
                 if (trim($prop) != "") array_push($props_tmp, trim($prop) );
 	}
-
+        # Remove duplicates
         $props = array_unique($props_tmp);
 
         #error_log("Props: ".join("< ",$props) );
@@ -1972,6 +2005,8 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/LGA 1156/i',$title)) array_push ( $taglist , 988);
   if (preg_match('/LGA775/i',$title)) array_push ( $taglist , 537);
   if (preg_match('/LGA 775/i',$title)) array_push ( $taglist , 537);
+  if (preg_match('/LGA1366/i',$title)) array_push ( $taglist , 819);
+  if (preg_match('/LGA 1366/i',$title)) array_push ( $taglist , 819);
 
   if (preg_match('/AMD/',$title)) array_push ( $taglist , 520);
   if (preg_match('/Sempron/',$title)) array_push ( $taglist , 875);
