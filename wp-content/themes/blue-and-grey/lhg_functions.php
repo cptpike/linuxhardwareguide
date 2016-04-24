@@ -2295,7 +2295,7 @@ function translate_title($title){
         	$title = str_replace("Digital Oscilloscope", "Oscilloscope Digital",$title);
         	$title = str_replace("Digital Microscope", "Microscopio Digital",$title);
         	$title = str_replace("Remote Control", "Mando a Distancia",$title);
-        	$title = str_replace("Video Editing", "Edici&oacute;n de V&iecute;deo",$title);
+        	$title = str_replace("Video Editing", "Edici&oacute;n de V&iacute;deo",$title);
         	$title = str_replace("Document Camera", "Esc&aacute;ner de Documentos",$title);
         	$title = str_replace("Integrated Microphone", "Micr&oacute;fono integrado",$title);
         	$title = str_replace("Network Card", "Tarjeta de Red",$title);
@@ -2540,8 +2540,8 @@ function translate_title($title){
 
                 //Cleaning some strings
         	$title = str_replace("FRITZ!Placa", "FRITZ!Card",$title);
-        	$title = str_replace("Video ", "V&iecute;deo ",$title);
-        	$title = str_replace("video ", "v&iecute;deo ",$title);
+        	$title = str_replace("Video ", "V&iacute;deo ",$title);
+        	$title = str_replace("video ", "v&iacute;deo ",$title);
 
         	return $title;
         }
