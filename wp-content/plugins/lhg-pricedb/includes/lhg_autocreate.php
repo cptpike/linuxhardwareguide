@@ -2175,7 +2175,11 @@ function lhg_correct_authors( $input ) {
 
 
         $user_info = get_userdata( $uid );
-        $output = "Author corrected to ".$user_info->display_name." (UID: $uid)";
+        $output = "Author corrected to ".$user_info->display_name." (UID: $uid)
+        <select name='post_author_override' id='post_author_override' style='visibility: hidden;' class=''>
+        <option value='".$uid."' selected='selected'></option>
+        </select>
+        ";
     	#error_log("Correct author: $pid -> $uid (was: $author_id)");
 
 	$myPost = array(
