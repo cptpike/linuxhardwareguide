@@ -157,7 +157,7 @@ function lhg_scan_update_ajax() {
         if ($posttags) {
   		foreach($posttags as $tag) {
 		   array_push( $properties_array, $tag->name);
-                   error_log("TAG: ".$tag->name);
+                   #error_log("TAG: ".$tag->name);
 		}
 	}
         $properties = join( ", " , $properties_array );

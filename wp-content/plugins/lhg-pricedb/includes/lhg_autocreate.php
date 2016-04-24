@@ -518,9 +518,10 @@ function lhg_create_drive_article ($title, $sid, $id ) {
   foreach ($dmesg_lines as $dmesg_line) {
         $full_title = $dmesg_line;
   }
+  #error_log("Full Title: $full_title");
 
-  # ATA drive
-  if (strpos($title, "ATA ") !== false ) {
+  # ATA drive 
+  if ( (strpos($title, "ATA ") !== false )  ) {
 	  # 1. get HDD name
 	  $dmesg_lines = preg_grep("/".$title."/i",$dmesg);
 	  foreach ($dmesg_lines as $dmesg_line) {
@@ -531,6 +532,18 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 	                $searchstring = $tmp[0];
                         break;
 		}
+
+              /*  # In case of USB storage we have no ATA string
+        	$strpos_usbstorage = strpos($dmesg_line,"ANSI: 6");
+        	$strpos_usb_start = strpos($dmesg_line,"Direct-Access");
+	        if ($strpos_usbstorage > 0) {
+        		$searchstring0 = substr($dmesg_line, $strpos_usb_start+14);
+	                $tmp = explode( " ", trim( $searchstring0 ) );
+	                $searchstring = $tmp[0];
+                        break;
+		}
+                */
+
 	  }
 
 	  # 2. get scsi ID
@@ -2081,6 +2094,7 @@ function lhg_taglist_by_title ( $title  ) {
   if (preg_match('/Optiarc/',$title)) array_push ( $taglist , 754);
   if (preg_match('/SATA /i',$title)) array_push ( $taglist , 346);
   if (preg_match('/3.5 /i',$title)) array_push ( $taglist , 903);
+  if (preg_match('/3.5-Inch/i',$title)) array_push ( $taglist , 903);
 
   #Hitachi
   if (preg_match('/HTS[0-9][0-9]/',$title)) array_push ( $taglist , 905);
@@ -2131,3 +2145,45 @@ function lhg_translate_title_en_to_de( $title )  {
         return $title;
 }
 
+# automatic created articles should get the publisher as author
+add_filter( 'wp_dropdown_users', lhg_correct_authors );
+
+function lhg_correct_authors( $input ) {
+
+        if ( isset($_GET['action'])  && $_GET['action'] === 'edit' ){
+	        # only run checks on edit screens
+	}else{
+                return $input;
+        }
+
+        global $post;
+	$uid = get_current_user_id();
+        $pid = $_GET['post'];
+        $status=get_post_status ( $pid );
+        #error_log("Status: ".$status);
+
+        # Only change author if not published yet
+        if ($status != "draft") return $input;
+        # admin can still delegate authorship, others get automatically assigned to themselves
+        if ($uid == 1) return $input;
+
+
+        # Which author is currently set?
+        $author_id = isset( $post->post_author ) ? $post->post_author : null;
+        # Author was set before. We show the full selector in such cases
+        if ($author_id == $uid) return $input;
+
+
+        $user_info = get_userdata( $uid );
+        $output = "Author corrected to ".$user_info->display_name." (UID: $uid)";
+    	#error_log("Correct author: $pid -> $uid (was: $author_id)");
+
+	$myPost = array(
+                        'ID' => $pid,
+			'post_author' => $uid,
+		);
+        wp_update_post( $myPost );
+        $post->post_author = $uid;
+        return $output;
+
+}
