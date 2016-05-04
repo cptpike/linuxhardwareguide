@@ -513,7 +513,7 @@ function lhg_donation_table_shortcode($attr) {
 	global $txt_cp_language;
 
                 # How many users to show for ongoing quarter
-                $max_users_to_show = 5;
+                $max_users_to_show = 10;
 
 
                 $langurl = lhg_get_lang_url_from_region( $region );
@@ -619,7 +619,7 @@ function lhg_donation_table_shortcode($attr) {
 		}
 
                         $i++;
-                        if ($i > $max_users_to_show-1) break;
+                        if ($i > $max_users_to_show) break;
 		}
 
                 if (sizeof($list_uid) > 0) $output .= "</table>";
