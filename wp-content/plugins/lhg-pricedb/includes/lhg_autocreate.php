@@ -1674,6 +1674,8 @@ function lhg_clean_mainboard_name ( $title  ) {
         # Remove or rename some long names or placeholders
 	$title = str_replace("Gigabyte Technology Co., Ltd. ","Gigabyte ",$title);
 	$title = str_replace("System manufacturer System Product Name","",$title);
+	$title = str_replace("To be filled by O.E.M./","",$title);
+	$title = str_replace("To be filled by O.E.M.","",$title);
 
 	$s=explode(", BIOS",$title);
         $title=trim($s[0]);
