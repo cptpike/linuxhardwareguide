@@ -231,6 +231,16 @@ $lspci0 = str_replace("\n\n","",$lspci0);
   while (preg_match("/  /",$distribution)){
         $distribution = str_replace("  "," ",$distribution);
   }
+  if (trim($distribution) == "") {
+        # get distribution name from scan data base
+	$sql = "SELECT distribution FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
+    	$result = $lhg_price_db->get_results($sql);
+        $result0 = $result[0];
+        $distribution = $result0->distribution;
+  }
+
+
+
 
 
   # Kernel version
@@ -848,11 +858,12 @@ foreach(preg_split("/((\r?\n)|(\r\n?))/", $dmesg_content_from_library) as $line)
   $title = wp_strip_all_tags($title);
   $title_orig = $title;
 
+  $title_orig_filtered = str_replace(", Inc.","",$title_orig);
 
   $title = lhg_clean_usb_title( $title );
 
 
-  $article = 'The '.$title_orig.' is a USB '.$type.' with USB ID '.$usbid.'
+  $article = 'The '.$title_orig_filtered.' is a USB '.$type.' with USB ID '.$usbid.'
 [code lang="plain" title="lsusb"]
 '.$lsusbOutput.'
 [/code]
@@ -1659,10 +1670,19 @@ function lhg_clean_usb_title ( $title ) {
 
 function lhg_clean_mainboard_name ( $title  ) {
         $otitle = $name;
+
+        # Remove or rename some long names or placeholders
 	$title = str_replace("Gigabyte Technology Co., Ltd. ","Gigabyte ",$title);
+	$title = str_replace("System manufacturer System Product Name","",$title);
+
 	$s=explode(", BIOS",$title);
         $title=trim($s[0]);
         if ($title == "") $title = " ";
+
+
+        # check if name starts with "/"
+        if ( substr($title,0,1 ) == "/") $title=substr($title,1);
+
 
         # check if name twice given, separated by "/"
         # i.e. check if part after "/" is existing twice
@@ -1672,7 +1692,7 @@ function lhg_clean_mainboard_name ( $title  ) {
         if ( strpos(substr($title,0,strpos($title, "/") ), trim($s[1]) ) > 0) $title = trim($s[0]);
 
 
-        # make title beautyful
+        # make title beautiful
         $title = str_replace("FUJITSU","Fujitsu", $title);
         $title = str_replace("LENOVO ","Lenovo ", $title);
         $title = str_replace("LIFEBOOK","Lifebook", $title);
