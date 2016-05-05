@@ -582,19 +582,27 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 
           # 4. get device file name
 	  $device_array = preg_grep("/sd ".$scsi_nr."/i",$dmesg );
-          foreach ($device_array as $line) $device_line = $line;
+          foreach ($device_array as $line) {
+                #error_log("DL: $line");
+                # found line with [s..] definition. Remember and leave loop
+                if ( preg_match("/\[s..\]/i", $line ) == 1 ) {
+        	        $device_line = $line;
+                        #error_log("Found: $line");
+                        break;
+		}
+	  }
 	  preg_match("/\[s..\]/i", $device_line, $device_name_array);
           $device_name = $device_name_array[0];
           $device_name_raw = substr($device_name,1,-1);
           #print "DNAme RAW:".$device_name_raw."<br>";
           #var_dump($device_array);
 
-#          print "
+#          error_log ("
 #1: $ata_nr<br>
 #2: $device_name<br>
 #3: $device_name_raw<br>
 #4: ".substr($ata_nr,0,4)."<br>
-#5: $scsi_nr<br>"
+#5: $scsi_nr<br>")
 #;
           # 5. extract all relevant lines
 	  $dmesg_outputs = preg_grep("/(".$ata_nr."|\[".$device_name_raw."\]|".$device_name_raw."|".substr($ata_nr,0,4)."|".$scsi_nr.")/i", $dmesg);
@@ -605,6 +613,8 @@ function lhg_create_drive_article ($title, $sid, $id ) {
                 array_push( $clean_dmesg_outputs, substr( $dmesg_output, 15) );
 	  }
 
+          # if more than 100 lines were found something probably went wrong. If not, no use in adding so many lines of log output to post
+          if ( count($clean_dmesg_outputs) > 100 ) $clean_dmesg_output = "Error: too many dmesg files found";
           $dmesgOutput = join("\n",$clean_dmesg_outputs);
   }
 
