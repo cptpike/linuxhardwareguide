@@ -1791,8 +1791,18 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         $title_main = $titlearray[0];
         $title_prop = $titlearray[1];
         $title_prop = str_replace(")", "", $title_prop);
-
         $props = explode(",",$title_prop);
+
+        # Clean broken properties. Provide array of strings to be omitted
+        $del_vals=array("tel");
+        foreach ($del_vals as $del_val) {
+                #error_log("Search: $del_val");
+	        if(($key = array_search(" ".$del_val, $props)) !== false) {
+                    #error_log("FOUND - cleaning");
+		    unset($props[$key]);
+		}
+	}
+
         #print "TITLE: $title_main + $title_prop<br>";
 
         # 1. Harddisk
@@ -1817,6 +1827,8 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( stristr($string, "LGA1366") != false ) array_push($props,"Socket 1366");
         if ( stristr($string, "LGA 1366") != false ) array_push($props,"Socket 1366");
         if ( stristr($string, "Quad-Core") != false ) array_push($props,"Quad Core");
+                #repair broken cache string
+        if ( preg_match("/ [0-9]{3}K Cache/i", $string, $match) == 1 ) array_push($props, str_replace("K Cache","KB Cache",$match[0]));
         if ( preg_match("/ [0-9]{1} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
         if ( preg_match("/ [0-9]{2} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
         if ( preg_match("/ [0-9]{1}MB Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-8)." MB Cache" );
@@ -1832,6 +1844,7 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( preg_match("/DVD.*RW/i", $string, $match) == 1 ) array_unshift($props, "DVD Writer");
         if ( preg_match("/DVD/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
         if ( preg_match("/ DVD /i", $string, $match) == 1 ) array_push($props, "DVD");
+        if ( preg_match("/DVD-Rom/i", $string, $match) == 1 ) array_push($props, "DVD");
         if ( preg_match("/ CD /i", $string, $match) == 1 ) array_push($props, "CD");
         if ( preg_match("/Optical Drive/i", $string, $match) == 1 ) array_push($props, "Optical Drive");
         if ( preg_match("/Dual Layer/i", $string, $match) == 1 ) array_push($props, "Dual Layer");
@@ -1842,6 +1855,7 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( preg_match("/3.5\"/i", $string, $match) == 1 ) array_push($props, "3.5 Inch");
         if ( preg_match("/2.5-Inch/i", $string, $match) == 1 ) array_push($props, "2.5 Inch");
         if ( preg_match("/3.5-Inch/i", $string, $match) == 1 ) array_push($props, "3.5 Inch");
+        if ( preg_match("/ IDE /i", $string, $match) == 1 ) array_push($props, "IDE");
 
         # get props by taglist
         $tagarray = lhg_taglist_by_title ( $string );
