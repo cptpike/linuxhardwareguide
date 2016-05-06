@@ -903,9 +903,11 @@ $before_widget";
                 if ( is_array($posttags) )
 		foreach($posttags as $tag) {
                         if ($tag->count > 1) { // combination not useful in case of one result
-                           $count++;
-        	   	   $tagstrings[$count] =  $tag->term_id.'; <a href="'.get_tag_link($tag->term_id).'">'.$tag->name.'</a> ('.$tag->count.')<br /> ';
-          		   if( $count >15 ) break;
+                           if ($tag->term_id != 981) {
+                           	$count++;
+        	   	   	$tagstrings[$count] =  $tag->term_id.'; <a href="'.get_tag_link($tag->term_id).'">'.$tag->name.'</a> ('.$tag->count.')<br /> ';
+          		   	if( $count >15 ) break;
+			   }
 			}
 		}
        	}
