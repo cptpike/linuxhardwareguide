@@ -580,7 +580,7 @@ function lhg_set_donation() {
 		add_user_meta($user_id, 'user_donation_target', '1');
                 $user_donation_target = 1;
   	}else {
-                echo "Found: $user_donation_target";
+                #echo "Found: $user_donation_target";
         }
 
 ?><tr>
