@@ -113,9 +113,10 @@ $cpu0 = implode("\n",$new_cpulines);
   $pos = strpos($cpu0, "model name");
   $pos_end = strpos( substr($cpu0,$pos) , "\n");
   $pos_colon = strpos( substr($cpu0,$pos) , ":");
-  #print "POS: $pos - $pos_colon - $pos_end<br>";
+  #error_log ("POS: $pos - $pos_colon - $pos_end<br>");
   #print substr($cpu0,$pos+$pos_colon+2, $pos_end-$pos_colon-2)."<br>";
   $cpu_identifier = substr($cpu0,$pos+$pos_colon+2, $pos_end-$pos_colon-2);
+  #error_log("CPU id: $cpu_identifier");
   lhg_create_new_DB_entry_post ( $newPostID, "cpu", $cpu_identifier );
   # get Amazon ID, if available
   $amzid = lhg_get_AMZ_ID_from_scan ( $sid, "cpu", "" );
@@ -1794,7 +1795,7 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         $props = explode(",",$title_prop);
 
         # Clean broken properties. Provide array of strings to be omitted
-        $del_vals=array("tel");
+        $del_vals=array("tel", "D");
         foreach ($del_vals as $del_val) {
                 #error_log("Search: $del_val");
 	        if(($key = array_search(" ".$del_val, $props)) !== false) {
@@ -1826,7 +1827,9 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( stristr($string, "LGA 1155") != false ) array_push($props,"Socket 1155");
         if ( stristr($string, "LGA1366") != false ) array_push($props,"Socket 1366");
         if ( stristr($string, "LGA 1366") != false ) array_push($props,"Socket 1366");
+        if ( stristr($string, "Socket AM2") != false ) array_push($props,"Socket AM2");
         if ( stristr($string, "Quad-Core") != false ) array_push($props,"Quad Core");
+        if ( stristr($string, "Dual-Core") != false ) array_push($props,"Dual Core");
                 #repair broken cache string
         if ( preg_match("/ [0-9]{3}K Cache/i", $string, $match) == 1 ) array_push($props, str_replace("K Cache","KB Cache",$match[0]));
         if ( preg_match("/ [0-9]{1} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
@@ -1837,6 +1840,9 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         # Sometimes CPU title do not have the word "Cache"
         if ( ( preg_match("/Cache/i", $string, $match) === false ) && ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/ [0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
         if ( ( preg_match("/Cache/i", $string, $match) === false ) && ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/ [0-9][0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
+
+        if ( preg_match("/ [0-9].[0-9] GHz/i", $string, $match) == 1 ) array_push($props, $match[0]);
+
 
         if ( preg_match("/ [0-9][0-9][0-9][0-9]RPM/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-3)." RPM");
         if ( preg_match("/ [0-9][0-9][0-9][0-9] RPM/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-3)." RPM");
@@ -1856,6 +1862,8 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( preg_match("/2.5-Inch/i", $string, $match) == 1 ) array_push($props, "2.5 Inch");
         if ( preg_match("/3.5-Inch/i", $string, $match) == 1 ) array_push($props, "3.5 Inch");
         if ( preg_match("/ IDE /i", $string, $match) == 1 ) array_push($props, "IDE");
+
+
 
         # get props by taglist
         $tagarray = lhg_taglist_by_title ( $string );
