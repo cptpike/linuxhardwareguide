@@ -75,6 +75,27 @@ function get_distri_logo( $distribution )  {
 }
 
 
+// Twitter widget on main page
+// enhance widget with unicode character substitution
+add_filter( 'widget_twitter_content', 'lhg_twitter_unicode' );
+function lhg_twitter_unicode( $text ) {
+        #uncomment and look into log message to get unicode
+        #error_log("Filter: $text");
+        # Star substitution
+        $text = str_replace("\xe2\xad\x90\xef\xb8\x8f",'<img src="/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.gif" style="height: 1em;">',$text);
+        # Flag substitution
+        $text = str_replace("\xf0\x9f\x87\xab\xf0\x9f\x87\xb7",'<img src="/wp-content/plugins/qtranslate/flags/fr.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xaa\xf0\x9f\x87\xb8",'<img src="/wp-content/plugins/qtranslate/flags/es.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xae\xf0\x9f\x87\xb9",'<img src="/wp-content/plugins/qtranslate/flags/it.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xb3\xf0\x9f\x87\xb1",'<img src="/wp-content/plugins/qtranslate/flags/nl.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xaf\xf0\x9f\x87\xb5",'<img src="/wp-content/plugins/qtranslate/flags/jp.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xa8\xf0\x9f\x87\xb3",'<img src="/wp-content/plugins/qtranslate/flags/cn.png" style="height: .8em; margin-right: 2px;">',$text);
+
+	return $text;
+}
+
+
+
 // Associating a function to login hook
 add_action ( 'wp_login', 'lhg_set_last_login' );
  
