@@ -28,14 +28,15 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_sanity_checks.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_shortcodes.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_auto_finder.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_donations.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_user_management.php');
 require_once('/var/www/wordpress/version.php');
 
+# Disable visual editor for all users - breaks too many things
+add_filter('user_can_richedit' , create_function('' , 'return false;') , 50);
 
 
 if (!is_admin()) return;
 if (!current_user_can('activate_plugins')) return;
-
-
 
 //echo "SADDR: ".$_SERVER['SERVER_ADDR'];
 
@@ -730,7 +731,7 @@ function lhg_get_properties_string ( $postid ) {
         if ($posttags) {
   		foreach($posttags as $tag) {
 		   array_push( $properties_array, $tag->name);
-                   error_log("TAG: ".$tag->name);
+                   #error_log("TAG: ".$tag->name);
 		}
 	}
         $properties = join( ", " , $properties_array );
