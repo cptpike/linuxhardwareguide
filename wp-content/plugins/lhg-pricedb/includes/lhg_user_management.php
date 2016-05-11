@@ -180,7 +180,7 @@ function lhg_greeting_widget() {
                        <div class="inside">
                        <div class="table table_content">
 			<p class="sub"><h2>How to earn Karma</h2></p>
-                        Karma points can be donated to certain Linux projects. Select your donation target on your <a href="./profile.php">profile page</a>. You can collect Karma points in the following ways:
+                        Karma points can be donated to financially support certain Linux projects. Select your donation target on your <a href="./profile.php">profile page</a>. You can collect Karma points in the following ways:
                              <p>
                              1) Rate and comment on your Linux hardware
                              <p>
