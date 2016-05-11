@@ -395,7 +395,7 @@ function lhg_store_login_data ( $sid ) {
         if (strlen($sid) == 30)
         if ($user_ID != 1) {
 		global $lhg_price_db;
-        	$sql = "INSERT INTO `lhgscan_login` ( date, ip, sid, user_id ) VALUES ( '$date', '$ip', '$sid', '$user_id')";
+        	$sql = "INSERT INTO `lhgscan_login` ( date, ip, sid, user_id ) VALUES ( '$date', '$ip', '$sid', '$user_ID')";
                 #$safe_sql = $lhg_price_db->prepare($sql, $date, $ip, $sid, $user_ID);
     		$inser = $lhg_price_db->query($sql);
 	}
