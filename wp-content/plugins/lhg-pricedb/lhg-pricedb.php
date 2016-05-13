@@ -27,13 +27,16 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_autocreate.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_sanity_checks.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_shortcodes.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_auto_finder.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_donations.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_user_management.php');
+require_once('/var/www/wordpress/version.php');
 
+# Disable visual editor for all users - breaks too many things
+add_filter('user_can_richedit' , create_function('' , 'return false;') , 50);
 
 
 if (!is_admin()) return;
 if (!current_user_can('activate_plugins')) return;
-
-
 
 //echo "SADDR: ".$_SERVER['SERVER_ADDR'];
 
@@ -660,7 +663,8 @@ function lhg_store_comment_numbers ( $comment_id, $comment_approved) {
         if ($comment_approved === 1) {
                 $comment = get_comment( $comment_id );
                 $post_id = $comment->comment_post_ID;
-                $lhg_store_comment_numbers_by_post_id ( $post_id );
+                lhg_store_comment_numbers_by_post_id ( $post_id );
+                #error_log("Comment: $post_id ");
 
 	}
 }
@@ -668,7 +672,8 @@ function lhg_store_comment_numbers ( $comment_id, $comment_approved) {
 
 # Store comment counting in priceDB by post ID
 # extract from wpdb -> store in priceDB
-add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
+#add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
+#add_action('wp_insert_comment','lhg_store_comment_numbers',99,2);
 function lhg_store_comment_numbers_by_post_id ( $post_id ) {
 
         global $lang;
@@ -704,5 +709,34 @@ function lhg_store_comment_numbers_by_post_id ( $post_id ) {
 		}
 	}
 }
+
+function lhg_get_rating_value( $post_id ) {
+        global $lang;
+        global $lhg_price_db;
+
+	if ($lang != "de") $ratings = $lhg_price_db->get_results("SELECT * FROM  `lhgtransverse_posts` WHERE postid_com = $post_id");
+	if ($lang == "de") $ratings = $lhg_price_db->get_results("SELECT * FROM  `lhgtransverse_posts` WHERE postid_de = $post_id");
+
+	$num_rates = $ratings[0]->post_ratings_users_com + $ratings[0]->post_ratings_users_de;
+        if ($num_rates == 0 ) $rating_avg = 0;
+        if ($num_rates != 0 ) $rating_avg = ( $ratings[0]->post_ratings_score_com + $ratings[0]->post_ratings_score_de ) / ( $num_rates ) ;
+
+        return $rating_avg;
+}
+
+function lhg_get_properties_string ( $postid ) {
+
+        $posttags = get_the_tags( $postid );
+        $properties_array = array();
+        if ($posttags) {
+  		foreach($posttags as $tag) {
+		   array_push( $properties_array, $tag->name);
+                   #error_log("TAG: ".$tag->name);
+		}
+	}
+        $properties = join( ", " , $properties_array );
+        return $properties;
+}
+
 
 ?>

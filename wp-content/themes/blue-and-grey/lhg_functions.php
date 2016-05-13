@@ -1,5 +1,11 @@
 <?php
 
+# Store comment counting in priceDB by post ID
+# extract from wpdb -> store in priceDB
+add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
+
+
+
 // ini_set( 'display_errors', 1 );
 // error_reporting(-1);
 
@@ -18,50 +24,6 @@ $lang_url_array = array('ca','zh','fr','in','it','ja'    ,'uk'  ,'es',''     ,'n
 global $donation_total;
 $donation_total = 30.00;
 
-global $donation;
-$donation = array(
-	1 => array (
-                "Name" => "Linux Foundation",
-                "NameShort" => "Linux FND",
-                "Percentage" => .50
-                ),
-
-	2 => array (
-                "Name" => "Open Source Initiative",
-                "NameShort" => "Open Source In.",
-                "Percentage" => .10
-                ),
-
-	3 => array (
-                "Name" => "Free Software Foundation",
-                "NameShort" => "Free Software FND",
-                "Percentage" => .10
-                ),
-
-	4 => array (
-                "Name" => "Apache Software Foundation",
-                "NameShort" => "Apache Software FND",
-                "Percentage" => .10
-                ),
-
-	5 => array (
-                "Name" => "RedHat Foundation",
-                "NameShort" => "RedHat FND",
-                "Percentage" => .20
-                ),
-
-	6 => array (
-                "Name" => "Linux Mint",
-                "NameShort" => "Linux Mint",
-                "Percentage" => .20
-                ),
-
-	7 => array (
-                "Name" => "Apache Software Foundation",
-                "Percentage" => .20
-                )
-
-             );
 
 
 function get_distri_logo( $distribution )  {
@@ -99,10 +61,39 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/kalilinux-logo.png";
         if ( strpos($distribution,"Raspbian ") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/raspbian-logo.png";
+        if ( strpos($distribution,"Ultimate Edition ") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/ultimate-edition-logo.png";
+        if ( strpos($distribution,"Gentoo") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/gentoo-logo.png";
+        if ( strpos($distribution,"Linux From Scratch") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linux-from-scratch-logo.png";
+        if ( strpos($distribution,"Mageia") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/mageia-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
 }
+
+
+// Twitter widget on main page
+// enhance widget with unicode character substitution
+add_filter( 'widget_twitter_content', 'lhg_twitter_unicode' );
+function lhg_twitter_unicode( $text ) {
+        #uncomment and look into log message to get unicode
+        #error_log("Filter: $text");
+        # Star substitution
+        $text = str_replace("\xe2\xad\x90\xef\xb8\x8f",'<img src="/wp-content/plugins/wp-postratings/images/stars_crystal/rating_on.gif" style="height: 1em;">',$text);
+        # Flag substitution
+        $text = str_replace("\xf0\x9f\x87\xab\xf0\x9f\x87\xb7",'<img src="/wp-content/plugins/qtranslate/flags/fr.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xaa\xf0\x9f\x87\xb8",'<img src="/wp-content/plugins/qtranslate/flags/es.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xae\xf0\x9f\x87\xb9",'<img src="/wp-content/plugins/qtranslate/flags/it.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xb3\xf0\x9f\x87\xb1",'<img src="/wp-content/plugins/qtranslate/flags/nl.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xaf\xf0\x9f\x87\xb5",'<img src="/wp-content/plugins/qtranslate/flags/jp.png" style="height: .8em; margin-right: 2px;">',$text);
+        $text = str_replace("\xf0\x9f\x87\xa8\xf0\x9f\x87\xb3",'<img src="/wp-content/plugins/qtranslate/flags/cn.png" style="height: .8em; margin-right: 2px;">',$text);
+
+	return $text;
+}
+
 
 
 // Associating a function to login hook
@@ -610,7 +601,7 @@ function lhg_set_donation() {
 		add_user_meta($user_id, 'user_donation_target', '1');
                 $user_donation_target = 1;
   	}else {
-                echo "Found: $user_donation_target";
+                #echo "Found: $user_donation_target";
         }
 
 ?><tr>
@@ -645,6 +636,7 @@ global $donation;
    <option value="5" <?php selected('5',$user_donation_target); ?>     ><?php echo $donation[5]["Name"]; ?></option>
    <option value="6" <?php selected('6',$user_donation_target); ?>     ><?php echo $donation[6]["Name"]; ?></option>
    <option value="7" <?php selected('7',$user_donation_target); ?>     ><?php echo $donation[7]["Name"]; ?></option>
+   <option value="8" <?php selected('8',$user_donation_target); ?>     ><?php echo $donation[8]["Name"]; ?></option>
 <?php
 
 }
@@ -2324,7 +2316,7 @@ function translate_title($title){
         	$title = str_replace("Digital Oscilloscope", "Oscilloscope Digital",$title);
         	$title = str_replace("Digital Microscope", "Microscopio Digital",$title);
         	$title = str_replace("Remote Control", "Mando a Distancia",$title);
-        	$title = str_replace("Video Editing", "Edici&oacute;n de V&iecute;deo",$title);
+        	$title = str_replace("Video Editing", "Edici&oacute;n de V&iacute;deo",$title);
         	$title = str_replace("Document Camera", "Esc&aacute;ner de Documentos",$title);
         	$title = str_replace("Integrated Microphone", "Micr&oacute;fono integrado",$title);
         	$title = str_replace("Network Card", "Tarjeta de Red",$title);
@@ -2569,8 +2561,8 @@ function translate_title($title){
 
                 //Cleaning some strings
         	$title = str_replace("FRITZ!Placa", "FRITZ!Card",$title);
-        	$title = str_replace("Video ", "V&iecute;deo ",$title);
-        	$title = str_replace("video ", "v&iecute;deo ",$title);
+        	$title = str_replace("Video ", "V&iacute;deo ",$title);
+        	$title = str_replace("video ", "v&iacute;deo ",$title);
 
         	return $title;
         }
@@ -3394,7 +3386,7 @@ $txt_footer_faq="F.A.Q.";
 $txt_footer_contributors="Contributors";
 $txt_footer_support="Support the community";
 $txt_footer_problem="Report a problem";
-$txt_footer_donate="Donate";
+$txt_footer_donate="Donations";
 $txt_footer_suppliers="Suppliers &amp; Advertisers";
 $txt_footer_hwsuppliers="Hardware Supplies";
 $txt_footer_manufacturers="Hardware Manufacturers";
@@ -3507,8 +3499,8 @@ $txt_twt_paypal='You have not set your PayPal email addresse and therefore can n
 $txt_twt_overview="Overview";
 $txt_twt_statistic="Statistic";
 $txt_twt_userid="User ID";
-$txt_twt_hwnum="Number of added hardware posts";
-$txt_twt_commnum="Number of comments";
+$txt_twt_hwnum="added hardware posts";
+$txt_twt_commnum="comments posted";
 $txt_twt_payment="Earnings and Payments";
 $txt_twt_actnum="Activities related to earnings";
 $txt_twt_pending="Pending earnings";

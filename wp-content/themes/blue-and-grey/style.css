@@ -588,7 +588,7 @@ form#post_list_form{
 	border: 0px solid black; 
         vertical-align: middle;
         padding-top:8px;
-        padding-bottom:13px;
+        /* padding-bottom:13px; */
         margin-left: 64px;
         }        
 .hwprofile-cite{
@@ -2460,8 +2460,13 @@ input.hwscan-comment-button-green {
 }
 
 .attachmentFile {
-	border: 0px solid black;
+	border: 1px solid #d0d0d0;
         margin-left: 62px;
+        background: #f6f6f6;
+        margin-bottom: 8px;
+        padding: 6px;
+        min-width: 250px;
+        width: 80%;
 }
 
 .wp-one-summary {
@@ -2593,4 +2598,44 @@ div#my_popup{
 .popular-post .wp-post-image {
         max-width: 30px;
         max-height: 30px;
+}
+
+.details {
+        margin-top: -18px;
+        margin-left: 80px;
+}
+
+table#quarterly-points-table {
+        width: auto;
+        border: 1px solid #DFDFDF !important;
+        border-radius: 3px;
+        border-spacing: 0px;
+        background: none !important;
+        margin-left: auto;
+	margin-right: auto;
+}
+
+tr#quarterly-points-header-row {
+	margin-left: -2px;
+        height: 41px;
+        background-image: -moz-linear-gradient(center top , rgb(249, 249, 249), rgb(236, 236, 236)) !important;
+        width: auto;
+        background-color: rgb(241,241,241);
+	font-weight: bold;
+}
+
+.qrtly-1, .qrtly-2, .qrtly-3, .qrtly-4, .qrtly-5 {
+	padding: 5px;
+}
+
+.qrtly-1, .qrtly-2, .qrtly-4, .qrtly-5 {
+	padding-left: 25px;
+}
+
+.qrtly-1 {
+	font-weight: bold;
+}
+
+.qrtly-3 {
+	min-width: 110px;
 }
