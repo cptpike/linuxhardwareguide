@@ -9,6 +9,7 @@ define ('LHG_KARMA_upload_files', 100);
 define ('LHG_KARMA_publish_posts', 300);
 define ('LHG_KARMA_edit_published_posts', 300);
 
+define ('LHG_KARMA_POINTS_hwscan', 50);
 
 #apply_filters ( 'map_meta_cap', $caps, $cap, $user_id, $args );
 add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
@@ -25,7 +26,7 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                         #error_log("Not enough points!");
                 	$caps[] = 'activate_plugins';
                 }else{
-                        error_log("Enough points. Let go!");
+                        #error_log("Enough points. Let go!");
                 	$caps[] = 'read';
 			#caps = array();
         	}
@@ -202,5 +203,126 @@ function lhg_greeting_widget() {
 			echo "</div>";
 
 }
+
+add_action('wp_dashboard_setup', 'lhg_add_scan_points');
+#add_action('test', 'lhg_add_scan_points');
+function lhg_add_scan_points() {
+        # Check if scans were uploaded and points need to be given to users
+
+        # when to check?
+        # first login of user
+        # login on hardware scan page
+        # each login
+        # ???
+
+        global $lhg_price_db;
+        $sql = "SELECT * FROM `lhgscansessions` WHERE karma <> \"linked\" ORDER BY id DESC LIMIT 10";
+        $results = $lhg_price_db->get_results($sql);
+
+        foreach($results as $result){
+                #print "ID: ".$result->id;
+                #print " SID: ".$result->sid;
+                #print " UID: ".$result->uid;
+                #print " WPUID: ".$result->wp_uid;
+                #print " EM: ".$result->email;
+                #print "<br>";
+
+                if  ($result->wp_uid != 0 ) {
+                        # user was identified by its ID
+                        lhg_link_hwscan( $result->wp_uid, $result->sid);
+
+		}else{
+                        # no linked internal uid found. Check if we can link results to an account
+
+                        # check 1: email matching?
+	                if  ($result->email != "") {
+                                # email known?
+                                $user = get_user_by( 'email', $result->email );
+                                if ($user->ID != ""){
+                                        lhg_link_hwscan( $user->ID, $result->sid);
+                                        lhg_update_userdb( 'email' , $user->ID , $result->email );
+				}
+                                # maybe username was entered instead of email
+                                $user = get_user_by( 'user_login', $result->email );
+                                if ($user->ID != ""){
+                                        lhg_link_hwscan( $user->ID, $result->sid);
+				}
+
+			}
+
+                        # check 3: uid already linked for other scans?
+	                if  ($result->uid != "") {
+
+
+			}
+		}
+	}
+
+        #var_dump ($result);
+
+        #error_log("First shot -> needs to be improved");
+
+        return;
+
+        $uid = get_current_user_id();
+        $points = 5;
+
+	cp_points('addpoints', $uid, $points, 'Test description');
+
+}
+
+function lhg_link_hwscan( $uid, $sid ) {
+
+        #error_log("Create link for $uid with $sid");
+
+	cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Test description');
+
+        global $lhg_price_db;
+        $sql = "UPDATE `lhgscansessions` SET `karma`=  \"linked\" WHERE sid = \"$sid\"";
+    	$result = $lhg_price_db->query($sql);
+
+        $sql = "UPDATE `lhgscansessions` SET `wp_uid` = \"".$uid."\" WHERE sid = \"$sid\"";
+    	$result = $lhg_price_db->query($sql);
+
+}
+
+add_action('wp_dashboard_setup', 'lhg_user_linking');
+#add_action('test', 'lhg_add_scan_points');
+function lhg_user_linking() {
+        global $lhg_price_db;
+        $sql = "SELECT * FROM `lhgscansessions` ORDER BY id DESC LIMIT 100";
+        $results = $lhg_price_db->get_results($sql);
+
+        foreach($results as $result){
+        	if  ( ($result->email != "") && ($result->wp_uid != 0) ){
+                        # email found but no
+                        #error_log("email & wpuid found: ".$result->email." ".$result->wp_uid );
+                        lhg_update_userdb( 'email' , $result->wp_uid , $result->email );
+		}
+	}
+}
+
+
+function lhg_update_userdb( $type , $uid , $data) {
+
+        # 1. check if user exists
+        global $lhg_price_db;
+        $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+
+
+        if ( $results[0]->id != "") {
+                # User exists
+                #error_log("User exists");
+	}else{
+
+                if ($type == "email") {
+	                #error_log("Adding user by email -> $uid $data");
+		        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails) VALUES (\"".$uid."\",  \"$data\")";
+    			$result = $lhg_price_db->query($sql);
+	        }
+        }
+}
+
 
 ?>
