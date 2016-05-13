@@ -146,7 +146,14 @@ function lhg_greeting_widget() {
                         ';
                         */
 
+                        # Number of owned posts
 			$user_post_count = count_user_posts( $userid );
+
+                        # Number of uploaded hardware scans
+                        global $lhg_price_db;
+        		$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid = \"".$userid."\"";
+        		$num_hwscans = $lhg_price_db->get_var($sql);
+
 
 		        if (function_exists('cp_getPoints'))
 		        $karma = cp_getPoints( $userid ); //$num_com * 3 + $num_art * 50;
@@ -158,6 +165,10 @@ function lhg_greeting_widget() {
 			);
 			$comments = get_comments($args);
 			$user_post_count = count_user_posts( $userid );
+
+                        $txt_numhwscans = "uploaded hardware scans";
+                        if ($num_hwscans == 1) $txt_numhwscans = "uploaded hardware scan";
+
                        echo '
                        <div class="inside">
                        <div class="table table_content">
@@ -169,6 +180,9 @@ function lhg_greeting_widget() {
                              <a href="edit.php"><strong>'.$user_post_count.'</strong></a></td><td class="t pages"><a href="edit.php">'.$txt_twt_hwnum.'</a></td></tr>
                            <tr><td class="first b b-cats">
                              <a href="edit-comments.php"><strong>'.$comments.'</strong></a></td><td class="t cats"><a href="edit-comments.php">'.$txt_twt_commnum.'</a></td></tr>
+                           <tr><td class="first b b-cats">
+                             <strong>'.$num_hwscans.'</strong> </td><td class="t cats">'.$txt_numhwscans.'</td></tr>
+
 			</table>
 		       </div>
                        </div>';
