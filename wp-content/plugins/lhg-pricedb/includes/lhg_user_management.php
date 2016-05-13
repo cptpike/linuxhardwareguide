@@ -200,7 +200,7 @@ function lhg_greeting_widget() {
                              1) Rate and comment on your Linux hardware
                              <p>
                              2) Upload your <a href="/add-hardware">hardware scan</a>, i.e. start the following command in a terminal<br>
-                             <tt>perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -)</tt>
+                             <tt>perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -) -u'.$userid.'</tt>
                              <p>
 
 		       </div>
