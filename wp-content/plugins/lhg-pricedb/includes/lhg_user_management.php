@@ -243,6 +243,7 @@ function lhg_add_scan_points() {
 
                 if  ($result->wp_uid != 0 ) {
                         # user was identified by its ID
+                        # error_log("UID exists but no karma");
                         lhg_link_hwscan( $result->wp_uid, $result->sid);
 
 		}else{
@@ -289,7 +290,8 @@ function lhg_link_hwscan( $uid, $sid ) {
 
         #error_log("Create link for $uid with $sid");
 
-	cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Test description');
+	cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+        #error_log("Points added");
 
         global $lhg_price_db;
         $sql = "UPDATE `lhgscansessions` SET `karma`=  \"linked\" WHERE sid = \"$sid\"";
@@ -314,6 +316,18 @@ function lhg_user_linking() {
                         lhg_update_userdb( 'email' , $result->wp_uid , $result->email );
 		}
 	}
+
+        # check for user ids that were added by scan server but not yet linked with karma
+        # Not needed because already handled by lhg_get_scan_points
+        #$sql = "SELECT * FROM `lhgscansessions` WHERE `wp_uid` != 0 and `karma` IS NULL";
+        #$results = $lhg_price_db->get_results($sql);
+        #
+        #var_dump($results);
+        #foreach($results as $result){
+        #        error_log("not linked SID: $result->sid - $result->wp_uid");
+	#}
+
+
 }
 
 
