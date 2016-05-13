@@ -2,10 +2,11 @@
 
 # Version 
 # 0.2b - Laptop recognition added
+# 0.2c - Possibility for user linking by LHG user ID added
 
 $sid = $ARGV[0];
 
-print "Version: 0.2b  \n";
+print "Version: 0.2c  \n";
 
 # MYSQL CONFIG VARIABLES
 use DBI;
@@ -711,13 +712,22 @@ sub create_db_metadata {
             $uid =~ s/ //;
             $uid =~ s/\n//;
         }
+        if ( substr($_,0,8) eq "LHGUID =" ) {
+            $lhguid = substr($_,8,-1);
+            $lhguid =~ s/ //;
+            $lhguid =~ s/\n//;
+        }
     }
     
     #if ($uid ne "") {
     if ($uid eq " \\n"){ $uid = "none"; }
     if ($uid eq "")  { $uid = "none"; }
         print "UID: $uid \n";
-    #    $lhg_db = DBI->connect($database, $user, $pw);
+    
+    if ($lhguid eq " \\n"){ $lhguid = "none"; }
+    if ($lhguid eq "")  { $lhguid = "none"; }
+    print "LHGUID: $lhguid \n";
+#    $lhg_db = DBI->connect($database, $user, $pw);
     #    $myquery = "INSERT INTO `lhgscansessions` (uid) VALUES (?)";   
     #    $sth_glob = $lhg_db->prepare($myquery);
     #    $sth_glob->execute($uid);
@@ -737,9 +747,9 @@ sub create_db_metadata {
     if ($id == "") {
         # fist scan store info
         $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "INSERT INTO `lhgscansessions` (sid, scandate, uid, kversion, distribution) VALUES (? ,? ,? ,? ,?)";   
+        $myquery = "INSERT INTO `lhgscansessions` (sid, scandate, uid, kversion, distribution, wp_uid) VALUES (? ,? ,? ,? ,?, ?)";   
         $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $scandate, $uid, $k_version, $distribution);
+        $sth_glob->execute($sid, $scandate, $uid, $k_version, $distribution, $lhguid);
         $cycle=0;
         create_pub_id();
         return $cycle;
@@ -749,9 +759,9 @@ sub create_db_metadata {
         
         # insert user id
         $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "UPDATE `lhgscansessions` SET uid = ? , kversion = ? , distribution = ? WHERE id = ?";   
+        $myquery = "UPDATE `lhgscansessions` SET uid = ? , kversion = ? , distribution = ? , wp_uid = ? WHERE id = ?";   
         $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($uid, $k_version, $distribution, $id );
+        $sth_glob->execute($uid, $k_version, $distribution, $lhguid, $id );
         create_pub_id();
 
         return $cycle;
