@@ -3,9 +3,9 @@
 # User management rules
 # In addition to standard Wordpress permissions, karma points define what users can and cannot do
 
-define ('LHG_KARMA_edit_posts', 10);
-define ('LHG_KARMA_delete_posts', 100);
-define ('LHG_KARMA_upload_files', 100);
+define ('LHG_KARMA_edit_posts', 50);
+define ('LHG_KARMA_delete_posts', 50);
+define ('LHG_KARMA_upload_files', 50);
 define ('LHG_KARMA_publish_posts', 300);
 define ('LHG_KARMA_edit_published_posts', 300);
 
@@ -27,8 +27,8 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 	$caps[] = 'activate_plugins';
                 }else{
                         #error_log("Enough points. Let go!");
-                	$caps[] = 'read';
-			#caps = array();
+                	#$caps[] = 'read';
+			$caps = array();
         	}
 	}
 
@@ -36,8 +36,8 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 if ( $karma < LHG_KARMA_delete_posts ) {
                 	$caps[] = 'activate_plugins';
                 }else{
-                	$caps[] = 'read';
-			#$caps = array();
+                	#$caps[] = 'read';
+			$caps = array();
 			#$caps[] = '';
         	}
 	}
@@ -46,8 +46,8 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 if ( $karma < LHG_KARMA_upload_files ) {
                 	$caps[] = 'activate_plugins';
                 }else{
-                	$caps[] = 'read';
-			#$caps = array();
+                	#$caps[] = 'read';
+			$caps = array();
         	}
 	}
 
@@ -55,10 +55,10 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 if ( $karma < LHG_KARMA_publish_posts ) {
                 	$caps[] = 'activate_plugins';
                 }else{
-                	$caps[] = 'read';
+                	#$caps[] = 'read';
 
 	#			$caps[] = '';
-        			#$caps = array();
+        		$caps = array();
 
         	}
 	}
@@ -67,10 +67,10 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 if ( $karma < LHG_KARMA_edit_published_posts ) {
                 	$caps[] = 'activate_plugins';
                 }else{
-                	$caps[] = 'read';
+                	#$caps[] = 'read';
 
 	#		$caps[] = '';
-			#$caps = array();
+			$caps = array();
 
         	}
 	}
