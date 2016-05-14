@@ -597,7 +597,7 @@ function lhg_set_donation() {
 
   	if($user_donation_target == ""){
    		//add default locale
-                echo "Unknown donation target ($user_donation_target)";
+                #echo "Unknown donation target ($user_donation_target)";
 		add_user_meta($user_id, 'user_donation_target', '1');
                 $user_donation_target = 1;
   	}else {
@@ -1284,7 +1284,7 @@ function lhg_set_language() {
 
   	if(!in_array($user_language, $lang_array) ){
    		//add default locale
-                echo "Unknown language ($user_language)";
+                #echo "Unknown language ($user_language)";
 		add_user_meta($user_id, 'user_language', 'com');
 	   	$user_language = 'com';
   	}else {
