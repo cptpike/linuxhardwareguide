@@ -2172,6 +2172,7 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("External","Extern",$title);
 	$title = str_replace("Hard Drive","Festplatte",$title);
 	$title = str_replace("Hard Disk","Festplatte",$title);
+	$title = str_replace("Harddisk","Festplatte",$title);
 	$title = str_replace("Inch","Zoll",$title);
 	$title = str_replace("DVD Drive","DVD-Laufwerk",$title);
 	$title = str_replace("DVD Player","DVD-Laufwerk",$title);
@@ -2182,7 +2183,7 @@ function lhg_translate_title_en_to_de( $title )  {
 	$title = str_replace("Motherboard","Mainboard",$title);
 	$title = str_replace("Laser Printer","Laser-Drucker",$title);
 	$title = str_replace("Inkjet Printer","Tintenstrahl-Drucker",$title);
-	$title = str_replace("All-In-One","Multifunktionsger‰t",$title);
+	$title = str_replace("All-In-One","Multifunktionsger√§t",$title);
 	$title = str_replace("Copier","Kopierer",$title);
 	$title = str_replace("Color","Farbe",$title);
 	$title = str_replace("WiFi","WLAN",$title);
