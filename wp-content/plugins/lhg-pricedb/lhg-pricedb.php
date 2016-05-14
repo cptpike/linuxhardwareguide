@@ -32,7 +32,39 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_user_management.php');
 require_once('/var/www/wordpress/version.php');
 
 # Disable visual editor for all users - breaks too many things
-add_filter('user_can_richedit' , create_function('' , 'return false;') , 50);
+#add_filter('user_can_richedit' , create_function('' , 'return false;') , 50);
+# This breaks qtranslate tabs, because the link directly to the visual/html tabs
+# Therefore, some other approach is needed
+# Set default editor to html
+function lhg_my_default_editor() {
+	$r = 'html'; // html or tinymce
+	return $r;
+}
+add_filter( 'wp_default_editor', 'lhg_my_default_editor' );
+
+function lhg_remove_visual_tab() {
+
+        if (!current_user_can('activate_plugins'))
+        echo '
+
+        <script type="text/javascript">
+                /* <![CDATA[ */
+
+		jQuery(window).load(function() {
+       			jQuery("#content-html").click();
+       			jQuery("#content-tmce").hide();
+       			jQuery("#content-html").hide();
+       			jQuery("#qtrans_select_ca").hide();
+       			jQuery("#qtrans_select_uk").hide();
+       			jQuery("#qtrans_select_in").hide();
+       		 });
+
+                /*]]> */
+        </script>
+
+        ';
+}
+add_action( 'admin_footer', 'lhg_remove_visual_tab' );
 
 
 if (!is_admin()) return;
