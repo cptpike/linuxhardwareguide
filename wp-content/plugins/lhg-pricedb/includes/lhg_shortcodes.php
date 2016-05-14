@@ -4,6 +4,7 @@ add_shortcode( 'lhg_hplip', 'lhg_hplip_shortcode');
 add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
 add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
+add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -641,6 +642,15 @@ function lhg_donation_list_shortcode($attr) {
 
 	}
         $output .= "</ul>";
+
+        return $output;
+}
+
+function lhg_scancommand_shortcode($attr) {
+
+        $output ="perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -) ";
+        $uid = get_current_user_id();
+        if ($uid != 0) $output .= "-u".$uid;
 
         return $output;
 }
