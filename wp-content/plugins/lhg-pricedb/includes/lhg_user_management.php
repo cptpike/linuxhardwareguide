@@ -11,9 +11,11 @@ define ('LHG_KARMA_edit_published_posts', 300);
 
 define ('LHG_KARMA_POINTS_hwscan', 50);
 
+# show comment menu for all users
+#add_menu_page('edit-comments.php');
+
 #apply_filters ( 'map_meta_cap', $caps, $cap, $user_id, $args );
 add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
-
 function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
 	$karma = cp_getPoints( $user_id ); //get karma points
@@ -176,12 +178,26 @@ function lhg_greeting_widget() {
 			<table>
 			   <tr class="first"><td class="first b b-posts">
                              <strong>'.$karma.'</strong></a></td><td class="t posts">Karma points</td></tr>
-			   <tr class="first"><td class="first b b-posts">
-                             <a href="edit.php"><strong>'.$user_post_count.'</strong></a></td><td class="t pages"><a href="edit.php">'.$txt_twt_hwnum.'</a></td></tr>
-                           <tr><td class="first b b-cats">
-                             <a href="edit-comments.php"><strong>'.$comments.'</strong></a></td><td class="t cats"><a href="edit-comments.php">'.$txt_twt_commnum.'</a></td></tr>
+
                            <tr><td class="first b b-cats">
                              <strong>'.$num_hwscans.'</strong> </td><td class="t cats">'.$txt_numhwscans.'</td></tr>
+
+			   <tr class="first"><td class="first b b-posts">';
+
+                           if (current_user_can('edit_posts') ) print '<a href="edit.php">';
+                           	print '<strong>'.$user_post_count.'</strong>';
+			   if (current_user_can('edit_posts') ) print '</a>';
+
+                           print '</td><td class="t pages">';
+
+                           if (current_user_can('edit_posts') ) print '<a href="edit.php">';
+                           print $txt_twt_hwnum;
+                           if (current_user_can('edit_posts') ) print '</a>';
+
+                           print '</td></tr>
+
+                           <tr><td class="first b b-cats">
+                             <a href="edit-comments.php"><strong>'.$comments.'</strong></a></td><td class="t cats"><a href="edit-comments.php">'.$txt_twt_commnum.'</a></td></tr>
 
 			</table>
 		       </div>
