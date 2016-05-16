@@ -543,15 +543,20 @@ function lhg_donation_table_shortcode($attr) {
                   <td class="qrtly-2" id="quarterly-points-2"></td>
                   <td class="qrtly-3" id="quarterly-points-3">Username</td>
                   <td class="qrtly-4" id="quarterly-points-3">Details</td>
-                  <td class="qrtly-5" id="quarterly-points-3">Total Points</td>
+                  <td class="qrtly-5" id="quarterly-points-3">Total Karma</td>
                 </tr>
                 ';
 
                 if (sizeof($list_uid) > 0)
 		foreach($list_uid as $uid){
+                        # skip deleted users
                         # skip anonymously added posts, i.e. user = user-submitted-posts
+	                $user = get_userdata($uid);
+
+                        if ( $user !== false )
                         if ($uid != 12378){
-	                	$user = get_userdata($uid);
+                                #var_dump($user);
+                                #print sizeof($uid)."<p>";
         	                $name = $user->first_name." ".$user->last_name;
                 	        $points = $list_points[$i];
                         	$avatar = get_avatar($uid, 40);
@@ -610,7 +615,7 @@ function lhg_donation_table_shortcode($attr) {
 
 <td class="qrtly-5">
           <div class="quartly-points-totalpoints">
-	      '.$txt_cp_karma.': '.$total_karma.' '.$txt_cp_points.'<br>
+	     '.$total_karma.' '.$txt_cp_points.'<br>
           </div>
 </td>
 
