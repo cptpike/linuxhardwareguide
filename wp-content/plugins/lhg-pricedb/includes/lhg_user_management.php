@@ -368,5 +368,48 @@ function lhg_update_userdb( $type , $uid , $data) {
         }
 }
 
+#
+# store date of last login
+# will be used to identify spam accounts
+add_action('wp_login', 'lhg_store_login_date');
+function lhg_store_login_date( $login ) {
+        error_log("store_login_fct");
+        global $lang;
+        global $lhg_price_db;
+
+        $user = wp_get_current_user();
+
+        if ($user->ID == 0) return;
+
+	# check if user exists
+	$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
+	$id = $lhg_price_db->get_var($sql);
+        #error_log("ID: $id");
+
+        #if not, create:
+        if ($id == "") {
+                        #error_log("create new");
+        	        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails ) VALUES (\"".$user->ID."\",  \"".$user->user_email."\")";
+    			$result = $lhg_price_db->query($sql);
+
+		        $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
+		        $id = $lhg_price_db->get_var($sql);
+	}
+
+        # store login date
+        $date=time();
+        #error_log("ID: $id, Date: $date");
+
+        if ($lang != "de"){
+        	$sql = "UPDATE `lhgtransverse_users` SET `lastlogin_com` = %s WHERE id = %s ";
+        }else{
+        	$sql = "UPDATE `lhgtransverse_users` SET `lastlogin_de` = %s WHERE id = %s ";
+
+	}
+        $safe_sql = $lhg_price_db->prepare($sql, $date, $id);
+    	$result = $lhg_price_db->query($safe_sql);
+
+}
+
 
 ?>
