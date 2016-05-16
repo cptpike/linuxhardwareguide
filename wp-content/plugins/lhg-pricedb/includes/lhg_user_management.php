@@ -109,6 +109,7 @@ function lhg_greeting_widget() {
 			global $txt_twt_payd;
 			global $txt_twt_maintext1;
 			global $txt_twt_maintext2;
+                        global $donation;
 
 
 			#$args = array(
@@ -160,6 +161,9 @@ function lhg_greeting_widget() {
 		        if (function_exists('cp_getPoints'))
 		        $karma = cp_getPoints( $userid ); //$num_com * 3 + $num_art * 50;
 
+                        $donation_target = get_user_meta($userid,'user_donation_target',true);
+                        if ($donation_target == "") $donation_target = 1;
+                        $donation_target_text = $donation[$donation_target]["Name"];
 
 			$args = array(
 				'user_id' => $userid, // use user_id
@@ -198,8 +202,12 @@ function lhg_greeting_widget() {
 
                            <tr><td class="first b b-cats">
                              <a href="edit-comments.php"><strong>'.$comments.'</strong></a></td><td class="t cats"><a href="edit-comments.php">'.$txt_twt_commnum.'</a></td></tr>
+                             <p>
 
 			</table>
+                        <p>
+                             Your Karma points are used for financially supporting certain Linux projects. Your donations are currently going to the '.$donation_target_text.'. Select your donation target on your <a href="./profile.php">profile page</a>.
+
 		       </div>
                        </div>';
 
@@ -210,16 +218,16 @@ function lhg_greeting_widget() {
                        echo '
                        <div class="inside">
                        <div class="table table_content">
-			<p class="sub"><h2>How to earn Karma</h2></p>
-                        Karma points can be donated to financially support certain Linux projects. Select your donation target on your <a href="./profile.php">profile page</a>. You can collect Karma points in the following ways:
-                             <p>
-                             1) Rate and comment on your Linux hardware
-                             <p>
-                             2) Upload your <a href="/add-hardware">hardware scan</a>, i.e. start the following command in a terminal<br>
+			<p class="sub"><h2>How to quickly earn Karma</h2></p>
+                             1) Upload your <a href="/add-hardware">hardware scan</a>, i.e. start the following command in a terminal<br>
                              <tt>perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -) -u'.$userid.'</tt>
                              <p>
+                             2) Rate and comment on your Linux hardware
+                             <p>';
 
-		       </div>
+                        if ($karma < 50) print 'You need at least '.LHG_KARMA_edit_posts.' Karma points to create new hardware articles.';
+
+		       print '</div>
                        </div>';
 
 
@@ -382,18 +390,31 @@ function lhg_store_login_date( $login ) {
         if ($user->ID == 0) return;
 
 	# check if user exists
-	$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
-	$id = $lhg_price_db->get_var($sql);
+        if ($lang != "de"){
+		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
+        }else{
+		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"".$user->ID."\" ";
+	}
+
+
+        $id = $lhg_price_db->get_var($sql);
         #error_log("ID: $id");
 
         #if not, create:
         if ($id == "") {
                         #error_log("create new");
-        	        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails ) VALUES (\"".$user->ID."\",  \"".$user->user_email."\")";
-    			$result = $lhg_price_db->query($sql);
 
-		        $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
-		        $id = $lhg_price_db->get_var($sql);
+		        if ($lang != "de"){
+        		        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails ) VALUES (\"".$user->ID."\",  \"".$user->user_email."\")";
+    				$result = $lhg_price_db->query($sql);
+		                $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
+			        $id = $lhg_price_db->get_var($sql);
+		        }else{
+        		        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid_de, emails ) VALUES (\"".$user->ID."\",  \"".$user->user_email."\")";
+    				$result = $lhg_price_db->query($sql);
+		                $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"".$user->ID."\" ";
+			        $id = $lhg_price_db->get_var($sql);
+			}
 	}
 
         # store login date
