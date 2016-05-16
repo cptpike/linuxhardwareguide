@@ -93,6 +93,8 @@ function lhg_dashboard_widgets() {
 	$logo_url = sprintf( 'http://www.linux-hardware-guide.de/avatars/lhg60-avatar.png' , is_ssl()? 's':'' );
 
 	wp_add_dashboard_widget('lhg_greeting_widget', '<img src="'.$logo_url.'" style="height: 1.2em; margin-right:8px; margin-bottom: -3px;" >Welcome to Linux-Hardware-Guide', 'lhg_greeting_widget');
+	wp_add_dashboard_widget('lhg_user_overview_widget', 'Most Active Users', 'lhg_user_overview_widget');
+	wp_add_dashboard_widget('lhg_open_tasks_widget', 'Open Tasks', 'lhg_open_tasks_widget');
 }
 
 function lhg_greeting_widget() {
@@ -241,6 +243,29 @@ function lhg_greeting_widget() {
 			echo "</div>";
 
 }
+
+function lhg_open_tasks_widget() {
+                       echo '
+                       <div class="inside">
+                       <div class="table table_content">
+			<p class="sub"><h2>'.$txt_twt_statistic.'</h2></p>
+			<table>
+                                <tr><td>
+                                List of open tasks
+                                </td></tr>
+                        </table>
+                        </div>
+                        </div>';
+}
+
+function lhg_user_overview_widget() {
+        #print "User statistics".
+
+        print do_shortcode("[lhg_donation_table]");
+
+
+}
+
 
 add_action('wp_dashboard_setup', 'lhg_add_scan_points');
 #add_action('test', 'lhg_add_scan_points');
