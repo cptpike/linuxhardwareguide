@@ -513,6 +513,11 @@ function lhg_donation_table_shortcode($attr) {
 	global $txt_cp_longtext;
 	global $txt_cp_language;
 
+
+        # before we create the table we update the data in the transverse DB
+        lhg_update_karma_values('quarterly');
+
+
                 # How many users to show for ongoing quarter
                 $max_users_to_show = 10;
 
