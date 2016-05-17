@@ -643,6 +643,7 @@ global $donation;
 
 
 function lhg_update_donation_settings(){
+  global $lang;
 
   //echo "Found??: ".$_POST['lhg_user_donation_target'];
 
@@ -654,6 +655,12 @@ function lhg_update_donation_settings(){
   $user_donation_target = $_POST['lhg_user_donation_target'];
   //update user locale
   update_user_meta($user_id, 'user_donation_target', $user_donation_target);
+
+  //also store in priceDB
+  if ($lang != "de") lhg_update_userdb_by_uid( "donation_target_com", $user_id, $user_donation_target);
+  if ($lang == "de") lhg_update_userdb_by_uid( "donation_target_de", $user_id, $user_donation_target);
+  if ($lang != "de") lhg_update_userdb_by_uid( "donation_target_date_com", $user_id, time() );
+  if ($lang == "de") lhg_update_userdb_by_uid( "donation_target_date_de", $user_id, time() );
 
  }
 add_filter('personal_options_update','lhg_update_donation_settings');

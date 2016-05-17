@@ -362,7 +362,7 @@ function lhg_user_linking() {
         	if  ( ($result->email != "") && ($result->wp_uid != 0) ){
                         # email found but no
                         #error_log("email & wpuid found: ".$result->email." ".$result->wp_uid );
-                        lhg_update_userdb( 'email' , $result->wp_uid , $result->email );
+                        lhg_update_userdb_by_uid( 'email' , $result->wp_uid , $result->email );
 		}
 	}
 
@@ -379,12 +379,95 @@ function lhg_user_linking() {
 
 }
 
+#
+# find all users for this quarter and update the values in priceDB
+#
+function lhg_update_karma_values( $type ) {
+	global $lang;
+        global $lhg_price_db;
 
-function lhg_update_userdb( $type , $uid , $data) {
+	list($list_uid, $list_points) = cp_getAllQuarterlyPoints();
+
+        $i=0;
+        if (sizeof($list_uid) > 0)
+	foreach($list_uid as $uid){
+                $user = get_user_by('id',$uid);
+
+        	if ( $user !== false )
+                if ($uid != 12378){
+                	$name = $user->nickname; #$user->first_name." ".$user->last_name;
+                        $username = $user->user_login;
+                	$points = $list_points[$i];
+                        $avatar = get_avatar($uid, 40);
+	                $user_language_txt = lhg_get_locale_from_id ( $uid );
+        		$user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
+			$total_karma = cp_getPoints( $uid ); //$num_com * 3 + $num_art * 50;
+                        $donation_target = get_user_meta($uid,'user_donation_target',true);
+                        if ($lang != "de") $user_language = get_user_meta($uid,'user_language',true);
+
+
+
+			# check if user exists
+		        if ($lang != "de"){
+				$sql = "SELECT id, karma_com, karma_quarterly_com, donation_target_com, user_nicename, language, username_com FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+		        }else{
+				$sql = "SELECT id, karma_de, karma_quarterly_de, donation_target_de, user_nicename, username_de  FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
+			}
+		        $result = $lhg_price_db->get_results($sql);
+                        #print "UID: $uid -> ";
+                        #var_dump($result);
+                        #print "<br>";
+
+                        if ($result[0] ->id == "") {
+	                        # user not yet in priceDB, add
+                                $guid = lhg_add_user_to_pricedb($uid);
+                                if  ($lang != "de") lhg_update_userdb_by_guid("karma_com", $guid, $total_karma);
+                                if  ($lang != "de") lhg_update_userdb_by_guid("karma_quarterly_com", $guid, $points);
+                                if  ($lang != "de") lhg_update_userdb_by_guid("donation_target_com", $guid, $donation_target);
+                                if  ($lang != "de") lhg_update_userdb_by_guid("language", $guid, $donation_target);
+                                if  ($lang != "de") lhg_update_userdb_by_guid("username_com", $guid, $username);
+                                if  ($lang == "de") lhg_update_userdb_by_guid("karma_de", $guid, $total_karma);
+                                if  ($lang == "de") lhg_update_userdb_by_guid("karma_quarterly_de", $guid, $points);
+                                if  ($lang == "de") lhg_update_userdb_by_guid("donation_target_de", $guid, $user_language);
+                                if  ($lang == "de") lhg_update_userdb_by_guid("username_de", $guid, $username);
+                                #error_log("A: $uid - $guid - ".$result->id);
+
+                                lhg_update_userdb_by_guid("user_nicename", $guid, $name);
+                                lhg_update_userdb_by_guid("avatar", $guid, $avatar);
+
+			}else{
+                        	# user in priceDB, check if update necessary
+                                if ( ($lang != "de") && ($total_karma != $result[0]->karma_com) ) lhg_update_userdb_by_guid("karma_com", $result[0]->id, $total_karma);
+                                if ( ($lang != "de") && ($points != $result[0]->karma_quarterly_com) ) lhg_update_userdb_by_guid("karma_quarterly_com", $result[0]->id, $points);
+                                if ( ($lang != "de") && ($donation_target != $result[0]->donation_target_com) ) lhg_update_userdb_by_guid("donation_target_com", $result[0]->id, $donation_target);
+                                if ( ($lang != "de") && ($user_language != $result[0]->language) ) lhg_update_userdb_by_guid("language", $result[0]->id, $user_language);
+                                if ( ($lang != "de") && ($username != $result[0]->username_com) ) lhg_update_userdb_by_guid("username_com", $result[0]->id, $username);
+                                if ( ($lang == "de") && ($total_karma != $result[0]->karma_de) ) lhg_update_userdb_by_guid("karma_de", $result[0]->id, $total_karma);
+                                if ( ($lang == "de") && ($points != $result[0]->karma_quarterly_de) ) lhg_update_userdb_by_guid("karma_quarterly_de", $result[0]->id, $points);
+                                if ( ($lang == "de") && ($donation_target != $result[0]->donation_target_de) ) lhg_update_userdb_by_guid("donation_target_de", $result[0]->id, $donation_target);
+                                if ( ($lang == "de") && ($username != $result[0]->username_com) ) lhg_update_userdb_by_guid("username_de", $result[0]->id, $username);
+                                if ($name != $result[0]->user_nicename) lhg_update_userdb_by_guid("user_nicename", $result[0]->id, $name);
+                                if ($avatar != $result[0]->avatar) lhg_update_userdb_by_guid("avatar", $result[0]->id, $avatar);
+                                #error_log("NAME: $name");
+                                #error_log("B Points: $points vs. ".$result[0]->karma_quarterly_com);
+
+                        }
+		}
+        $i++; // points array counter
+
+	}
+}
+
+
+# use user id to update entry
+function lhg_update_userdb_by_uid( $type , $uid , $data) {
+
+        global $lang;
 
         # 1. check if user exists
         global $lhg_price_db;
-        $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+	if ($lang != "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+	if ($lang == "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
         $results = $lhg_price_db->get_results($sql);
 
 
@@ -392,25 +475,110 @@ function lhg_update_userdb( $type , $uid , $data) {
                 # User exists
                 #error_log("User exists");
 	}else{
-
-                if ($type == "email") {
+                # user does not exist, will be added
 	                #error_log("Adding user by email -> $uid $data");
-		        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails) VALUES (\"".$uid."\",  \"$data\")";
+		        if ($lang != "de") $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails) VALUES (\"".$uid."\",  \"$data\")";
+		        if ($lang == "de") $sql = "INSERT INTO `lhgtransverse_users` ( wpuid_de, emails) VALUES (\"".$uid."\",  \"$data\")";
     			$result = $lhg_price_db->query($sql);
-	        }
+
+			if ($lang != "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+			if ($lang == "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
+		        $results = $lhg_price_db->get_results($sql);
+
         }
+
+        # now that user exists, we can update the values
+        lhg_update_userdb_by_guid( $type, $results[0]->id, $data);
+}
+
+# use global user id to update entry
+function lhg_update_userdb_by_guid( $type , $guid , $data) {
+
+        global $lhg_price_db;
+
+        if ($type == "email") {
+		        $sql = "UPDATE `lhgtransverse_users` SET emails =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "karma_com") {
+		        $sql = "UPDATE `lhgtransverse_users` SET karma_com =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "karma_de") {
+		        $sql = "UPDATE `lhgtransverse_users` SET karma_de =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "karma_quarterly_com") {
+		        $sql = "UPDATE `lhgtransverse_users` SET karma_quarterly_com =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "karma_quarterly_de") {
+		        $sql = "UPDATE `lhgtransverse_users` SET karma_quarterly_de =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "donation_target_com") {
+		        $sql = "UPDATE `lhgtransverse_users` SET donation_target_com =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "donation_target_date_com") {
+		        $sql = "UPDATE `lhgtransverse_users` SET donation_target_date_com =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "donation_target_date_de") {
+		        $sql = "UPDATE `lhgtransverse_users` SET donation_target_date_de =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "user_nicename") {
+		        $sql = "UPDATE `lhgtransverse_users` SET user_nicename =  \"$data\" WHERE id = \"".$guid."\" ";
+    			$result = $lhg_price_db->query($sql);
+                        return;
+	}
+        if ($type == "avatar") {
+		        $sql = "UPDATE `lhgtransverse_users` SET avatar =  %s WHERE id = \"".$guid."\" ";
+                        $safe_sql=$lhg_price_db->prepare($sql, $data);
+    			$result = $lhg_price_db->query($safe_sql);
+                        return;
+	}
+        if ($type == "language") {
+		        $sql = "UPDATE `lhgtransverse_users` SET language =  %s WHERE id = \"".$guid."\" ";
+                        $safe_sql=$lhg_price_db->prepare($sql, $data);
+    			$result = $lhg_price_db->query($safe_sql);
+                        return;
+	}
+        if ($type == "username_com") {
+		        $sql = "UPDATE `lhgtransverse_users` SET username_com =  %s WHERE id = \"".$guid."\" ";
+                        $safe_sql=$lhg_price_db->prepare($sql, $data);
+    			$result = $lhg_price_db->query($safe_sql);
+                        return;
+	}
+        if ($type == "username_de") {
+		        $sql = "UPDATE `lhgtransverse_users` SET username_de =  %s WHERE id = \"".$guid."\" ";
+                        $safe_sql=$lhg_price_db->prepare($sql, $data);
+    			$result = $lhg_price_db->query($safe_sql);
+                        return;
+	}
+
+        error_log("ERROR: unknown type for lhg_update_userdb_by_guid: $type");
 }
 
 #
 # store date of last login
 # will be used to identify spam accounts
-add_action('wp_login', 'lhg_store_login_date');
-function lhg_store_login_date( $login ) {
-        error_log("store_login_fct");
+add_action('wp_login', 'lhg_store_login_date',1,2);
+function lhg_store_login_date( $user_login, $user ) {
         global $lang;
         global $lhg_price_db;
 
-        $user = wp_get_current_user();
+        #$user = wp_get_current_user();
+        #does not work because user not yet fully logged in
 
         if ($user->ID == 0) return;
 
@@ -444,7 +612,6 @@ function lhg_store_login_date( $login ) {
 
         # store login date
         $date=time();
-        #error_log("ID: $id, Date: $date");
 
         if ($lang != "de"){
         	$sql = "UPDATE `lhgtransverse_users` SET `lastlogin_com` = %s WHERE id = %s ";
@@ -454,6 +621,56 @@ function lhg_store_login_date( $login ) {
 	}
         $safe_sql = $lhg_price_db->prepare($sql, $date, $id);
     	$result = $lhg_price_db->query($safe_sql);
+
+}
+
+function lhg_add_user_to_pricedb( $uid ) {
+        #error_log("store_login_fct");
+        global $lang;
+        global $lhg_price_db;
+
+        $user = get_user_by('ID', $uid );
+
+        if ($user->ID == "") {
+                # this can happen if the user was deleted in the meantime
+        	return;
+        }
+
+	# check if user exists
+        if ($lang != "de"){
+		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
+        }else{
+		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"".$user->ID."\" ";
+	}
+        $id = $lhg_price_db->get_var($sql);
+
+        #if not, create:
+        if ($id == "") {
+                        #error_log("create new");
+
+		        if ($lang != "de"){
+        		        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails ) VALUES (\"".$user->ID."\",  \"".$user->user_email."\")";
+    				$result = $lhg_price_db->query($sql);
+		                $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
+			        $id = $lhg_price_db->get_var($sql);
+		        }else{
+        		        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid_de, emails ) VALUES (\"".$user->ID."\",  \"".$user->user_email."\")";
+    				$result = $lhg_price_db->query($sql);
+		                $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"".$user->ID."\" ";
+			        $id = $lhg_price_db->get_var($sql);
+			}
+	}
+
+        # return global uid:
+        if ($lang != "de"){
+		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
+        }else{
+		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"".$user->ID."\" ";
+	}
+        $id = $lhg_price_db->get_var($sql);
+        return $id;
+
+
 
 }
 
