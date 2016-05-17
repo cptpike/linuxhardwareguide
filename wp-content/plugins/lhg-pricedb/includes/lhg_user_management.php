@@ -424,11 +424,11 @@ function lhg_update_karma_values( $type ) {
                                 if  ($lang != "de") lhg_update_userdb_by_guid("karma_com", $guid, $total_karma);
                                 if  ($lang != "de") lhg_update_userdb_by_guid("karma_quarterly_com", $guid, $points);
                                 if  ($lang != "de") lhg_update_userdb_by_guid("donation_target_com", $guid, $donation_target);
-                                if  ($lang != "de") lhg_update_userdb_by_guid("language", $guid, $donation_target);
+                                if  ($lang != "de") lhg_update_userdb_by_guid("language", $guid, $user_language);
                                 if  ($lang != "de") lhg_update_userdb_by_guid("username_com", $guid, $username);
                                 if  ($lang == "de") lhg_update_userdb_by_guid("karma_de", $guid, $total_karma);
                                 if  ($lang == "de") lhg_update_userdb_by_guid("karma_quarterly_de", $guid, $points);
-                                if  ($lang == "de") lhg_update_userdb_by_guid("donation_target_de", $guid, $user_language);
+                                if  ($lang == "de") lhg_update_userdb_by_guid("donation_target_de", $guid, $donation_target);
                                 if  ($lang == "de") lhg_update_userdb_by_guid("username_de", $guid, $username);
                                 #error_log("A: $uid - $guid - ".$result->id);
 
@@ -583,11 +583,7 @@ function lhg_store_login_date( $user_login, $user ) {
         if ($user->ID == 0) return;
 
 	# check if user exists
-        if ($lang != "de"){
-		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
-        }else{
-		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"".$user->ID."\" ";
-	}
+	$sql = "SELECT id FROM `lhgtransverse_users` WHERE emails = \"".$user->user_email."\" ";
 
 
         $id = $lhg_price_db->get_var($sql);
@@ -625,28 +621,25 @@ function lhg_store_login_date( $user_login, $user ) {
 }
 
 function lhg_add_user_to_pricedb( $uid ) {
-        #error_log("store_login_fct");
+        #error_log("add_user: $uid");
         global $lang;
         global $lhg_price_db;
 
-        $user = get_user_by('ID', $uid );
+        $user = get_userdata( $uid );
 
         if ($user->ID == "") {
                 # this can happen if the user was deleted in the meantime
+	        error_log("User not found by ID. Maybe deleted?");
         	return;
         }
 
 	# check if user exists
-        if ($lang != "de"){
-		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"".$user->ID."\" ";
-        }else{
-		$sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"".$user->ID."\" ";
-	}
+	$sql = "SELECT id FROM `lhgtransverse_users` WHERE emails = \"".$user->user_email."\" ";
         $id = $lhg_price_db->get_var($sql);
 
         #if not, create:
         if ($id == "") {
-                        #error_log("create new");
+                        #error_log("create new:".$user->ID);
 
 		        if ($lang != "de"){
         		        $sql = "INSERT INTO `lhgtransverse_users` ( wpuid, emails ) VALUES (\"".$user->ID."\",  \"".$user->user_email."\")";
