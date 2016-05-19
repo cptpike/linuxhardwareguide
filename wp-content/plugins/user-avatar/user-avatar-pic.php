@@ -226,6 +226,8 @@ class timthumb {
                       (! preg_match('/192.168.3.112/i', $_SERVER['HTTP_REFERER']))
                       &&
                       (! preg_match('/192.168.56.12/i', $_SERVER['HTTP_REFERER']))
+                      &&
+                      (! preg_match('/linux-hardware-guide\.de/i', $_SERVER['HTTP_REFERER']))
                     )
                 ){
 			// base64 encoded red image that says 'no hotlinkers'
