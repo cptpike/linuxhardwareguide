@@ -362,6 +362,39 @@ function cp_getAllQuarterlyPoints(){
 
 }
 
+function cp_getAllQuarterlyPoints_transverse(){
+
+        global $lhg_price_db;
+        $sql = "SELECT * FROM `lhgtransverse_users` WHERE karma_quarterly_com <> 0 OR karma_quarterly_de <> 0";
+        $results = $lhg_price_db->get_results($sql);
+
+
+        # Sum up achieved points of the accumulation time span
+	foreach($results as $result){
+		$user_nicename = $result->user_nicename;
+		$points = $result->karma_quarterly_com + $result->karma_quarterly_de;
+                #$cp_inQuarter = cp_TimeInQuarter($result->timestamp);
+		#print "$user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data <br>";
+
+                $founduser_points[$result->id] = $points;
+                $founduser_guid[$result->id] = $result->id;
+        }
+        #print "USERP: <br>";
+        #var_dump($founduser_points);
+        #print "<br>ID: <br>";
+        #var_dump($founduser_uid);
+
+        array_multisort($founduser_points, SORT_DESC, SORT_NUMERIC, $founduser_guid);
+
+        #print "<br>USERP sorted: <br>";
+        #var_dump($founduser_points);
+        #print "<br>ID sorted: <br>";
+        #var_dump($founduser_guid);
+
+        return array($founduser_guid, $founduser_points);
+
+}
+
 function cp_StartOfQuarter(){
 
         #find start of actual quarter

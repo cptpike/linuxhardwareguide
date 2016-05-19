@@ -710,4 +710,14 @@ function lhg_add_user_to_pricedb( $uid ) {
 }
 
 
+function lhg_get_userdata_guid( $guid ) {
+        global $lhg_price_db;
+
+	$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+        $user = $lhg_price_db->get_results($sql);
+
+        return $user;
+
+}
+
 ?>
