@@ -972,6 +972,7 @@ function lhg_show_flag_by_lang ($lang) {
       if ($lang == "uk") return '<img src="'.$flag_url."uk.png".'">';
       if ($lang == "es") return '<img src="'.$flag_url."es.png".'">';
       if ($lang == "nl") return '<img src="'.$flag_url."nl.png".'">';
+      if ($lang == "de") return '<img src="'.$flag_url."de.png".'">';
       //default
       return '<img src="'.$flag_url."us.png".'">';
 
