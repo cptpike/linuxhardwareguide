@@ -570,6 +570,7 @@ function lhg_donation_table_shortcode($attr) {
                         if ($user->donation_target_date_de > $user->donation_target_date_com) $donation_target = $user->donation_target_de;
                         if ($user->donation_target_date_de <= $user->donation_target_date_com) $donation_target = $user->donation_target_com;
                         if ($donation_target == "") $donation_target = 1;
+                        if ($donation_target == 0) $donation_target = 1;
 
                         //print_r($y);
                         //if ($langurl != "") $langurl = "/".$langurl;
