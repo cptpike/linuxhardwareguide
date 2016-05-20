@@ -807,10 +807,12 @@ function lhg_donation_list_shortcode($attr) {
 }
 
 function lhg_scancommand_shortcode($attr) {
+        global $lang;
 
         $output ="perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -) ";
         $uid = get_current_user_id();
-        if ($uid != 0) $output .= "-u".$uid;
+        if ( ($lang == "de") && ($uid != 0) ) $output .= "-d".$uid;
+        if ( ($lang != "de") && ($uid != 0) ) $output .= "-u".$uid;
 
         return $output;
 }
