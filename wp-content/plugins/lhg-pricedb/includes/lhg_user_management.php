@@ -90,10 +90,13 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 add_action('wp_dashboard_setup', 'lhg_dashboard_widgets');
 function lhg_dashboard_widgets() {
 	global $wp_meta_boxes;
+        global $txt_cp_title;
+        global $txt_lhgdb_welcome;
+
 	$logo_url = sprintf( 'http://www.linux-hardware-guide.de/avatars/lhg60-avatar.png' , is_ssl()? 's':'' );
 
-	wp_add_dashboard_widget('lhg_greeting_widget', '<img src="'.$logo_url.'" style="height: 1.2em; margin-right:8px; margin-bottom: -3px;" >Welcome to Linux-Hardware-Guide', 'lhg_greeting_widget');
-	wp_add_dashboard_widget('lhg_user_overview_widget', 'Most Active Users', 'lhg_user_overview_widget');
+	wp_add_dashboard_widget('lhg_greeting_widget', '<img src="'.$logo_url.'" style="height: 1.2em; margin-right:8px; margin-bottom: -3px;" >'.$txt_lhgdb_welcome, 'lhg_greeting_widget');
+	wp_add_dashboard_widget('lhg_user_overview_widget', $txt_cp_title, 'lhg_user_overview_widget');
 	wp_add_dashboard_widget('lhg_open_tasks_widget', 'Open Tasks', 'lhg_open_tasks_widget');
 }
 
@@ -112,6 +115,16 @@ function lhg_greeting_widget() {
 			global $txt_twt_maintext1;
 			global $txt_twt_maintext2;
                         global $donation;
+                        global $txt_lhgdb_karmapoints;
+                        global $txt_lhgdb_numhwscan;
+                        global $txt_lhgdb_numhwscans;
+                        global $txt_lhgdb_karmadescr;
+                        global $txt_lhgdb_karmadescr_end;
+                        global $txt_lhgdb_karma_howto;
+                        global $txt_lhgdb_karma_1;
+                        global $txt_lhgdb_karma_2;
+                        global $txt_lhgdb_karma_3;
+                        global $txt_lhgdb_karma_4;
 
 
 			#$args = array(
@@ -161,7 +174,8 @@ function lhg_greeting_widget() {
 
 
 		        if (function_exists('cp_getPoints'))
-		        $karma = cp_getPoints( $userid ); //$num_com * 3 + $num_art * 50;
+		        $karma = lhg_get_karma( $userid );
+		        #$karma = cp_getPoints( $userid ); //$num_com * 3 + $num_art * 50;
 
                         $donation_target = get_user_meta($userid,'user_donation_target',true);
                         if ($donation_target == "") $donation_target = 1;
@@ -174,8 +188,8 @@ function lhg_greeting_widget() {
 			$comments = get_comments($args);
 			$user_post_count = count_user_posts( $userid );
 
-                        $txt_numhwscans = "uploaded hardware scans";
-                        if ($num_hwscans == 1) $txt_numhwscans = "uploaded hardware scan";
+                        $txt_numhwscans = $txt_lhgdb_numhwscans; #"uploaded hardware scans";
+                        if ($num_hwscans == 1) $txt_numhwscans = $txt_lhgdb_numhwscan; #"uploaded hardware scan";
 
                        echo '
                        <div class="inside">
@@ -183,7 +197,7 @@ function lhg_greeting_widget() {
 			<p class="sub"><h2>'.$txt_twt_statistic.'</h2></p>
 			<table>
 			   <tr class="first"><td class="first b b-posts">
-                             <strong>'.$karma.'</strong></a></td><td class="t posts">Karma points</td></tr>
+                             <strong>'.$karma.'</strong></a></td><td class="t posts">'.$txt_lhgdb_karmapoints.'</td></tr>
 
                            <tr><td class="first b b-cats">
                              <strong>'.$num_hwscans.'</strong> </td><td class="t cats">'.$txt_numhwscans.'</td></tr>
@@ -208,7 +222,9 @@ function lhg_greeting_widget() {
 
 			</table>
                         <p>
-                             Your Karma points are used for financially supporting certain Linux projects. Your donations are currently going to the '.$donation_target_text.'. Select your donation target on your <a href="./profile.php">profile page</a>.
+                             '.$txt_lhgdb_karmadescr.
+                             	$donation_target_text.'. '.
+                               $txt_lhgdb_karmadescr_end.'
 
 		       </div>
                        </div>';
@@ -220,14 +236,15 @@ function lhg_greeting_widget() {
                        echo '
                        <div class="inside">
                        <div class="table table_content">
-			<p class="sub"><h2>How to quickly earn Karma</h2></p>
-                             1) Upload your <a href="/add-hardware">hardware scan</a>, i.e. start the following command in a terminal<br>
-                             <tt>perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -) -u'.$userid.'</tt>
+			<p class="sub"><h2>'.$txt_lhgdb_karma_howto.'</h2></p>
+                             '.$txt_lhgdb_karma_1.'
+                             <br>
+                             <tt>'.do_shortcode("[lhg_scancommand ]").'</tt>
                              <p>
-                             2) Rate and comment on your Linux hardware
+                             '.$txt_lhgdb_karma_2.'
                              <p>';
 
-                        if ($karma < 50) print 'You need at least '.LHG_KARMA_edit_posts.' Karma points to create new hardware articles.';
+                        if ($karma < 50) print $txt_lhgdb_karma_3.' '.LHG_KARMA_edit_posts.' '.$txt_lhgdb_karma_4;
 
 		       print '</div>
                        </div>';
@@ -279,6 +296,7 @@ function lhg_add_scan_points() {
         # ???
 
         global $lhg_price_db;
+        global $lang;
         $sql = "SELECT * FROM `lhgscansessions` WHERE karma <> \"linked\" ORDER BY id DESC LIMIT 10";
         $results = $lhg_price_db->get_results($sql);
 
@@ -290,12 +308,16 @@ function lhg_add_scan_points() {
                 #print " EM: ".$result->email;
                 #print "<br>";
 
-                if  ($result->wp_uid != 0 ) {
+                if  ( ($lang != "de") && ($result->wp_uid != 0 ) ) {
                         # user was identified by its ID
                         # error_log("UID exists but no karma");
                         lhg_link_hwscan( $result->wp_uid, $result->sid);
+                } elseif  ( ($lang == "de") && ($result->wp_uid_de != 0 ) ) {
+                        # user was identified by its .de ID
+                        lhg_link_hwscan( $result->wp_uid_de, $result->sid);
 
-		}else{
+		}
+                else{
                         # no linked internal uid found. Check if we can link results to an account
 
                         # check 1: email matching?
@@ -338,15 +360,19 @@ function lhg_add_scan_points() {
 function lhg_link_hwscan( $uid, $sid ) {
 
         #error_log("Create link for $uid with $sid");
+        global $lang;
 
-	cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+	if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+	if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
         #error_log("Points added");
 
         global $lhg_price_db;
         $sql = "UPDATE `lhgscansessions` SET `karma`=  \"linked\" WHERE sid = \"$sid\"";
     	$result = $lhg_price_db->query($sql);
 
-        $sql = "UPDATE `lhgscansessions` SET `wp_uid` = \"".$uid."\" WHERE sid = \"$sid\"";
+        # ToDo: if wp_uid is already set (e.g. by scan script), it is set again. This seems unnecessary.
+        if ($lang != "de") $sql = "UPDATE `lhgscansessions` SET `wp_uid` = \"".$uid."\" WHERE sid = \"$sid\"";
+        if ($lang == "de") $sql = "UPDATE `lhgscansessions` SET `wp_uid_de` = \"".$uid."\" WHERE sid = \"$sid\"";
     	$result = $lhg_price_db->query($sql);
 
 }
@@ -719,5 +745,26 @@ function lhg_get_userdata_guid( $guid ) {
         return $user;
 
 }
+
+function lhg_get_karma( $uid ) {
+
+        global $lhg_price_db;
+        global $lang;
+
+        # 1. look if user is available in transcerse DB
+	if ($lang == "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
+	if ($lang != "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+        $karma = $results[0]->karma_com + $results[0]->karma_de;
+
+
+        # 2. default to internal routine
+        if ( ($karma == 0) or ($karma == "") ) $karma = cp_getPoints( $uid ); 
+
+        return $karma;
+
+
+}
+
 
 ?>

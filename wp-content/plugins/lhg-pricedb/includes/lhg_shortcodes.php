@@ -592,8 +592,8 @@ function lhg_donation_table_shortcode($attr) {
 
 
 <td class="quartery-points-avatar qrtly-2">';
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '<a href="./hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '<a href="./hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
 $output .='    <div class="userlist-avatar">'.
       $avatar.'
     </div> ';
@@ -604,8 +604,8 @@ $output .= '</td>
 
 <td class="qrtly-3">
           <div class="userlist-displayname">';
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '		<a href="./hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '		<a href="./hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '		<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '		<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
 	            	$output .= $user_nicename;
 
 if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '</a>';
@@ -807,10 +807,12 @@ function lhg_donation_list_shortcode($attr) {
 }
 
 function lhg_scancommand_shortcode($attr) {
+        global $lang;
 
         $output ="perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -) ";
         $uid = get_current_user_id();
-        if ($uid != 0) $output .= "-u".$uid;
+        if ( ($lang == "de") && ($uid != 0) ) $output .= "-d".$uid;
+        if ( ($lang != "de") && ($uid != 0) ) $output .= "-u".$uid;
 
         return $output;
 }

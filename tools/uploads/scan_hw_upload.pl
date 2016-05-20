@@ -3,10 +3,11 @@
 # Version 
 # 0.2b - Laptop recognition added
 # 0.2c - Possibility for user linking by LHG user ID added
+# 0.2d - Possibility for user linking by LHG.de user ID added
 
 $sid = $ARGV[0];
 
-print "Version: 0.2c  \n";
+print "Version: 0.2d  \n";
 
 # MYSQL CONFIG VARIABLES
 use DBI;
@@ -717,6 +718,11 @@ sub create_db_metadata {
             $lhguid =~ s/ //;
             $lhguid =~ s/\n//;
         }
+        if ( substr($_,0,10) eq "LHGUIDDE =" ) {
+            $lhguidde = substr($_,10,-1);
+            $lhguidde =~ s/ //;
+            $lhguidde =~ s/\n//;
+        }
     }
     
     #if ($uid ne "") {
@@ -726,7 +732,10 @@ sub create_db_metadata {
     
     if ($lhguid eq " \\n"){ $lhguid = "none"; }
     if ($lhguid eq "")  { $lhguid = "none"; }
+    if ($lhguidde eq " \\n"){ $lhguidde = "none"; }
+    if ($lhguidde eq "")  { $lhguidde = "none"; }
     print "LHGUID: $lhguid \n";
+    print "LHGUID.de: $lhguidde \n";
 #    $lhg_db = DBI->connect($database, $user, $pw);
     #    $myquery = "INSERT INTO `lhgscansessions` (uid) VALUES (?)";   
     #    $sth_glob = $lhg_db->prepare($myquery);
@@ -747,9 +756,9 @@ sub create_db_metadata {
     if ($id == "") {
         # fist scan store info
         $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "INSERT INTO `lhgscansessions` (sid, scandate, uid, kversion, distribution, wp_uid) VALUES (? ,? ,? ,? ,?, ?)";   
+        $myquery = "INSERT INTO `lhgscansessions` (sid, scandate, uid, kversion, distribution, wp_uid, wp_uid_de) VALUES (? ,? ,? ,? ,?, ?, ?)";   
         $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $scandate, $uid, $k_version, $distribution, $lhguid);
+        $sth_glob->execute($sid, $scandate, $uid, $k_version, $distribution, $lhguid, $lhguidde);
         $cycle=0;
         create_pub_id();
         return $cycle;
