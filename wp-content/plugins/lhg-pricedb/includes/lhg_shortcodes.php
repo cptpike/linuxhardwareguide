@@ -4,6 +4,7 @@ add_shortcode( 'lhg_hplip', 'lhg_hplip_shortcode');
 add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
 add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
+add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -503,6 +504,155 @@ function lhg_scan_overview_shortcode($attr) {
 function lhg_donation_table_shortcode($attr) {
 
 	global $region;
+        global $lang;
+	global $top_users;
+        global $donation;
+        global $txt_username;
+        global $txt_cp_title;
+	global $txt_cp_karma;
+	global $txt_cp_points;
+	global $txt_cp_donates_to;
+	global $txt_cp_longtext;
+	global $txt_cp_language;
+        global $txt_cp_quarterly;
+        global $txt_cp_totalkarma;
+        global $txt_cp_details;
+
+        # before we create the table we update the data in the transverse DB
+        lhg_update_karma_values('quarterly');
+
+
+        # How many users to show for ongoing quarter
+        $max_users_to_show = 10;
+
+        $langurl = lhg_get_lang_url_from_region( $region );
+
+	# Show table of top users of ongoing Quarter
+	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse();
+
+
+        $i = 0;
+
+        if (sizeof($list_guid) > 0) $output .= '<table id="quarterly-points-table">
+                <tr id="quarterly-points-header-row">
+                  <td class="qrtly-1" id="quarterly-points-1">'.$txt_cp_quarterly.'</td>
+                  <td class="qrtly-2" id="quarterly-points-2"></td>
+                  <td class="qrtly-3" id="quarterly-points-3">'.$txt_username.'</td>
+                  <td class="qrtly-4" id="quarterly-points-3">'.$txt_cp_details.'</td>
+                  <td class="qrtly-5" id="quarterly-points-3">'.$txt_cp_totalkarma.'</td>
+                </tr>
+                ';
+
+                if (sizeof($list_guid) > 0)
+		foreach($list_guid as $guid){
+                        # skip deleted users
+                        # skip anonymously added posts, i.e. user = user-submitted-posts
+	                $user_tmp = lhg_get_userdata_guid($guid);
+                        $user=$user_tmp[0];
+
+                        if ( $user !== false )
+                        if ($uid != 12378){
+                                #var_dump($user);
+                                #print sizeof($uid)."<p>";
+        	                $user_nicename = $user->user_nicename;
+                	        $points = $list_points_guid[$i];
+                        	$avatar = $user->avatar;
+                                $wpuid_de = $user->wpuid_de;
+                                $wpuid_com = $user->wpuid;
+	                        $user_language_txt = $user->language;
+        			$user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
+			        $total_karma = $user->karma_com + $user->karma_de; //$num_com * 3 + $num_art * 50;
+
+                                if ($lang == "de") $uid = $user->wpuid_de;
+                                if ($lang == "com") $uid = $user->wpuid;
+
+                        //registration date
+                        #$regdate = date("d. M Y", strtotime(get_userdata( $uid ) -> user_registered ) );
+
+                        //donates to
+                        if ($user->donation_target_date_de > $user->donation_target_date_com) $donation_target = $user->donation_target_de;
+                        if ($user->donation_target_date_de <= $user->donation_target_date_com) $donation_target = $user->donation_target_com;
+                        if ($donation_target == "") $donation_target = 1;
+                        if ($donation_target == 0) $donation_target = 1;
+
+                        //print_r($y);
+                        //if ($langurl != "") $langurl = "/".$langurl;
+
+
+
+	                #print "Name: ".$user->user_nicename." ($uid) - $points<br>";
+
+			$output .= '<tr>
+
+<td class="qrtly-1" >
+	    <div class="userlist-place-quarter">'.
+        	    ($points).' '.$txt_cp_points.'
+    	    </div>
+</td>
+
+
+<td class="quartery-points-avatar qrtly-2">';
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '<a href="./hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '<a href="./hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+$output .='    <div class="userlist-avatar">'.
+      $avatar.'
+    </div> ';
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '</a>';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '</a>';
+$output .= '</td>
+
+
+<td class="qrtly-3">
+          <div class="userlist-displayname">';
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '		<a href="./hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '		<a href="./hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+	            	$output .= $user_nicename;
+
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '</a>';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '</a>';
+$output .='
+          </div>
+</td>
+
+
+<td class="qrtly-4">
+    <div class="quarterly-points-userlist-details">
+      '.$txt_cp_donates_to.': '.$donation[$donation_target]["Name"].'<br>
+      '.$txt_cp_language.': ';
+
+#check if this user is present on "de" server
+if ($user->wpuid_de != 0) $output .= lhg_show_flag_by_lang( "de" )." ";
+if ($user->wpuid != 0) $output .= $user_language_flag;
+
+      $output .=
+      '
+    </div>
+</td>
+
+<td class="qrtly-5">
+          <div class="quartly-points-totalpoints">
+	     '.$total_karma.' '.$txt_cp_points.'<br>
+          </div>
+</td>
+
+
+</tr>';
+
+		}
+
+                        $i++;
+                        if ($i > $max_users_to_show) break;
+		}
+
+                if (sizeof($list_guid) > 0) $output .= "</table>";
+
+        return $output;
+
+}
+
+function lhg_donation_table_shortcode_singe_language($attr) {
+
+	global $region;
 	global $top_users;
         global $donation;
         global $txt_cp_title;
@@ -512,11 +662,15 @@ function lhg_donation_table_shortcode($attr) {
 	global $txt_cp_longtext;
 	global $txt_cp_language;
 
-                # How many users to show for ongoing quarter
-                $max_users_to_show = 10;
+
+        # before we create the table we update the data in the transverse DB
+        lhg_update_karma_values('quarterly');
 
 
-                $langurl = lhg_get_lang_url_from_region( $region );
+        # How many users to show for ongoing quarter
+        $max_users_to_show = 10;
+
+        $langurl = lhg_get_lang_url_from_region( $region );
 
 		#extract($args, EXTR_SKIP);
 		#echo $before_widget;
@@ -531,6 +685,8 @@ function lhg_donation_table_shortcode($attr) {
 
 		# Show table of top users of ongoing Quarter
 		list($list_uid, $list_points) = cp_getAllQuarterlyPoints();
+		#list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse();
+
 
                 #print "<br>Users:";
                 #var_dump($list_uid);
@@ -542,15 +698,20 @@ function lhg_donation_table_shortcode($attr) {
                   <td class="qrtly-2" id="quarterly-points-2"></td>
                   <td class="qrtly-3" id="quarterly-points-3">Username</td>
                   <td class="qrtly-4" id="quarterly-points-3">Details</td>
-                  <td class="qrtly-5" id="quarterly-points-3">Total Points</td>
+                  <td class="qrtly-5" id="quarterly-points-3">Total Karma</td>
                 </tr>
                 ';
 
                 if (sizeof($list_uid) > 0)
 		foreach($list_uid as $uid){
+                        # skip deleted users
                         # skip anonymously added posts, i.e. user = user-submitted-posts
+	                $user = get_userdata($uid);
+
+                        if ( $user !== false )
                         if ($uid != 12378){
-	                	$user = get_userdata($uid);
+                                #var_dump($user);
+                                #print sizeof($uid)."<p>";
         	                $name = $user->first_name." ".$user->last_name;
                 	        $points = $list_points[$i];
                         	$avatar = get_avatar($uid, 40);
@@ -609,7 +770,7 @@ function lhg_donation_table_shortcode($attr) {
 
 <td class="qrtly-5">
           <div class="quartly-points-totalpoints">
-	      '.$txt_cp_karma.': '.$total_karma.' '.$txt_cp_points.'<br>
+	     '.$total_karma.' '.$txt_cp_points.'<br>
           </div>
 </td>
 
@@ -641,6 +802,17 @@ function lhg_donation_list_shortcode($attr) {
 
 	}
         $output .= "</ul>";
+
+        return $output;
+}
+
+function lhg_scancommand_shortcode($attr) {
+        global $lang;
+
+        $output ="perl <(wget -q http://linux-hardware-guide.com/scan-hardware -O -) ";
+        $uid = get_current_user_id();
+        if ( ($lang == "de") && ($uid != 0) ) $output .= "-d".$uid;
+        if ( ($lang != "de") && ($uid != 0) ) $output .= "-u".$uid;
 
         return $output;
 }
