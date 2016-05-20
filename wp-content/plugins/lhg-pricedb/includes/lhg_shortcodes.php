@@ -507,13 +507,16 @@ function lhg_donation_table_shortcode($attr) {
         global $lang;
 	global $top_users;
         global $donation;
+        global $txt_username;
         global $txt_cp_title;
 	global $txt_cp_karma;
 	global $txt_cp_points;
 	global $txt_cp_donates_to;
 	global $txt_cp_longtext;
 	global $txt_cp_language;
-
+        global $txt_cp_quarterly;
+        global $txt_cp_totalkarma;
+        global $txt_cp_details;
 
         # before we create the table we update the data in the transverse DB
         lhg_update_karma_values('quarterly');
@@ -532,11 +535,11 @@ function lhg_donation_table_shortcode($attr) {
 
         if (sizeof($list_guid) > 0) $output .= '<table id="quarterly-points-table">
                 <tr id="quarterly-points-header-row">
-                  <td class="qrtly-1" id="quarterly-points-1">Quarterly Points</td>
+                  <td class="qrtly-1" id="quarterly-points-1">'.$txt_cp_quarterly.'</td>
                   <td class="qrtly-2" id="quarterly-points-2"></td>
-                  <td class="qrtly-3" id="quarterly-points-3">Username</td>
-                  <td class="qrtly-4" id="quarterly-points-3">Details</td>
-                  <td class="qrtly-5" id="quarterly-points-3">Total Karma</td>
+                  <td class="qrtly-3" id="quarterly-points-3">'.$txt_username.'</td>
+                  <td class="qrtly-4" id="quarterly-points-3">'.$txt_cp_details.'</td>
+                  <td class="qrtly-5" id="quarterly-points-3">'.$txt_cp_totalkarma.'</td>
                 </tr>
                 ';
 

@@ -3035,6 +3035,8 @@ global $txt_cp_points;
 global $txt_cp_donates_to;
 global $txt_cp_language;
 global $txt_cp_title;
+global $txt_cp_quarterly;
+global $txt_cp_totalkarma;
 
 //user-submit-form
 global $txt_submit_name;
@@ -3201,6 +3203,14 @@ global $txt_crp_title;
 global $txt_lhgdb_overview;
 global $txt_lhgdb_exclporto;
 global $txt_lhgdb_inclporto;
+global $txt_lhgdb_welcome;
+global $txt_lhgdb_karmapoints;
+global $txt_lhgdb_karmadescr;
+global $txt_lhgdb_karma_howto;
+global $txt_lhgdb_karma_1;
+global $txt_lhgdb_karma_2;
+global $txt_lhgdb_karma_3;
+global $txt_lhgdb_karma_4;
 
 
 //
@@ -3254,6 +3264,10 @@ $txt_cp_language	= "Language";
 $txt_cp_longtext	= 'The Linux-Hardware-Guide donates monthly banner advertising revenue back to of the Linux community.
   Registered users vote with their Karma points to whom donations go (<a href="./donations">see more details</a>). Donation sum of ongoing month';
 $txt_cp_title		= "Most active users and donations";
+$txt_cp_quarterly       = "Quarterly Points";
+$txt_cp_totalkarma      = "Total Karma";
+$txt_cp_details         = "Details";
+
 
 //searchform.php
 $txt_search 		= "Search".'&nbsp;<i class="icon-arrow-right icon-button"></i>';
@@ -3549,7 +3563,18 @@ $txt_crp_title		    = "Recently Added Linux Hardware";//[:fr]Matériel compatibl
 $txt_lhgdb_overview         = "Supplier comparison";
 $txt_lhgdb_exclporto	    = "Excl. shipping";
 $txt_lhgdb_inclporto	    = "Incl. shipping";
+$txt_lhgdb_karmapoints	    = "Karma points";
 $txt_shipping_costs	    = "Shipping costs";
+$txt_lhgdb_welcome          = "Weclome to the Linux-Hardware-Guide";
+$txt_lhgdb_numhwscans       = "uploaded hardware scans";
+$txt_lhgdb_numhwscan        = "uploaded hardware scan";
+$txt_lhgdb_karmadescr       = 'Your Karma points are used for financially supporting certain Linux projects. Your donations are currently going to the '.$donation_target_text.'. Select your donation target on your <a href="./profile.php">profile page</a>.';
+$txt_lhgdb_karmadescr_end   = 'Select your donation target on your <a href="./profile.php">profile page</a>.';
+$txt_lhgdb_karma_howto	    = 'How to quickly earn Karma';
+$txt_lhgdb_karma_1	    = '1) Upload your <a href="/add-hardware">hardware scan</a>, i.e. start the following command in a terminal';
+$txt_lhgdb_karma_2	    = '2) Rate and comment on your Linux hardware';
+$txt_lhgdb_karma_3	    = 'You need at least';
+$txt_lhgdb_karma_4	    = 'Karma points to create new hardware articles.';
 
 //misc
 $lhg_txt_new		    = "New";
@@ -3610,6 +3635,9 @@ if ($lang == "de") {
 	$txt_cp_longtext	= 'The Linux-Hardware-Guide donates monthly banner advertising revenue back to of the Linux community.
   Registered users vote with their Karma points to whom donations go (<a href="./donations">see more details</a>). Donation sum of ongoing month';
 	$txt_cp_title		= "Aktivste Mitglieder und Spenden";
+	$txt_cp_quarterly       = "Quartals-Punkte";
+	$txt_cp_totalkarma      = "Karma";
+	$txt_cp_details         = "Details";
 
 
         //searchform.php
@@ -3765,8 +3793,8 @@ Ausgabe von lspci, lsusb und lshw...';
 	$txt_twt_overview="&Uuml;bersicht";
 	$txt_twt_statistic="Statistik";
         $txt_twt_userid="Benutzer-ID";
-        $txt_twt_hwnum="Anzahl an Hardware-Artikel";
-        $txt_twt_commnum="Anzahl an Kommentaren";
+        $txt_twt_hwnum="erstellte Hardware-Artikel";
+        $txt_twt_commnum="erstellte Kommentaren";
 	$txt_twt_payment="Bezahlung";
 	$txt_twt_actnum="Anzahl bezahlter Aktivit&auml;ten";
 	$txt_twt_pending="Ausstehende Einnahmen";
@@ -3885,6 +3913,19 @@ Ausgabe von lspci, lsusb und lshw...';
 	$txt_lhgdb_overview         = "&Uuml;bersicht der Anbieter";
 	$txt_lhgdb_exclporto	    = "Exkl. Porto";
 	$txt_lhgdb_inclporto	    = "Inkl. Porto";
+	$txt_lhgdb_welcome          = "Willkommen beim Linux-Hardware-Guide";
+	$txt_lhgdb_karmapoints	    = "Karma-Punkte";
+        $txt_lhgdb_numhwscans       = "beigetragene Hardware-Scans";
+        $txt_lhgdb_numhwscan        = "beigetragener Hardware-Scan";
+	$txt_lhgdb_karmadescr       = 'Deine Karma-Punkte werden zur finanziellen Unterst&uuml;tzung von Linux-Projekten eingesetzt. Deine Spenden gehen an ';
+	$txt_lhgdb_karmadescr_end   = 'Unter Deinen <a href="./profile.php">Profil-Einstellungen</a> kannst Du ausw&auml;hlen, an wen Du spenden m&ouml;chtest.';
+	$txt_lhgdb_karma_howto	    = 'Wie sammelt man schnell Karma?';
+	$txt_lhgdb_karma_1	    = '1) <a href="/add-hardware">Hardware Scan hochladen</a>, d.h. folgenden Befehl im Terminal ausf&uuml;hren';
+	$txt_lhgdb_karma_2	    = '2) Linux Hardware bewerten und kommentieren';
+	$txt_lhgdb_karma_3	    = 'Du ben&ouml;tigst mindestens';
+	$txt_lhgdb_karma_4	    = 'Karma-Punkte, um neue Artikel erstellen zu k&ouml;nnen.';
+
+
 	$txt_buy_from   	    = "Erh&auml;ltlich bei";
 	$txt_preorder   	    = "Vormerken bei";
 	$txt_not_avail_at 	    = "Momentan nicht lieferbar von";
@@ -3954,6 +3995,9 @@ if ($region == "nl") {
    Geregistreerde gebruikers stemmen met hun Karma punten aan wie donaties gaan (<a href="./donations">zie meer details</a>).
    Donatie som van de lopende maand ';
 	$txt_cp_title		= "Meest actieve leden en donaties";
+	$txt_cp_quarterly       = "Punten van kwartaal";
+	$txt_cp_totalkarma      = "Karma";
+	$txt_cp_details         = "Gegevens";
 
         //searchform.php
         $txt_search             = "Zoeken".'&nbsp;<i class="icon-arrow-right icon-button"></i>';
@@ -4229,6 +4273,17 @@ output van lspci -nnk, lsusb en lshw...';
 	$txt_curr_not_avail_at 	    = "Niet beschikbaar vanaf";
 	$txt_search_at  	    = "Zoeken in";
 	$txt_shipping_costs	    = "Verzendkosten";
+	$txt_lhgdb_welcome          = "Welkom bij de Linux-hardware-Guide";
+	$txt_lhgdb_karmapoints	    = "Karma punten";
+        $txt_lhgdb_numhwscans       = "geüploade hardware scans";
+        $txt_lhgdb_numhwscan        = "geüploade hardware scan";
+	$txt_lhgdb_karmadescr       = 'Uw Karma punten worden gebruikt voor het financieel ondersteunen van bepaalde Linux-projecten. Uw giften zijn op dit moment naar de';
+	$txt_lhgdb_karmadescr_end   = 'Selecteer uw donatie doel op je <a href="./profile.php">profielpagina</a>.';
+	$txt_lhgdb_karma_howto	    = 'Hoe om snel te verdienen Karma?';
+	$txt_lhgdb_karma_1	    = '1) Upload uw <a href="/add-hardware">hardware Scan</a>: start the following command in a terminal';
+	$txt_lhgdb_karma_2	    = '2) te beoordelen en commentaar op uw Linux-hardware';
+	$txt_lhgdb_karma_3	    = 'Je moet ten minste';
+	$txt_lhgdb_karma_4	    = 'Karma punten om nieuwe artikelen te creëren';
 
 
 }
@@ -4303,6 +4358,9 @@ if ($region == "fr") {
    Les utilisateurs enregistrés votent avec leurs points de Karma à qui des dons vont (<a href="./donations">voir plus de détails</a>).
    Donation somme du mois en cours';
 	$txt_cp_title		= "Classement de l'utilisateur et leurs dons";
+	$txt_cp_quarterly       = "Points trimestriels";
+	$txt_cp_totalkarma      = "Karma totale";
+	$txt_cp_details         = "Détails";
 
 
         //header.php
@@ -4500,6 +4558,24 @@ Sortie de lspci -vnn, lsusb -v et lshw...
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "plus";
 
+	//priceDB
+	$txt_lhgdb_overview         = "Vue d'ensemble des fournisseurs";
+	$txt_lhgdb_exclporto	    = "excl. les frais de livraison";
+	$txt_lhgdb_inclporto	    = "incl. les frais de livraison";
+	$txt_lhgdb_welcome          = "Bienvenue sur le Linux-Hardware-Guide";
+	$txt_lhgdb_karmapoints	    = "points de Karma";
+        $txt_lhgdb_numhwscans       = "analyses du matériel téléchargé";
+        $txt_lhgdb_numhwscan        = "analyse du matériel téléchargé";
+	$txt_lhgdb_karmadescr       = 'Vos points de Karma sont utilisés pour soutenir financièrement certains projets de Linux. Vos dons sont actuellement en cours au ';
+	$txt_lhgdb_karmadescr_end   = 'Sélectionnez votre cible de don sur votre <a href="./profile.php">page de profil</a>.';
+	$txt_lhgdb_karma_howto	    = 'Comment gagner Karma rapidement ?';
+	$txt_lhgdb_karma_1	    = '1)<a href="/add-hardware">Téléchargez votre</a> analyse du matériel: lancez la commande suivante dans un terminal';
+	$txt_lhgdb_karma_2	    = '2) Noter et commenter sur votre matériel Linu';
+	$txt_lhgdb_karma_3	    = "Vous avez besoin d'au moins";
+	$txt_lhgdb_karma_4	    = 'points de Karma pour créer de nouveaux articles.';
+
+
+
 }
 
 if ($region == "es") {
@@ -4586,6 +4662,9 @@ if ($region == "es") {
    Los usuarios registrados votan con sus puntos de Karma a quien donaciones van (<a href="./donations">ver más detalles</a>).
 Suma Donación de mes en curso';
 	$txt_cp_title		= "Ranking de usuarios y sus donaciones";
+	$txt_cp_quarterly       = "Puntos Trimestrales";
+	$txt_cp_totalkarma      = "Karma totales";
+	$txt_cp_details         = "Detalles";
 
 
         //comments-template.php
@@ -4768,6 +4847,22 @@ pasos de configuración necesarios para utilizar el hardware con Linux, versión
 	//wp-admin/admin-footer.php
 	$txt_admin_footer='Por favor, póngase en contacto con<a mailto="linux.hardware.guide@gmail.com">linux.hardware.guide@gmail.com</a>.';
 
+	//priceDB
+	$txt_lhgdb_overview         = "Visión general de los proveedores";
+	$txt_lhgdb_exclporto	    = "incluyendo los gastos de envío";
+	$txt_lhgdb_inclporto	    = "excluyendo los gastos de envío";
+	$txt_lhgdb_welcome          = "Bienvenido a la Linux-Hardware-Guide";
+	$txt_lhgdb_karmapoints	    = "puntos de karma";
+        $txt_lhgdb_numhwscans       = "exploraciones de hardware subidos";
+        $txt_lhgdb_numhwscan        = "exploración de hardware Subida";
+	$txt_lhgdb_karmadescr       = 'Sus puntos de Karma se utilizan para apoyar económicamente a ciertos proyectos Linux. Sus donaciones son actualmente van a la';
+	$txt_lhgdb_karmadescr_end   = 'Seleccione su destino donación en su <a href="./profile.php">página de perfil</a>.';
+	$txt_lhgdb_karma_howto	    = 'Cómo acumular rápidamente Karma?';
+	$txt_lhgdb_karma_1	    = '1) Cargar su exploración de hardware: iniciar el siguiente comando en un terminal';
+	$txt_lhgdb_karma_2	    = '2) Tasa y hacer comentarios sobre su hardware Linux';
+	$txt_lhgdb_karma_3	    = "Se necesita al menos";
+	$txt_lhgdb_karma_4	    = 'puntos de Karma para crear nuevos artículos.';
+
 
 
 }
@@ -4890,6 +4985,9 @@ if ($region == "it") {
    Gli utenti registrati votano con i loro punti Karma ai quali le donazioni stanno andando
         (<a href="./donations">vedi maggiori dettagli</a>). Donazione somma di mese in corso';
 	$txt_cp_title		= "Ranking utenti e le loro donazioni ";
+	$txt_cp_quarterly       = "Punti trimestrali";
+	$txt_cp_totalkarma      = "Karma totale";
+	$txt_cp_details         = "Dettagli";
 
 
 	//attachment
@@ -5046,6 +5144,17 @@ Sotto trovi il tuo nome utente e la password generata automaticamente.\r\n";
 	$txt_lhgdb_overview         = "Panoramica dei fornitori";
 	$txt_lhgdb_exclporto	    = "Escl. spese di spedizione";
 	$txt_lhgdb_inclporto	    = "Affrancatura";
+	$txt_lhgdb_welcome          = "Benvenuti al Linux-Hardware-Guide";
+	$txt_lhgdb_karmapoints	    = "punti karma";
+        $txt_lhgdb_numhwscans       = "scansioni hardware caricati";
+        $txt_lhgdb_numhwscan        = "scansione dell'hardware caricati";
+	$txt_lhgdb_karmadescr       = 'I suoi punti di Karma sono utilizzati per sostenere finanziariamente alcuni progetti Linux. Le vostre donazioni sono attualmente in corso per la';
+	$txt_lhgdb_karmadescr_end   = 'Seleziona il tuo target donazione sulla <a href="./profile.php">pagina del tuo profilo</a>.';
+	$txt_lhgdb_karma_howto	    = 'Come guadagnare rapidamente Karma?';
+	$txt_lhgdb_karma_1	    = "1) <a href='/it//add-hardware'>Carica la scansione dell'hardware</a>: avviare il seguente comando in un terminale";
+	$txt_lhgdb_karma_2	    = '2) votare e commentare sul proprio hardware Linux';
+	$txt_lhgdb_karma_3	    = 'Hai bisogno di almeno';
+	$txt_lhgdb_karma_4	    = 'punti Karma per creare nuovi articoli.';
 	$txt_shipping_costs	    = "Costi di spedizione";
 
 
@@ -5175,6 +5284,9 @@ $txt_comments_intro     = "请使用注释部分提出更正的文章，以及�
   注册用户投票与他们的噶分给谁捐赠会
         (<a href="./donations">详情请见</a>)。持续一个月的捐赠款项';
 	$txt_cp_title		= "用户排名和他们的捐款 ";
+	$txt_cp_quarterly       = "分季度";
+	$txt_cp_totalkarma      = "详细信息";
+	$txt_cp_details         = "总因果报应";
 
 
 
@@ -5279,6 +5391,23 @@ $txt_product_rating     = "产品评级";
 	$txt_subscr_name 	    = "名称 ";
 	$txt_subscr_email	    = "电子邮件 ";
 	$txt_subscr_more	    = "更多";
+
+	//priceDB
+	$txt_lhgdb_overview         = "供应商的概述";
+	$txt_lhgdb_exclporto	    = "including shipping costs";
+	$txt_lhgdb_inclporto	    = "excluding shipping costs";
+	$txt_lhgdb_welcome          = "欢迎来到 Linux-Hardware-Guide";
+	$txt_lhgdb_karmapoints	    = "噶点";
+        $txt_lhgdb_numhwscans       = "上传的硬件扫描";
+        $txt_lhgdb_numhwscan        = "上传的硬件扫描";
+	$txt_lhgdb_karmadescr       = '你噶点用于财政上支持某些Linux项目。目前您的捐款是要';
+	$txt_lhgdb_karmadescr_end   = '选择您的个人资料页上您的捐款目标。';
+	$txt_lhgdb_karma_howto	    = '如何快速赚噶？';
+	$txt_lhgdb_karma_1	    = '1）上传您的硬件扫描：在终端启动下面的命令';
+	$txt_lhgdb_karma_2	    = '2）率和评论你的Linux硬件';
+	$txt_lhgdb_karma_3	    = '你至少需要';
+	$txt_lhgdb_karma_4	    = '噶点来创建新的文章。';
+
 
 
 }
@@ -5453,6 +5582,9 @@ $txt_comments_intro     = "記事の訂正を提出するだけでなく、の<t
   登録ユーザは、誰に寄付しようとしているに
         (<a href="./donations">詳細を参照</a>) 、それらのカルマポイントと投票。進行中の月の寄付合計';
 	$txt_cp_title		= "ユーザーのランキングとその寄付 ";
+	$txt_cp_quarterly       = "四半期ごとのポイント";
+	$txt_cp_totalkarma      = "総カルマ";
+	$txt_cp_details         = "細部";
 
 
 	//related posts thumbnails
