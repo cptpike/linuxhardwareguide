@@ -768,9 +768,9 @@ sub create_db_metadata {
         
         # insert user id
         $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "UPDATE `lhgscansessions` SET uid = ? , kversion = ? , distribution = ? , wp_uid = ? WHERE id = ?";   
+        $myquery = "UPDATE `lhgscansessions` SET uid = ? , kversion = ? , distribution = ? , wp_uid = ? , wp_uid_de = ?  WHERE id = ?";   
         $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($uid, $k_version, $distribution, $lhguid, $id );
+        $sth_glob->execute($uid, $k_version, $distribution, $lhguid, $lhguidde, $id );
         create_pub_id();
 
         return $cycle;
