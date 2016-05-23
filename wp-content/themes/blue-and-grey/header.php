@@ -626,7 +626,8 @@ if ($lang =="en")
 if (!is_user_logged_in() ) {
 
 
-echo '
+# top banner disabled. disturbed layout too much!
+if (1==0) echo '
            <span class="topbanner">
 <script async src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- Linux-Hardware-Guide.com Top -->

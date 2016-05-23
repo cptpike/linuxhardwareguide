@@ -114,7 +114,6 @@ $sid = substr($urlpath,$hwscanpos+23);
        $sid = $lhg_price_db->get_var($myquery);
  }
 
-
 # store login data
 # we need this info to link scan results with users
 # and ratings with kernel versions
@@ -182,9 +181,6 @@ if (current_user_can('publish_posts') ) {
         if ($show_public_profile != 1) print '<br><a href="http://'.$rescan_url.'/rescan.php?sid='.$sid.'">Start rescan!</a><br>';
 }
 
-if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
-This way we can fill our Linux Hardware Database with valuable information for the Linux community.</b>';
-
 
 # link to other scans
 
@@ -198,11 +194,6 @@ $myquery = $lhg_price_db->prepare("SELECT COUNT(*) FROM `lhgscansessions` WHERE 
 $num_uid = $lhg_price_db->get_var($myquery);
 
 #print "<br>NUM:".$num_uid;
-
-if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
-	if ($show_public_profile != 1) print "<br>&nbsp;<br>See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
-	#var_dump( $uid );
-}
 
 $email = lhg_get_hwscanmail($sid);
 if ($email != "") $userknown = 1;
@@ -288,18 +279,18 @@ echo '
                 /*]]> */
                 </script>';
 
-
+if ( !lhg_scan_is_linked_with_user_id($sid) )
 print '
 <br>&nbsp;<br>
 <h2>Contact information</h2>
 <form action="?" method="post">
-       Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:<br>
+       Please enter your email address in order to allow us to contact you in case of questions regarding your hardware scan results.<br>
+       If you have an Linux-Hardware-Guide account please enter your registration mail address to link this scan with your account:<br>
        <b>Email</b>: <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
        <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
 </form>
 <br>
 ';
-
 }
 
 
@@ -332,12 +323,12 @@ print '
 
         $logo = get_distri_logo($distribution);
 
-	echo "<h2>Scan overview:</h2>";
+	#echo "<h2>Scan overview:</h2>";
 
                 #get and check session ID
                 #echo "Session ID: $sid <br>";
 
-                echo '<table id="registration">';
+                echo '<table id="registration" class="scanoverview-table">';
                 echo '<tr id="header">
 
 
@@ -409,6 +400,13 @@ print '
                         echo "</tr>\n";
 
                 echo "</table>";
+
+
+# Link other scans of user
+if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
+	if ($show_public_profile != 1) print "See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
+	#var_dump( $uid );
+}
 
 
 # Add user feedback exchange
@@ -901,8 +899,8 @@ if (count($unidentified_hw_pci) > 0) {
 
         $mb_name = lhg_get_mainboard_name( $sid );
         $clean_mb_name = lhg_clean_mainboard_name( $mb_name );
-	print "<h2>Unknown ".$mb_or_laptop."</h2>";
-        print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
+	print "<h2>New ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
+        #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
         print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
 
 
@@ -1247,7 +1245,7 @@ if ($num_skip_tmp == count($unidentified_hw) ) {
 
 if ( (count($unidentified_hw) > 0) && ($skip_unknown_hw != 1) ) {
 
-print "<h2>Unknown Hardware</h2>";
+print "<h2>New Hardware</h2>";
 
 
 
@@ -1927,6 +1925,11 @@ print '
 
 $scandate = lhg_get_hwscandate($sid);
 $scandate = gmdate("Y-m-d\TH:i:s\Z", $scandate);
+
+if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
+This way we can fill our Linux Hardware Database with valuable information for the Linux community.<br>';
+
+
 print "<br>This scan was performed at: ".$scandate;
 print "<br>Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
 However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.";
@@ -2542,6 +2545,24 @@ function lhg_get_mainboard_name_from_DMI ( $dmesg ) {
         #print "<br>";
 
         return $mbstring;
+}
+
+function lhg_scan_is_linked_with_user_id( $sid ) {
+
+       # check if the scan session is linked with a user account
+       global $lhg_price_db;
+
+       $myquery = $lhg_price_db->prepare("SELECT wp_uid FROM `lhgscansessions` WHERE sid = %s", $sid);
+       $wp_uid = $lhg_price_db->get_var($myquery);
+       $myquery = $lhg_price_db->prepare("SELECT wp_uid_de FROM `lhgscansessions` WHERE sid = %s", $sid);
+       $wp_uid_de = $lhg_price_db->get_var($myquery);
+
+       #error_log("SID: $sid - UID: ".$result);
+       $linked = false;
+       if ($wp_uid != 0) $linked = true;
+       if ($wp_uid_de != 0) $linked = true;
+
+       return $linked;
 }
 
 ?>

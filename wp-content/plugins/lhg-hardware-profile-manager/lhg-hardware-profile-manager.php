@@ -482,6 +482,7 @@ class wp_subscribe_reloaded{
 
 		$hwprofpos=strpos($urlpath,"/hardware-profile/user");
 		$hwscanpos=strpos($urlpath,"/hardware-profile/scan-");
+		$hweditscanpos=strpos($urlpath,"/hardware-profile/editscan-");
 		$hwsystempos=strpos($urlpath,"/hardware-profile/system-");
 		$hwuidpos=strpos($urlpath,"/hardware-profile/uid-");
                 //echo "<br>POS: $hwprofpos";
@@ -511,6 +512,15 @@ class wp_subscribe_reloaded{
                    //return $_posts;
                    global $show_scan_profile;
                    $show_scan_profile = 1;
+	        }
+
+                if ( $hweditscanpos > 1) {
+                   //$include_post_content = show_public_profile();
+
+                   //echo "Test";
+                   //return $_posts;
+                   global $show_editscan_profile;
+                   $show_editscan_profile = 1;
 	        }
 
                 if ( $hwuidpos > 1) {
