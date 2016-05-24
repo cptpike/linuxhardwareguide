@@ -1949,6 +1949,34 @@ function translate_category($url){
         return $url;
 }
 
+function lhg_translate_search_url($url){
+        # We can not translate by $region or $lang because these values are set incorrectly by the AJAX request.
+        # Instead, we use the HTTP_REFERER to identify the language
+
+	$ref = $_SERVER["HTTP_REFERER"];
+        $langurl = "";
+        if (strpos($ref, "/fr/") !== false ) $langurl = "fr";
+        if (strpos($ref, "/ca/") !== false ) $langurl = "ca";
+        if (strpos($ref, "/uk/") !== false ) $langurl = "uk";
+        if (strpos($ref, "/es/") !== false ) $langurl = "es";
+        if (strpos($ref, "/it/") !== false ) $langurl = "it";
+        if (strpos($ref, "/nl/") !== false ) $langurl = "nl";
+        if (strpos($ref, "/in/") !== false ) $langurl = "in";
+        if (strpos($ref, "/ja/") !== false ) $langurl = "ja";
+        if (strpos($ref, "/zh/") !== false ) $langurl = "zh";
+
+	if ($langurl == "") return $url;
+
+        //translate urls
+        $url = str_replace("http://192.168.3.113/", "http://192.168.3.113/".$langurl."/",$url);
+        $url = str_replace("http://192.168.56.13/", "http://192.168.56.13/".$langurl."/",$url);
+        $url = str_replace("http://www.linux-hardware-guide.com/", "http://www.linux-hardware-guide.com/".$langurl."/",$url);
+        $url = str_replace("http://linux-hardware-guide.com/", "http://linux-hardware-guide.com/".$langurl."/",$url);
+
+        return $url;
+}
+
+
 
 function translate_title($title){
         global $region;
