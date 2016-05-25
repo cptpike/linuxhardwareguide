@@ -3216,7 +3216,7 @@ global $txt_subscr_numart;
 global $txt_subscr_numcom;
 global $txt_subscr_public_hw_profile;
 global $txt_subscr_lat_sub; 	//= "Latest hardware submissions";
-
+global $txt_hwprof_of;
 
 //mobile theme
 global $txt_mobile_search; //Search by article title
@@ -3575,6 +3575,7 @@ $txt_subscr_numart	    = "Number of submitted hardware descriptions";
 $txt_subscr_numcom	    = "Number of comments";
 $txt_subscr_public_hw_profile = "Hardware Profile";
 $txt_subscr_lat_sub	    = "Latest hardware submissions";
+$txt_hwprof_of              = "Public Hardware Profile of";
 
 
 //mobile theme
@@ -3926,6 +3927,7 @@ Ausgabe von lspci, lsusb und lshw...';
 	$txt_subscr_lat_sub	    = "Letzte Hardware-Eintr&auml;ge";
 	$txt_subscr_numart	    = "Anzahl eingereichter Hardware-Artikel";
 	$txt_subscr_numcom	    = "Anzahl an Kommentaren";
+	$txt_hwprof_of              = "�ffentliche Hardware-Profil von";
 
 
 
@@ -4281,6 +4283,7 @@ output van lspci -nnk, lsusb en lshw...';
 	$txt_subscr_name 	    = "Naam";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "meer";
+	$txt_hwprof_of              = "Publieke Hardware Profiel van";
 
 
 	//mobile theme
@@ -4585,6 +4588,8 @@ Sortie de lspci -vnn, lsusb -v et lshw...
 	$txt_subscr_name 	    = "Nom";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "plus";
+        $txt_hwprof_of              = "Profil Matériel Public de";
+
 
 	//priceDB
 	$txt_lhgdb_overview         = "Vue d'ensemble des fournisseurs";
@@ -4843,6 +4848,7 @@ Suma Donación de mes en curso';
 	$txt_subscr_name 	    = "Nombre";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "más";
+        $txt_hwprof_of              = "Perfil de hardware público del";
 
 
         //user-submit-form.php
@@ -5126,6 +5132,7 @@ if ($region == "it") {
 	$txt_subscr_name 	    = "Nome";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "di più";
+        $txt_hwprof_of              = "Profilo hardware pubblico di";
 
 
         //user-submit-form.php
@@ -5419,6 +5426,7 @@ $txt_product_rating     = "产品评级";
 	$txt_subscr_name 	    = "名称 ";
 	$txt_subscr_email	    = "电子邮件 ";
 	$txt_subscr_more	    = "更多";
+        $txt_hwprof_of              = "公共硬件配置文件";
 
 	//priceDB
 	$txt_lhgdb_overview         = "供应商的概述";
@@ -5665,6 +5673,7 @@ $txt_out_of = "最大のうち";
 	$txt_subscr_name 	    = "名前 ";
 	$txt_subscr_email	    = "Eメール ";
 	$txt_subscr_more	    = "もっと";
+        $txt_hwprof_of              = "の公共ハードウェアプロファイル";
 
 
 }
