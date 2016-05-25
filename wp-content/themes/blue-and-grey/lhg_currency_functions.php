@@ -2,6 +2,7 @@
 
 function lhg_float_to_currency_string ($float, $region) {
 
+
         #remove leading "."
         if (
         (
@@ -60,6 +61,7 @@ function lhg_float_to_currency_string ($float, $region) {
 }
 
 function lhg_remove_amazon_currency_symbol( $price, $region ) {
+
         //echo "O: $price";
 	$price  = str_replace( "INR" , "" , $price );
 	$price  = str_replace( "$" , "" , $price );
@@ -124,6 +126,7 @@ function lhg_get_currency_symbol( $region ) {
 function lhg_amazon_price_to_float_chart ( $price, $region ) {
         //echo "POS: ".strpos(" ",$price);
 
+
 	//extract currency symbol if necessary
         $cut = 4; // default for EUR
         if ($region == "com") $cut = 1;
@@ -145,6 +148,22 @@ function lhg_amazon_price_to_float_chart ( $price, $region ) {
 }
 
 function lhg_amazon_price_to_float( $price, $my_region ) {
+
+        $price = trim($price);
+
+
+        # check if this is a affilinet price
+        # EUR formatting is different than from Amazon, i.e. "XX.XX EUR" instead of "EUR XX,XX"
+        if (preg_match("/[0-9].[0-9][0-9] EUR/",$price, $match) == 1){
+        	#error_log("Found".$match[0]);
+                # make amazon like string
+		$price = str_replace(",","",$price);
+		$price = str_replace(".",",",$price);
+		$price = str_replace("EUR","",$price);
+
+        }
+
+
 
         global $region;
         if ($my_region == "") $my_region = $region;
