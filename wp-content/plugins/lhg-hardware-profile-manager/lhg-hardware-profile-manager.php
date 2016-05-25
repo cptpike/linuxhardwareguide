@@ -593,8 +593,27 @@ class wp_subscribe_reloaded{
 		global $wp_query;
 
 		$manager_page_title = html_entity_decode(get_option('subscribe_reloaded_manager_page_title', 'Manage subscriptions'), ENT_COMPAT, 'UTF-8');
+
+
+                # Show alternative title, if this is the public profile of someone else
+                $url     = ((empty($_SERVER['HTTPS'])) ? 'http' : 'https') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+		$pieces  = parse_url($url);
+		$urlpath = $pieces['path'];
+		$hwprofpos   = strpos($urlpath,"/hardware-profile/user");
+		$url_user_id = (int)substr($urlpath,$hwprofpos+22);
+
+
+		if (strpos($urlpath,"/hardware-profile/user") !== false)
+                if (get_current_user_id() != $url_user_id) {
+                        $user = get_userdata( $url_user_id );
+                        $name = $user->display_name;
+
+                        global $txt_hwprof_of;
+                        $manager_page_title = $txt_hwprof_of." ".$name;
+                }
 		if(function_exists('qtrans_useCurrentLanguageIfNotFoundUseDefaultLanguage'))
 			$manager_page_title = qtrans_useCurrentLanguageIfNotFoundUseDefaultLanguage($manager_page_title);
+
 
 		$posts[] =
 			(object)array(
