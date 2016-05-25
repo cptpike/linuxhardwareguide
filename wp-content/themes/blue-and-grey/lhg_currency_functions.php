@@ -163,6 +163,16 @@ function lhg_amazon_price_to_float( $price, $my_region ) {
 
         }
 
+        # check if this is a zanox price
+        # EUR formatting is different than from Amazon, i.e. "XX.XX" instead of "EUR XX,XX"
+        if ( (preg_match("/EUR/",$price, $match) == 0) &&
+              (preg_match("/[0-9].[0-9][0-9]$/",$price, $match) == 1)){
+        	#error_log("Found".$match[0]);
+                # make amazon like string
+		$price = str_replace(",","",$price);
+		$price = str_replace(".",",",$price);
+        }
+
 
 
         global $region;
