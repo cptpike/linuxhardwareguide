@@ -378,26 +378,32 @@ function lhg_link_hwscan( $uid, $sid ) {
 }
 
 add_action('wp_dashboard_setup', 'lhg_user_linking');
+add_action('wp_login', 'lhg_user_linking');
 #add_action('test', 'lhg_add_scan_points');
 function lhg_user_linking() {
         global $lhg_price_db;
         global $lang;
-
-        if ($lang == "de") {
-                error_log("Function lhg_user_linking() currently only working for lang != de");
-                return;
-	}
 
 
         $sql = "SELECT * FROM `lhgscansessions` ORDER BY id DESC LIMIT 100";
         $results = $lhg_price_db->get_results($sql);
 
         foreach($results as $result){
+
+                if ($lang != "de")
         	if  ( ($result->email != "") && ($result->wp_uid != 0) ){
                         # email found but no
                         #error_log("email & wpuid found: ".$result->email." ".$result->wp_uid );
                         lhg_update_userdb_by_uid( 'email' , $result->wp_uid , $result->email );
 		}
+
+                if ($lang == "de")
+        	if  ( ($result->email != "") && ($result->wp_uid_de != 0) ){
+                        # email found but no
+                        #error_log("email & wpuid found: ".$result->email." ".$result->wp_uid );
+                        lhg_update_userdb_by_uid( 'email' , $result->wp_uid_de , $result->email );
+		}
+
 	}
 
         # check for user ids that were added by scan server but not yet linked with karma
