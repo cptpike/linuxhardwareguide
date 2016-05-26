@@ -987,18 +987,23 @@ function get_edit_comment_link( $comment_id = 0 ) {
 	$comment = &get_comment( $comment_id );
 
         global $user_can_edit_comment;
+        #error_log("CID: $comment_id");
 
         //check if you are the author
         $author_id = get_comment( get_comment_ID() ) -> user_id;
         $user_id   = get_current_user_id( );
-        if ( ($user_id == 0) or ($author_id == $user_id))
 
+        #nothing allowed if not logged in
+        if ( $user_id == 0 ) return;
+
+        #if ( ($user_id == 0) or ($author_id == $user_id))
 	if ( current_user_can( 'edit_comment', $comment->comment_ID ) or
         	($user_id == $author_id )
         ){
 		$location = admin_url('comment.php?action=editcomment&amp;c=') . $comment->comment_ID;
-		return apply_filters( 'get_edit_comment_link', $location );
+                #error_log("AU: $location ->ID: $comment->comment_ID");
                 $user_can_edit_comment = 1;
+		return apply_filters( 'get_edit_comment_link', $location );
 	}
 
 
