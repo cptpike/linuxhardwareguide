@@ -170,9 +170,25 @@ function lhg_greeting_widget() {
 			$user_post_count = count_user_posts( $userid );
 
                         # Number of uploaded hardware scans
+                        $guserids = lhg_get_current_users_guids();
+                        #error_log("DE: ".$guserids["de"]." COM: ".$guserids["com"]);
+
                         global $lhg_price_db;
-        		$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid = \"".$userid."\"";
-        		$num_hwscans = $lhg_price_db->get_var($sql);
+        		$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid_de = \"".$guserids["de"]."\"";
+        		$num_hwscans_de = $lhg_price_db->get_var($sql);
+
+                        global $lhg_price_db;
+        		$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid = \"".$guserids["com"]."\"";
+        		$num_hwscans_com = $lhg_price_db->get_var($sql);
+                        $num_hwscans = $num_hwscans_de + $num_hwscans_com;
+
+                        #Fallback
+                        if (($num_hwscans_de + $num_hwscans_com) == 0 )  {
+	                       global $lhg_price_db;
+        	       	       $sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid = \"".$userid."\"";
+        		       $num_hwscans = $lhg_price_db->get_var($sql);
+                        }
+
 
 
 		        if (function_exists('cp_getPoints'))
@@ -796,6 +812,43 @@ function lhg_get_karma( $uid ) {
 
 
 }
+
+function lhg_get_current_users_guids() {
+        global $lhg_price_db;
+
+        $current_user = wp_get_current_user();
+        $cuid = $current_user->ID;
+        $guid = lhg_get_guid( $cuid);
+        #error_log("GUID: $guid");
+
+	$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+
+        $uids = array(
+        		"de"  => $results[0]->wpuid_de,
+        		"com" => $results[0]->wpuid,
+        		);
+        return $uids;
+}
+
+function lhg_get_guid( $uid ) {
+        global $lhg_price_db;
+        global $lang;
+
+        if ($uid == "") {
+                error_log("ERROR: lhg_get_guid -> empty uid provided");
+                return;
+	}
+
+	if ($lang == "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
+	if ($lang != "de") $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+
+        return $results[0]->id;
+
+
+}
+
 
 
 ?>
