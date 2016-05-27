@@ -384,7 +384,30 @@ function lhg_user_linking() {
         global $lhg_price_db;
         global $lang;
 
+        # transverse linking. Look if email is also used for accounts on other servers
+        $current_user = wp_get_current_user();
+        $email = $current_user->user_email;
+        $cuid = $current_user->ID;
 
+        if ($lang != "de")
+        if (email != "") {
+                        # email found but no
+                        #error_log("email & wpuid found: ".$result->email." ".$result->wp_uid );
+                        lhg_update_userdb_by_uid( 'email' , $cuid , $email );
+	}
+
+        if ($lang == "de")
+        if (email != "") {
+                        # email found but no
+                        #error_log("email & wpuid found: ".$email." ".$cuid );
+                        lhg_update_userdb_by_uid( 'email' , $cuid , $email );
+	}
+
+
+
+
+
+        # Link users with available scans
         $sql = "SELECT * FROM `lhgscansessions` ORDER BY id DESC LIMIT 100";
         $results = $lhg_price_db->get_results($sql);
 
