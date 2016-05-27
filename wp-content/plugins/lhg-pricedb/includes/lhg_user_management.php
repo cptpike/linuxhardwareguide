@@ -18,7 +18,9 @@ define ('LHG_KARMA_POINTS_hwscan', 50);
 add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
 function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
-	$karma = cp_getPoints( $user_id ); //get karma points
+
+	#$karma = cp_getPoints( $user_id ); //get karma points
+	$karma = lhg_get_karma( $user_id ); // get transversal karma (= sum of all servers)
 
 	#error_log("User $user_id permission check cap: $cap - caps:".join(",",$caps) );
 
