@@ -393,14 +393,14 @@ function lhg_user_linking() {
         if (email != "") {
                         # email found but no
                         #error_log("email & wpuid found: ".$result->email." ".$result->wp_uid );
-                        lhg_update_userdb_by_uid( 'email' , $cuid , $email );
+                        lhg_update_userdb_by_uid( 'wpuid' , $cuid , $cuid );
 	}
 
         if ($lang == "de")
         if (email != "") {
                         # email found but no
                         #error_log("email & wpuid found: ".$email." ".$cuid );
-                        lhg_update_userdb_by_uid( 'email' , $cuid , $email );
+                        lhg_update_userdb_by_uid( 'wpuid_de' , $cuid , $cuid );
 	}
 
 
