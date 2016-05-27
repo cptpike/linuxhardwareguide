@@ -481,6 +481,7 @@ class wp_subscribe_reloaded{
                 //echo "PATH: $urlpath";
 
 		$hwprofpos=strpos($urlpath,"/hardware-profile/user");
+		$hwprofpos_guid=strpos($urlpath,"/hardware-profile/guser");
 		$hwscanpos=strpos($urlpath,"/hardware-profile/scan-");
 		$hweditscanpos=strpos($urlpath,"/hardware-profile/editscan-");
 		$hwsystempos=strpos($urlpath,"/hardware-profile/system-");
@@ -494,6 +495,18 @@ class wp_subscribe_reloaded{
                    //return $_posts;
                    global $show_user_profile;
                    $show_user_profile = 1;
+	        }
+
+
+                if ( $hwprofpos_guid > 1) {
+                   //$include_post_content = show_public_profile();
+
+                   //echo "Test";
+                   //return $_posts;
+                   global $show_user_profile;
+                   $show_user_profile = 1;
+                   global $show_guser_profile;
+                   $show_guser_profile = 1;
 	        }
 
                 if ( $hwsystempos > 1) {
