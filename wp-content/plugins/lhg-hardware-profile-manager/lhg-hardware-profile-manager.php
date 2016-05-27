@@ -616,10 +616,23 @@ class wp_subscribe_reloaded{
 		$url_user_id = (int)substr($urlpath,$hwprofpos+22);
 
 
-		if (strpos($urlpath,"/hardware-profile/user") !== false)
+		if ( (strpos($urlpath,"/hardware-profile/user") !== false) or (strpos($urlpath,"/hardware-profile/guser") !== false) )
                 if (get_current_user_id() != $url_user_id) {
+
+                        # sets name for user profile
                         $user = get_userdata( $url_user_id );
                         $name = $user->display_name;
+
+                        # sets name for guser profile
+                        if (strpos($urlpath,"/hardware-profile/guser") !== false) {
+	                        $hwprofposg   = strpos($urlpath,"/hardware-profile/guser");
+				$url_guid = (int)substr($urlpath,$hwprofposg+23);
+                        	$guser = lhg_get_userdata_guid( $url_guid );
+                                $name = $guser[0]->user_nicename;
+                                #error_log("GUID: $url_guid -> name: $name");
+                        }
+
+
 
                         global $txt_hwprof_of;
                         $manager_page_title = $txt_hwprof_of." ".$name;
