@@ -591,7 +591,8 @@ function lhg_user_tooltip ( $uid ) {
         global $txt_avt_rank;
         global $txt_avt_click;
 
-	$karma = cp_getPoints( $uid );
+	#$karma = cp_getPoints( $uid );
+	$karma = lhg_get_karma( $uid );
         //$level = lhg_get_rank_level( $uid );
         $rank_txt = cp_module_ranks_getRank($public_user_ID);
 	$user = get_userdata( $uid );
@@ -616,7 +617,9 @@ function lhg_comment_percent_bar ( $uid ) {
 
         if ($lang == "de") return;
 
-	$karma = cp_getPoints( $uid );
+	#$karma = cp_getPoints( $uid );
+	$karma = lhg_get_karma( $uid );
+
         $level = lhg_get_rank_level( $uid );
         $rank_txt = cp_module_ranks_getRank($public_user_ID);
         $max_rank = 3;
@@ -642,7 +645,8 @@ function lhg_get_rank_level ( $uid ) {
 
         if (!function_exists('cp_getPoints') ) return;
 
-	$karma = cp_getPoints( $uid );
+	#$karma = cp_getPoints( $uid );
+        $karma = lhg_get_karma( $uid );
         if ($karma < 1000){ $karma_rank_total = 1000;  $rank_level = 2; }
         if ($karma < 100) { $karma_rank_total = 100 ; $rank_level = 1; }
 
