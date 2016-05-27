@@ -629,7 +629,7 @@ class wp_subscribe_reloaded{
 				$url_guid = (int)substr($urlpath,$hwprofposg+23);
                         	$guser = lhg_get_userdata_guid( $url_guid );
                                 $name = $guser[0]->user_nicename;
-                                error_log("GUID: $url_guid -> name: $name");
+                                #error_log("GUID: $url_guid -> name: $name");
                         }
 
 
