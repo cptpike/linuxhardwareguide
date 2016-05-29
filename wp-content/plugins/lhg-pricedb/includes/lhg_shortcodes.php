@@ -832,7 +832,7 @@ function lhg_donation_testing($attr, $content) {
         	  ($guid == 1)  or                          # cptpike .com & .de
         	  ($uid == 1)                               # admin .com & .de
            ) {                           
-                return $content;
+                return do_shortcode( $content );
 	}
 
         return;
