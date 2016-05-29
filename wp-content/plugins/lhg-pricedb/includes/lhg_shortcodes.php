@@ -824,11 +824,13 @@ function lhg_scancommand_shortcode($attr) {
 function lhg_donation_testing($attr, $content) {
         global $lang;
         $uid = get_current_user_id();
+        $guid = lhg_get_guid( $uid );
 
         # user accounts are currently hard coded. Will be removed after beta testing
         if (
         	( ($lang != "de") and ($uid == 24294)) or   # testuer1 .com
-        	  ($uid == 1)                               # admin
+        	  ($guid == 1)  or                          # cptpike .com & .de
+        	  ($uid == 1)                               # admin .com & .de
            ) {                           
                 return $content;
 	}
