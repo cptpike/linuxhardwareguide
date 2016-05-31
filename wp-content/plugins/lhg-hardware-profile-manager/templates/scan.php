@@ -512,7 +512,7 @@ if (count($identified_hw) == 0) {
 
                         # If on the German server, we need the transverse post ID
                         # ToDo: Identify cases where no translation was done yet
-                        if ($lang == "de") $PID = lhg_get_de_post_URL( $PID );
+                        if ($lang == "de") $PID = lhg_get_postid_de_from_com( $PID );
 
                         # get the rating field
                         ob_start();
@@ -733,6 +733,11 @@ if (count($multi_identified_hw) > 0) {
 	        foreach($postids as $postid){
                         $i++;
 
+                        # If on the German server, we need the transverse post ID
+                        # ToDo: Identify cases where no translation was done yet
+                        if ($lang == "de") $postid = lhg_get_postid_de_from_com( $postid );
+
+
                         #print "IDs: ".count($postids)."<br>";
 			if (count($postids) > $multilimit) {
                                 # skip line
@@ -839,6 +844,7 @@ print                       " </td>";
                         // --- User to rate HW
 
                         $postid = $a_identified_hw->postid;
+                        if ($lang == "de") $postid = lhg_get_postid_de_from_com($postid);
 
                         #if ($myrating == "n.a.")
                         echo "
