@@ -510,6 +510,10 @@ if (count($identified_hw) == 0) {
 
                         $PID = $a_identified_hw->postid;
 
+                        # If on the German server, we need the transverse post ID
+                        # ToDo: Identify cases where no translation was done yet
+                        (if $lang == "de") $PID = lhg_get_de_post_URL( $PID );
+
                         # get the rating field
                         ob_start();
 		        $returnval .= the_ratings("div",$PID);
