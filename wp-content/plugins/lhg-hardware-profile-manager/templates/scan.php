@@ -526,8 +526,8 @@ if (count($identified_hw) == 0) {
 
                         #List identified hw components
                         $comment_excerpt = "";
-			$permalink = get_permalink($a_identified_hw->postid);
-			$title = translate_title( get_the_title($a_identified_hw->postid) );
+			$permalink = get_permalink( $PID );
+			$title = translate_title( get_the_title( $PID ) );
 			$s=explode("(",$title);
 			$short_title=trim($s[0]);
 			$title_part2=str_replace(")","",trim($s[1]));
@@ -539,7 +539,7 @@ if (count($identified_hw) == 0) {
 					#'alt'	=> trim( strip_tags( $attachment->post_excerpt ) ),
 					#'title'	=> trim( strip_tags( $attachment->post_title ) ),
 				    );
-                        $art_image=get_the_post_thumbnail( $a_identified_hw->postid, array(55,55), $img_attr, array('class' => 'image55') );
+                        $art_image=get_the_post_thumbnail( $PID , array(55,55), $img_attr, array('class' => 'image55') );
 
                         if ($art_image == ""){
                                 #print "No Image";
@@ -552,14 +552,14 @@ if (count($identified_hw) == 0) {
 
 
                         #$category_ids[1]->cat_name = ""; #overwrite old values
-                        $category_ids   = get_the_category ( $a_identified_hw->postid );
+                        $category_ids   = get_the_category ( $PID );
                         $category_name = $category_ids[0]->cat_name;
                         #$category_name2 = "";
                         $category_name2 = $category_ids[1]->cat_name;
 
                         # --- Registered users
 		        global $wpdb;
-			$usernum = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->postmeta WHERE meta_key LIKE '\_stcr@\_%' AND post_id = ".$a_identified_hw->postid);
+			$usernum = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->postmeta WHERE meta_key LIKE '\_stcr@\_%' AND post_id = ".$PID);
 
 
                         // list HW entry
@@ -567,7 +567,7 @@ if (count($identified_hw) == 0) {
                         #$commenttext = "";
                         #if ($comment_excerpt != "") $commenttext='<div class="hwprofile-cite"><i>"'.wp_strip_all_tags($comment_excerpt).'"</i> <br>(<a href="'.$permalink.'#comment-'.$CID.'">'.$txt_subscr_more.'</a> - <a href="/wp-admin/comment.php?action=editcomment&c='.$CID.'">'.$txt_subscr_edit_comment.'</a>)</div>';
 
-			$rating=the_ratings_results($a_identified_hw->postid,0,0,0,10);
+			$rating=the_ratings_results( $PID ,0,0,0,10);
 
                         echo "
                         <td id=\"col-hw\"> <a class='hwscan-found-image' href='$permalink' target='_blank' >$art_image</a>
@@ -585,7 +585,7 @@ print                       " </td>";
 
                         // --- Add to HW profile
                         if ($userknown == 1) {
-	                        $hwbutton = lhg_add_hwbutton( $email, $a_identified_hw->postid);
+	                        $hwbutton = lhg_add_hwbutton( $email, $PID );
         	                #$hwbutton = "Test";
                 	        echo "
                         	<td id=\"col5\">
@@ -597,7 +597,7 @@ print                       " </td>";
 
                         // --- User to rate HW
 
-                        $postid = $a_identified_hw->postid;
+                        $postid = $PID; #a_identified_hw->postid;
 
                         #if ($myrating == "n.a.")
                         echo "
