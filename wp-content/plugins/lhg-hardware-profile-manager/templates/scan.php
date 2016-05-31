@@ -42,13 +42,13 @@ global $txt_subscr_edit_comment;
 global $txt_subscr_notrated;
 global $show_public_profile;
 
+require_once(plugin_dir_path(__FILE__).'../../lhg-pricedb/includes/lhg.conf');
 
-global $lhg_price_db;
-if ( ($_SERVER['SERVER_ADDR'] == "192.168.56.12") or ($_SERVER['SERVER_ADDR'] == "192.168.56.13") )
-$lhg_price_db = new wpdb("wordpress", "6DQ2O3PR", "lhgpricedb", "192.168.56.14");
+# quickfix
+# link to .com server for images
+$urlprefix = "";
+if ($lang = "de") $urlprefix = "http://www.linux-hardware-guide.com";
 
-if ( ($_SERVER['SERVER_ADDR'] == "192.168.3.112") or ($_SERVER['SERVER_ADDR'] == "192.168.3.113") )
-$lhg_price_db = new wpdb("wordpress", "6DQ2O3PR", "lhgpricedb", "192.168.3.114");
 
 // Avoid direct access to this piece of code
 if (!function_exists('add_action')){
@@ -113,6 +113,7 @@ $sid = substr($urlpath,$hwscanpos+23);
        $myquery = $lhg_price_db->prepare("SELECT sid FROM `lhgscansessions` WHERE pub_id = %s", $pub_id);
        $sid = $lhg_price_db->get_var($myquery);
  }
+
 
 # store login data
 # we need this info to link scan results with users
@@ -181,6 +182,9 @@ if (current_user_can('publish_posts') ) {
         if ($show_public_profile != 1) print '<br><a href="http://'.$rescan_url.'/rescan.php?sid='.$sid.'">Start rescan!</a><br>';
 }
 
+if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
+This way we can fill our Linux Hardware Database with valuable information for the Linux community.</b>';
+
 
 # link to other scans
 
@@ -194,6 +198,11 @@ $myquery = $lhg_price_db->prepare("SELECT COUNT(*) FROM `lhgscansessions` WHERE 
 $num_uid = $lhg_price_db->get_var($myquery);
 
 #print "<br>NUM:".$num_uid;
+
+if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
+	if ($show_public_profile != 1) print "<br>&nbsp;<br>See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
+	#var_dump( $uid );
+}
 
 $email = lhg_get_hwscanmail($sid);
 if ($email != "") $userknown = 1;
@@ -239,7 +248,7 @@ echo '
                                 var button = this;
 
                                 // "we are processing" indication
-                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="/wp-uploads/2015/11/loading-circle.gif" />\';
+                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
                                 $(button).after(indicator_html);
 
 
@@ -279,18 +288,18 @@ echo '
                 /*]]> */
                 </script>';
 
-if ( !lhg_scan_is_linked_with_user_id($sid) )
+
 print '
 <br>&nbsp;<br>
 <h2>Contact information</h2>
 <form action="?" method="post">
-       Please enter your email address in order to allow us to contact you in case of questions regarding your hardware scan results.<br>
-       If you have an Linux-Hardware-Guide account please enter your registration mail address to link this scan with your account:<br>
+       Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:<br>
        <b>Email</b>: <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
        <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
 </form>
 <br>
 ';
+
 }
 
 
@@ -323,12 +332,12 @@ print '
 
         $logo = get_distri_logo($distribution);
 
-	#echo "<h2>Scan overview:</h2>";
+	echo "<h2>Scan overview:</h2>";
 
                 #get and check session ID
                 #echo "Session ID: $sid <br>";
 
-                echo '<table id="registration" class="scanoverview-table">';
+                echo '<table id="registration">';
                 echo '<tr id="header">
 
 
@@ -402,13 +411,6 @@ print '
                 echo "</table>";
 
 
-# Link other scans of user
-if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
-	if ($show_public_profile != 1) print "See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
-	#var_dump( $uid );
-}
-
-
 # Add user feedback exchange
 lhg_feedback_area( $sid );
 
@@ -435,7 +437,7 @@ echo '
                                 var button = this;
 
                                 // "we are processing" indication
-                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="/wp-uploads/2015/11/loading-circle.gif" />\';
+                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
                                 $(button).after(indicator_html);
 
 
@@ -899,8 +901,8 @@ if (count($unidentified_hw_pci) > 0) {
 
         $mb_name = lhg_get_mainboard_name( $sid );
         $clean_mb_name = lhg_clean_mainboard_name( $mb_name );
-	print "<h2>New ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
-        #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
+	print "<h2>Unknown ".$mb_or_laptop."</h2>";
+        print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
         print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
 
 
@@ -1068,7 +1070,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
 				$(\'.pciid-column\').hide();
 				$(\'.mb-default-hidden\').hide();
                                 $(\'<a href id="toggleButton">Show hidden components</a>\').prependTo(\'#mainboard-show-more\');
-                                //$(\'<a href id="show-more-mb">Show details</a>\').prependTo(\'#details-mb\');
+                                $(\'<a href id="show-more-mb">Show details</a>\').prependTo(\'#details-mb\');
                                 $(\'#hidden-details-mb\').hide();
 
                                 $(\'#details-mb\').click(function(){
@@ -1165,7 +1167,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                                 var button = this;
 
                                 // "we are processing" indication
-                                var indicator_html = \'<img class="scan-load-button" id="button-load-mb-comment" src="/wp-uploads/2015/11/loading-circle.gif" />\';
+                                var indicator_html = \'<img class="scan-load-button" id="button-load-mb-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
                                 $(button).after(indicator_html);
 
 
@@ -1245,7 +1247,7 @@ if ($num_skip_tmp == count($unidentified_hw) ) {
 
 if ( (count($unidentified_hw) > 0) && ($skip_unknown_hw != 1) ) {
 
-print "<h2>New Hardware</h2>";
+print "<h2>Unknown Hardware</h2>";
 
 
 
@@ -1261,23 +1263,6 @@ print "<h2>New Hardware</h2>";
                         onclose: function() { $("#my_popup_contents").empty();},
                         opacity: 0.3,
                         transition: "all 0.3s"
-                      });
-
-
-                      // show additional properties from the beginning if amazon URL was provided
-                      // hide otherwise
-                      $("[id^=url-]").each(function(){
-                      	  var id = $(this).attr(\'id\').substring(4);
-
-                          url = $("#url-"+id).val();
-			  //$("#updatearea-8921").append("URL: "+url);
-			  //$("#updatearea-8921").append("POS: "+ url.toLowerCase().indexOf("amazon.") );
-                          if ( url.toLowerCase().indexOf("amazon.") >= 0 ) {
-                          	$(\'#details-hw-\'+id).show("slow");
-                                //$("#updatearea-8921").append( "FOUND!" );
-                          } else {
-                          	$(\'#details-hw-\'+id).hide();
-                          }
                       });
 
 
@@ -1376,8 +1361,8 @@ print "<h2>New Hardware</h2>";
 
                                 $("[id^=show-details-hw-]").each(function(){
                                 	var id = $(this).attr(\'id\').substring(16);
-	                                // $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
-                                        // $("#details-hw-"+id).hide();
+	                                $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
+                                        $("#details-hw-"+id).hide();
                                 });
                                 $("[id^=show-details-hw-]").click(function(){
                                 	var id = $(this).attr(\'id\').substring(16);
@@ -1391,8 +1376,6 @@ print "<h2>New Hardware</h2>";
 
 
 
-
-                                // Submit a comment or an URL to a unknown hardware component
 
 				$(\'[name^="scan-comments-"]\').click(function(){
 
@@ -1461,10 +1444,6 @@ print "<h2>New Hardware</h2>";
                                         $("#properties-"+id).text(properties);
                                         $("#title-"+id).text(newtitle);
 
-                                        // show new title
-	                                $(\'#details-hw-\'+id).show("slow");
-
-
                                 });
 
                                 //prevent default behavior
@@ -1481,7 +1460,7 @@ print "<h2>New Hardware</h2>";
 
                                         $("#my_popup").popup("show");
 
-                                        var indicator_html = \'<div id="scan-load-area">Searching for hardware...<img class="scan-load-button" id="auto_search_ongoing" src="/wp-uploads/2015/11/loading-circle.gif" /></div>\';
+                                        var indicator_html = \'<div id="scan-load-area">Searching for hardware...<img class="scan-load-button" id="auto_search_ongoing" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" /></div>\';
 
 	                                var clickedlink = this;
         	                        var id = $(clickedlink).attr(\'id\').substring(7);
@@ -1606,14 +1585,14 @@ print '
                         #        if ($is_mainboard_component == 1) $mainboard_array = array_merge($mainboard_array, $a_identified_hw);
 			#}
 
-                	if ($usbid != "") $logo = "<img src='/wp-uploads/2014/12/USB_logo.jpg' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown USB device'>";
+                	if ($usbid != "") $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/USB_logo.jpg' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown USB device'>";
                 	if ($pciid != "") $logo = "<div class='hwscan-pcilogo'>&nbsp;&nbsp;PCI</div>";
-                	if ($scantype == "cpu") $logo = "<img src='/wp-uploads/2014/12/cpu-image.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CPU'>";
+                	if ($scantype == "cpu") $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/cpu-image.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CPU'>";
 
                 	if ($scantype == "drive") {
-                        	$logo = "<img src='/wp-uploads/2014/12/drive-hdd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown Drive'>";
-                                if (strpos(" ".$title,"CD-ROM") > 0) $logo = "<img src='/wp-uploads/2014/12/drive-cd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CD/DVD Drive'>";
-                                if (strpos(" ".$title,"SSD") > 0) $logo = "<img src='/wp-uploads/2014/12/drive-ssd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown SSD Drive'>";
+                        	$logo = "<img src='".$urlprefix."/wp-uploads/2014/12/drive-hdd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown Drive'>";
+                                if (strpos(" ".$title,"CD-ROM") > 0) $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/drive-cd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CD/DVD Drive'>";
+                                if (strpos(" ".$title,"SSD") > 0) $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/drive-ssd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown SSD Drive'>";
 
 	                        #clean title
         	                $title = str_replace("Direct-Access","",$title);
@@ -1743,15 +1722,12 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
                 print '<div class="subscribe-hwtext">';
                 print '   <div class="subscribe-hwtext-span"><b>'.$title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
 
-                $title_info = get_the_title( $newPostID );
-                $properties_string = lhg_get_properties_string( $newPostID );
-
                 if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
                 	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
                 	print '
                         	<div id="details-hw-'.$id.'" class="details">
+                    	    		<br>Properties: <span id="properties-'.$id.'">'.$meta_info.'</span>
                 	    		<br>Title: <span id="title-'.$id.'">'.$title_info.'</span>
-                    	    		<br>Properties: <span id="properties-'.$id.'">'.$properties_string.'</span>
 		        	</div>';
                 }
 
@@ -1791,7 +1767,7 @@ print '
                           <span class='subscribe-column-2'>
                             USB Device: $usbid";
 
-                            if (current_user_can('publish_posts') ) {
+                            if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                    }
@@ -1815,7 +1791,7 @@ print '
                           <span class='subscribe-column-2'>
                             CPU";
 
-                            if (current_user_can('publish_posts') ) {
+                            if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
@@ -1834,7 +1810,7 @@ print '
                             <span class='subscribe-column-2'>
                               Drive";
 
-                              if (current_user_can('publish_posts') ) {
+                              if  ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
@@ -1925,11 +1901,6 @@ print '
 
 $scandate = lhg_get_hwscandate($sid);
 $scandate = gmdate("Y-m-d\TH:i:s\Z", $scandate);
-
-if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
-This way we can fill our Linux Hardware Database with valuable information for the Linux community.<br>';
-
-
 print "<br>This scan was performed at: ".$scandate;
 print "<br>Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
 However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.";
@@ -2545,24 +2516,6 @@ function lhg_get_mainboard_name_from_DMI ( $dmesg ) {
         #print "<br>";
 
         return $mbstring;
-}
-
-function lhg_scan_is_linked_with_user_id( $sid ) {
-
-       # check if the scan session is linked with a user account
-       global $lhg_price_db;
-
-       $myquery = $lhg_price_db->prepare("SELECT wp_uid FROM `lhgscansessions` WHERE sid = %s", $sid);
-       $wp_uid = $lhg_price_db->get_var($myquery);
-       $myquery = $lhg_price_db->prepare("SELECT wp_uid_de FROM `lhgscansessions` WHERE sid = %s", $sid);
-       $wp_uid_de = $lhg_price_db->get_var($myquery);
-
-       #error_log("SID: $sid - UID: ".$result);
-       $linked = false;
-       if ($wp_uid != 0) $linked = true;
-       if ($wp_uid_de != 0) $linked = true;
-
-       return $linked;
 }
 
 ?>
