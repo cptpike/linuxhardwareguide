@@ -3234,6 +3234,11 @@ global $txt_subscr_ratecomp;#        = "Please rate<br>Linux compatibility";
 global $txt_subscr_nohwfound;#       = "No hardware found";
 global $txt_subscr_hwfeedback;
 global $txt_subscr_multiple;
+global $txt_subscr_identified_usb;
+global $txt_subscr_option;
+global $txt_subscr_thisscan;#        = "This scan was performed at";
+global $txt_subscr_notice;#          = "Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
+global $txt_subscr_limitation; #This tool is limited to...
 
 global $txt_hwprof_of;
 
@@ -3609,6 +3614,21 @@ $txt_subscr_nohwfound       = "No hardware found";
 $txt_subscr_hwfeedback      = "Please let us know if certain hardware was recognized incorrectly or not recognized at all.<br>
 				       This helps us improving the automatic hardware recognition for future scans:";
 $txt_subscr_multiple        = "Multiple possibilites (Ambiguously Identified Hardware)";
+$txt_subscr_identified_usb  = "Identified USB Device";
+$txt_subscr_option          = "Option";
+$txt_subscr_thisscan        = "This scan was performed at";
+$txt_subscr_notice          = "Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
+			       However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.";
+$txt_subscr_limitation      = "
+<p>This tool is currently limited to following hardware components:
+<ul><li>USB devices
+<li>PCI devices
+<li>Mainboards (experimental)
+<li>Laptops (experimental)
+<li>CPUs
+<li>Storage media (HDD, CD, DVD, SSD)
+</ul>";
+
 
 $txt_hwprof_of              = "Public Hardware Profile of";
 
@@ -3977,6 +3997,20 @@ Ausgabe von lspci, lsusb und lshw...';
         $txt_subscr_hwfeedback      = "Bitte teile mit, falls Hardware-Komponenten nicht oder fehlerhaft identifiziert wurden.<br>
 				       Dies hilft uns die automatische Erkennung zu verbessern:";
         $txt_subscr_multiple        = "Mehrere M&ouml;glichkeiten (Mehrdeutige Hardware-Identifizierung)";
+	$txt_subscr_identified_usb  = "Identifizierte USB-Ger&auml;te";
+	$txt_subscr_option          = "Option";
+	$txt_subscr_thisscan        = "Dieser Hardware-Scan wurde ausgef&uuml;hrt um";
+	$txt_subscr_notice          = "Bitte beachte, dass dieser Web-Service weiterhin in Entwicklung ist. Alle Scan-Resultate wurden an die Linux-Hardware-Guide Datenbank &uuml;bertragen.
+        Allerdings ist die automatische Hardware-Erkenneung und die zugeh&ouml;rige &Uuml;bersicht auf dieser Seite nicht immer fehlerfrei.";
+	$txt_subscr_limitation      = "
+					<p>Dieses Tool ist momentan limitiert auf die Erkennung von:
+					<ul><li>USB Komponenten
+					<li>PCI Komponenten
+					<li>Mainboards (experimentell)
+					<li>Laptops (experimentell)
+					<li>CPUs
+					<li>Speichermedien (HDD, CD, DVD, SSD)
+					</ul>";
 
 	$txt_hwprof_of              = "Öffentliche Hardware-Profil von";
 
