@@ -3220,6 +3220,21 @@ global $txt_subscr_numart;
 global $txt_subscr_numcom;
 global $txt_subscr_public_hw_profile;
 global $txt_subscr_lat_sub; 	//= "Latest hardware submissions";
+global $txt_subscr_rank; 	//= "Latest hardware submissions";
+global $txt_subscr_nextpromo;  //Next promotion
+global $txt_subscr_nohw;
+global $txt_subscr_scanoverview;  # Scan overview
+global $txt_subscr_kernelversion; #   = 'Kernel version';
+global $txt_subscr_hwcomp; #          = "Hardware Components";
+global $txt_subscr_identified; #      = "Identified";
+global $txt_subscr_unknown; #         = "Unknown";
+global $txt_subscr_knownhw;
+global $txt_subscr_addhw;#	    = "Add HW to your profile";
+global $txt_subscr_ratecomp;#        = "Please rate<br>Linux compatibility";
+global $txt_subscr_nohwfound;#       = "No hardware found";
+global $txt_subscr_hwfeedback;
+global $txt_subscr_multiple;
+
 global $txt_hwprof_of;
 
 //mobile theme
@@ -3579,6 +3594,22 @@ $txt_subscr_numart	    = "Number of submitted hardware descriptions";
 $txt_subscr_numcom	    = "Number of comments";
 $txt_subscr_public_hw_profile = "Hardware Profile";
 $txt_subscr_lat_sub	    = "Latest hardware submissions";
+$txt_subscr_rank	    = "Rank";
+$txt_subscr_nextpromo       = "Next promotion";
+$txt_subscr_nohw	    = 'No hardware components were added to the profile so far.';
+$txt_subscr_scanoverview    = 'Scan overview';
+$txt_subscr_kernelversion   = 'Kernel version';
+$txt_subscr_hwcomp          = "Hardware Components";
+$txt_subscr_identified      = "Identified";
+$txt_subscr_unknown         = "Unknown";
+$txt_subscr_knownhw	    = "Known Hardware";
+$txt_subscr_addhw	    = "Add HW to your profile";
+$txt_subscr_ratecomp        = "Please rate<br>Linux compatibility";
+$txt_subscr_nohwfound       = "No hardware found";
+$txt_subscr_hwfeedback      = "Please let us know if certain hardware was recognized incorrectly or not recognized at all.<br>
+				       This helps us improving the automatic hardware recognition for future scans:";
+$txt_subscr_multiple        = "Multiple possibilites (Ambiguously Identified Hardware)";
+
 $txt_hwprof_of              = "Public Hardware Profile of";
 
 
@@ -3931,6 +3962,22 @@ Ausgabe von lspci, lsusb und lshw...';
 	$txt_subscr_lat_sub	    = "Letzte Hardware-Eintr&auml;ge";
 	$txt_subscr_numart	    = "Anzahl eingereichter Hardware-Artikel";
 	$txt_subscr_numcom	    = "Anzahl an Kommentaren";
+	$txt_subscr_rank	    = "Rang";
+        $txt_subscr_nextpromo       = "N&auml;chster Rang" ;  //Next promotion
+	$txt_subscr_nohw	    = 'Der Nutzer hat bisher keine Hardware-Komponenten seinem Profil hinzugef&uuml;gt.';
+	$txt_subscr_scanoverview    = 'Hardware-Scan &Uuml;bersicht';
+	$txt_subscr_kernelversion   = 'Kernel-Version';
+	$txt_subscr_hwcomp          = "Hardware-Komponenten";
+	$txt_subscr_identified      = "Identifiziert";
+	$txt_subscr_unknown         = "Unbekannt";
+	$txt_subscr_knownhw	    = "Bekannte Hardware";
+	$txt_subscr_addhw	    = "Hardware dem Profil hinzuf&uuml;gen";
+	$txt_subscr_ratecomp        = "Bitte bewerte die<br>Linux-Kompatibilit&auml;t";
+	$txt_subscr_nohwfound       = "Keine Hardware gefunden";
+        $txt_subscr_hwfeedback      = "Bitte teile mit, falls Hardware-Komponenten nicht oder fehlerhaft identifiziert wurden.<br>
+				       Dies hilft uns die automatische Erkennung zu verbessern:";
+        $txt_subscr_multiple        = "Mehrere M&ouml;glichkeiten (Mehrdeutige Hardware-Identifizierung)";
+
 	$txt_hwprof_of              = "Öffentliche Hardware-Profil von";
 
 
