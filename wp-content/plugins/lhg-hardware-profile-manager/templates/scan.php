@@ -17,6 +17,7 @@ $scandebug = 0;
 
 
 global $lang;
+global $txt_category;
 global $txt_subscr_compat              ;//  		= "Legende: Y = all comments, R = replies only, C = inactive";
 global $txt_subscr_regist_date  	;// = "Registration Date";
 global $txt_subscr_modus	  	;//= "Status";
@@ -53,6 +54,11 @@ global $txt_subscr_ratecomp;#        = "Please rate<br>Linux compatibility";
 global $txt_subscr_nohwfound;#       = "No hardware found";
 global $txt_subscr_hwfeedback; # Please let us know if ...
 global $txt_subscr_multiple;
+global $txt_subscr_identified_usb;
+global $txt_subscr_option;
+global $txt_subscr_thisscan; #        = "This scan was performed at";
+global $txt_subscr_notice; #          = "Please note that this web service is still under development....
+global $txt_subscr_limitation;
 
 require_once(plugin_dir_path(__FILE__).'../../lhg-pricedb/includes/lhg.conf');
 
@@ -509,7 +515,7 @@ if (count($identified_hw) == 0) {
 
                 echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>
 
-                <td id="col4">Category</td>
+                <td id="col4">'.$txt_category.'</td>
 
                 <!-- td id="col2">'.$txt_subscr_regist_date.'</td -->
 
@@ -721,7 +727,7 @@ if (count($multi_identified_hw) > 0) {
 
 
                 <td id="title-colhw">
-                Identified USB Device<br>
+                '.$txt_subscr_identified_usb.'<br>
                 '.$title.' - (USB ID: '.$usbid.')
                 </td>';
 
@@ -731,7 +737,7 @@ if (count($multi_identified_hw) > 0) {
 
                 echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>
 
-                <td id="col4">Category</td>
+                <td id="col4">'.$txt_category.'</td>
 
                 <!-- td id="col2">'.$txt_subscr_regist_date.'</td -->
                 </tr>';
@@ -754,7 +760,7 @@ if (count($multi_identified_hw) > 0) {
                                 # skip line
 
                         }else{
-		                echo '<tr><td><div class="hwscan_option">Option '.$i."</div>";
+		                echo '<tr><td><div class="hwscan_option">'.$txt_subscr_option.' '.$i."</div>";
 	                       #echo "PID: $postid";
         	                echo "</td><td></td><td>";
 	        	        if ($userknown == 1) echo "<td></td>";
@@ -1922,18 +1928,22 @@ print '
 
 $scandate = lhg_get_hwscandate($sid);
 $scandate = gmdate("Y-m-d\TH:i:s\Z", $scandate);
-print "<br>This scan was performed at: ".$scandate;
-print "<br>Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
-However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.";
+# This scan was performed at
+print "<br>".$txt_subscr_thisscan.": ".$scandate;
 
-print "<p>This tool is currently limited to following hardware components:";
-print "<ul><li>USB devices";
-print "<li>PCI devices";
-print "<li>Mainboards (experimental)";
-print "<li>Laptops (experimental)";
-print "<li>CPUs";
-print "<li>Storage media (HDD, CD, DVD, SSD)";
-print "</ul>";
+#Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
+#However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.
+print "<br>".$txt_subscr_notice;
+
+#print "<p>This tool is currently limited to following hardware components:";
+#print "<ul><li>USB devices";
+#print "<li>PCI devices";
+#print "<li>Mainboards (experimental)";
+#print "<li>Laptops (experimental)";
+#print "<li>CPUs";
+#print "<li>Storage media (HDD, CD, DVD, SSD)";
+#print "</ul>";
+print $txt_subscr_limitation;
 
 function lhg_get_hwscandate( $sid ) {
 
