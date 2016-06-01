@@ -41,6 +41,18 @@ global $txt_subscr_edit_rating;
 global $txt_subscr_edit_comment;
 global $txt_subscr_notrated;
 global $show_public_profile;
+global $txt_subscr_scanoverview;
+global $txt_scan_distribution;
+global $txt_subscr_kernelversion; #   = 'Kernel version';
+global $txt_subscr_hwcomp; #          = "Hardware Components";
+global $txt_subscr_identified; #      = "Identified";
+global $txt_subscr_unknown; #         = "Unknown";
+global $txt_subscr_knownhw;
+global $txt_subscr_addhw;#	    = "Add HW to your profile";
+global $txt_subscr_ratecomp;#        = "Please rate<br>Linux compatibility";
+global $txt_subscr_nohwfound;#       = "No hardware found";
+global $txt_subscr_hwfeedback; # Please let us know if ...
+global $txt_subscr_multiple;
 
 require_once(plugin_dir_path(__FILE__).'../../lhg-pricedb/includes/lhg.conf');
 
@@ -324,15 +336,15 @@ print '
 	$scandate = $identified_scans[0]->scandate;
 	$scandate_txt = gmdate("Y-m-d, H:i:s", $scandate);
 
-        $distribution = "unknown";
-        $kversion = "unkwnown";
+        $distribution = $txt_subscr_unknown; #"unknown";
+        $kversion = $txt_subscr_unknown; #"unkwnown";
 
         $distribution = $identified_scans[0]->distribution;
         $kversion = $identified_scans[0]->kversion;
 
         $logo = get_distri_logo($distribution);
 
-	echo "<h2>Scan overview:</h2>";
+	echo "<h2>".$txt_subscr_scanoverview.":</h2>";
 
                 #get and check session ID
                 #echo "Session ID: $sid <br>";
@@ -346,9 +358,9 @@ print '
                 #if ($userknown == 1)
                 #echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="30%">Distribution</td>
-                      <td id="hwscan-col2" width="20%">Kernel Version</td>
-                <td id="hwscan-col2" width="13%">Hardware Components</td>
+                echo '<td id="hwscan-col2" width="30%">'.$txt_scan_distribution.'</td>
+                      <td id="hwscan-col2" width="20%">'.$txt_subscr_kernelversion.'</td>
+                <td id="hwscan-col2" width="13%">'.$txt_subscr_hwcomp.'</td>
 
 
                 </tr>';
@@ -401,7 +413,7 @@ print '
 
                         echo "
                         <td id=\"col2\">
-                        <span class='subscribe-column-1'><center>Identified: $num_identified_hw <br> Unknown: $num_unidentified_hw  </center></span>
+                        <span class='subscribe-column-1'><center>".$txt_subscr_identified.": ".$num_identified_hw." <br> ".$txt_subscr_unknown.": $num_unidentified_hw  </center></span>
                         </td>";
 
 
@@ -424,7 +436,7 @@ lhg_feedback_area( $sid );
 
 if (count($identified_hw) > 0) {
 
-echo "<h2>Known Hardware</h2>";
+echo "<h2>".$txt_subscr_knownhw."</h2>";
 
 echo '
                 <script type="text/javascript">
@@ -480,7 +492,7 @@ echo '
 
 
 if (count($identified_hw) == 0) {
-        print '<div class="no-hw-found">No hardware found</div>';
+        print '<div class="no-hw-found">'.$txt_subscr_nohwfound.'</div>';
 }else {
 
                 #get and check session ID
@@ -490,12 +502,12 @@ if (count($identified_hw) == 0) {
                 echo '<tr id="header">
 
 
-                <td id="title-colhw">Identified Hardware</td>';
+                <td id="title-colhw">'.$txt_subscr_knownhw.'</td>';
 
                 if ($userknown == 1)
-                echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
+                echo '<td id="hwscan-col3" width="13%"><nobr>'.$txt_subscr_addhw.'</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="13%"><nobr>Please rate<br>Linux compatibility </nobr></td>
+                echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>
 
                 <td id="col4">Category</td>
 
@@ -632,9 +644,8 @@ if ($usercomment != "") $buttontext = "Update";
 
 #Ask, if HW scanner made errors?
 if ($show_public_profile != 1)
-echo ' <form action="?" method="post" class="usercomment">
-       Please let us know if certain hardware was recognized incorrectly or not recognized at all.<br>
-       This helps us improving the automatic hardware recognition for future scans:<br>
+echo ' <form action="?" method="post" class="usercomment">'.$txt_subscr_hwfeedback.'
+       <br>
        <textarea id="known-hardware-usercomment" name="usercomment" cols="10" rows="3">'.$usercomment.'</textarea><br>
        <input type="submit" id="known-hardware-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />
 </form>
@@ -694,7 +705,7 @@ echo ' <form action="?" method="post" class="usercomment">
 
 
 if (count($multi_identified_hw) > 0) {
-	echo "<h2>Multiple possibilites (Ambiguously Identified Hardware)</h2>";
+	echo "<h2>".$txt_subscr_multiple."</h2>";
         #small table version at
         $multilimit = 4;
 
@@ -716,9 +727,9 @@ if (count($multi_identified_hw) > 0) {
 
 
                 if ($userknown == 1)
-                echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
+                echo '<td id="hwscan-col3" width="13%"><nobr>'.$txt_subscr_addhw.'</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="13%"><nobr>Please rate<br>Linux compatibility </nobr></td>
+                echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>
 
                 <td id="col4">Category</td>
 
