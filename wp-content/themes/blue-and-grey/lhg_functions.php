@@ -3239,6 +3239,15 @@ global $txt_subscr_option;
 global $txt_subscr_thisscan;#        = "This scan was performed at";
 global $txt_subscr_notice;#          = "Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
 global $txt_subscr_limitation; #This tool is limited to...
+global $txt_subscr_newhw;
+global $txt_subscr_foundhwid; #        = "Hardware Identifier";
+global $txt_subscr_rate;
+global $txt_subscr_pleaserate;
+global $txt_subscr_type;
+global $txt_subscr_help;
+global $txt_subscr_ifpossible;
+global $txt_subscr_new;
+global $txt_subscr_thankyou;
 
 global $txt_hwprof_of;
 
@@ -3628,6 +3637,17 @@ $txt_subscr_limitation      = "
 <li>CPUs
 <li>Storage media (HDD, CD, DVD, SSD)
 </ul>";
+$txt_subscr_newhw	     = "New Hardware";
+$txt_subscr_foundhwid        = "Hardware Identifier";
+$txt_subscr_rate	     = "Rate hardware";
+$txt_subscr_pleaserate	     = "Please rate";
+$txt_subscr_type             = "Hardware Type";
+$txt_subscr_help             = "Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:";
+$txt_subscr_ifpossible       = "If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:";
+$txt_subscr_new		     = "New";
+$txt_subscr_thankyou	     = '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
+This way we can fill our Linux Hardware Database with valuable information for the Linux community.<br>';
+
 
 
 $txt_hwprof_of              = "Public Hardware Profile of";
@@ -4011,6 +4031,16 @@ Ausgabe von lspci, lsusb und lshw...';
 					<li>CPUs
 					<li>Speichermedien (HDD, CD, DVD, SSD)
 					</ul>";
+	$txt_subscr_newhw	     = "Neue Hardware";
+        $txt_subscr_foundhwid        = "Hardware-Kennung";
+	$txt_subscr_rate	     = "Hardware bewerten";
+	$txt_subscr_pleaserate	     = "Bitte bewerten";
+	$txt_subscr_type             = "Typ";
+	$txt_subscr_help             = "Hilf uns die Hardware-Komponente der Datenbank hinzuzuf&uuml;gen. Bitte identifiziere die Hardware (falls n&ouml;tig) und beschreibe ihre Linux-Kompatibilit&auml;t:";
+        $txt_subscr_ifpossible       = "Bitte hinterlasse die URL einer Web-Seite, auf welcher die Hardware beschrieben wird (z.B. Hersteller-Spezifikation oder Amazon-Seite).<br>URL:";
+	$txt_subscr_new		     = "Neues";
+	$txt_subscr_thankyou	     = '<b>Danke, dass die die Linux-Hardware-Guide Scan-Software eingesetzt haben</b> (mehr Informationen zur Software unter <a href="https://github.com/paralib5/lhg_scanner">GitHub</a>).<br>
+					Auf diese Weise k&ouml;nnen wir die Linux Hardware Datenbank mit f&uuml;r die Linux-Community wertvollen Informationen f&uuml;llen.<br>';
 
 	$txt_hwprof_of              = "Öffentliche Hardware-Profil von";
 
