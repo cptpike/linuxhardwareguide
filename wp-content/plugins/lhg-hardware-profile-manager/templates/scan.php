@@ -1769,24 +1769,26 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
 
                 print '</div>';
 
-if ($show_public_profile != 1)
-print '<form action="?" method="post" class="hwcomments">
+if ($show_public_profile != 1){
+	print '<form action="?" method="post" class="hwcomments">
        <div id="updatearea-'.$id.'">';
 
        # Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:
-print $txt_subscr_help;
+	print $txt_subscr_help;
 
-print '<br>
+	print '<br>
        <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea><br>';
 
        # If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
-print $txt_subscr_ifpossible;
+	print $txt_subscr_ifpossible;
 
-print '<input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
+	print '<input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
        <input id="postid-'.$id.'" name="postid-'.$id.'" type="hidden" value="'.$newPostID.'">
        </div>
        <br><input type="submit" name="scan-comments-'.$id.'" id="scan-comments-'.$id.'" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />
-</form>';
+	</form>';
+ }
+
 print '
 </td><td>
 '.$article_created.'
