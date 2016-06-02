@@ -3248,6 +3248,10 @@ global $txt_subscr_help;
 global $txt_subscr_ifpossible;
 global $txt_subscr_new;
 global $txt_subscr_thankyou;
+global $txt_subscr_hwscantitle;
+global $txt_yes;
+global $txt_no;
+
 
 global $txt_hwprof_of;
 
@@ -3647,6 +3651,9 @@ $txt_subscr_ifpossible       = "If possible, please leave an URL to a web page w
 $txt_subscr_new		     = "New";
 $txt_subscr_thankyou	     = '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
 This way we can fill our Linux Hardware Database with valuable information for the Linux community.<br>';
+$txt_subscr_hwscantitle	     = "Hardware Scan Overview:";
+$txt_yes                     = "yes";
+$txt_no                      = "no";
 
 
 
@@ -4041,8 +4048,11 @@ Ausgabe von lspci, lsusb und lshw...';
 	$txt_subscr_new		     = "Neues";
 	$txt_subscr_thankyou	     = '<b>Danke, dass die die Linux-Hardware-Guide Scan-Software eingesetzt haben</b> (mehr Informationen zur Software unter <a href="https://github.com/paralib5/lhg_scanner">GitHub</a>).<br>
 					Auf diese Weise k&ouml;nnen wir die Linux Hardware Datenbank mit f&uuml;r die Linux-Community wertvollen Informationen f&uuml;llen.<br>';
+	$txt_subscr_hwscantitle	     = "&Uuml;bersicht Hardware-Scan:";
 
 	$txt_hwprof_of              = "Öffentliche Hardware-Profil von";
+	$txt_yes                     = "ja";
+	$txt_no                      = "nein";
 
 
 
