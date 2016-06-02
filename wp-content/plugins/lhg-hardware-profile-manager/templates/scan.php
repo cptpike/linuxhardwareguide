@@ -982,7 +982,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
        </form>';
 
         print "<table id='mainboard-scan-table'>
-                 <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>Hardware Component Name</td><td class='pciid-column'>PCI ID</td></tr>";
+                 <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>".$txt_subscr_foundhwid."</td><td class='pciid-column'>PCI ID</td></tr>";
 
         # list of IDs that should be hidden in overview
         $hidearray = array();
@@ -1007,6 +1007,9 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                 $showme = lhg_show_scanned_component( $title , $id, $pciid );
                 $short_pci_title = lhg_clean_pci_title( $title );
                 $is_onboard = lhg_pci_component_is_onboard( $title, $sid, $id, $pciid);
+
+                global $txt_yes;
+                global $txt_no;
 
                 if ($is_onboard == "yes")  {  $default_y = 'checked'; $default_n = '';	}
                 if ($is_onboard == "no") {    $default_y = ''; $default_n = 'checked';  }
@@ -1048,8 +1051,8 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                         <form action="?" method="post" class="hwcomments">
                         <td class="pci-column-onboard pci-column-onboard-radiob">
                           <fieldset>
-                             yes <input type="radio" id="radio-y-'.$id.'" name="on-board" value="y" '.$default_y.' />
-                             <input type="radio" id="radio-n-'.$id.'" name="on-board" value="n" '.$default_n.' /> no
+                             '.$txt_yes.' <input type="radio" id="radio-y-'.$id.'" name="on-board" value="y" '.$default_y.' />
+                             <input type="radio" id="radio-n-'.$id.'" name="on-board" value="n" '.$default_n.' /> '.$txt_no.'
                           </fieldset>
                         </td>
                         <td><div class="pci-title"><b>'.$short_pci_title.'</b><span id="show-details-hw-'.$id.'"></span></div>
@@ -1069,8 +1072,8 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                 print '
                         <td class="pci-column-onboard pci-column-onboard-radiob">';
 
-                if ($default_y != "") print "yes";
-                if ($default_n != "") print "no";
+                if ($default_y != "") print $txt_yes;
+                if ($default_n != "") print $txt_no;
                 print '
                         </td>
                         <td><div class="pci-title"><b>'.$short_pci_title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
