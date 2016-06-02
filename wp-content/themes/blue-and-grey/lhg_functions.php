@@ -4021,7 +4021,7 @@ Ausgabe von lspci, lsusb und lshw...';
 	$txt_subscr_option          = "Option";
 	$txt_subscr_thisscan        = "Dieser Hardware-Scan wurde ausgef&uuml;hrt um";
 	$txt_subscr_notice          = "Bitte beachte, dass dieser Web-Service weiterhin in Entwicklung ist. Alle Scan-Resultate wurden an die Linux-Hardware-Guide Datenbank &uuml;bertragen.
-        Allerdings ist die automatische Hardware-Erkenneung und die zugeh&ouml;rige &Uuml;bersicht auf dieser Seite nicht immer fehlerfrei.";
+        Allerdings ist die automatische Hardware-Erkennung und die zugeh&ouml;rige &Uuml;bersicht auf dieser Seite nicht immer fehlerfrei.";
 	$txt_subscr_limitation      = "
 					<p>Dieses Tool ist momentan limitiert auf die Erkennung von:
 					<ul><li>USB Komponenten
