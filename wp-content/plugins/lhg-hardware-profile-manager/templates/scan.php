@@ -49,6 +49,7 @@ global $txt_subscr_hwcomp; #          = "Hardware Components";
 global $txt_subscr_identified; #      = "Identified";
 global $txt_subscr_unknown; #         = "Unknown";
 global $txt_subscr_knownhw;
+global $txt_subscr_newhw;
 global $txt_subscr_addhw;#	    = "Add HW to your profile";
 global $txt_subscr_ratecomp;#        = "Please rate<br>Linux compatibility";
 global $txt_subscr_nohwfound;#       = "No hardware found";
@@ -59,6 +60,14 @@ global $txt_subscr_option;
 global $txt_subscr_thisscan; #        = "This scan was performed at";
 global $txt_subscr_notice; #          = "Please note that this web service is still under development....
 global $txt_subscr_limitation;
+global $txt_subscr_foundhwid; #        = "Hardware Identifier";
+global $txt_subscr_rate;#	     = "Hardware bewerten";
+global $txt_subscr_pleaserate;
+global $txt_subscr_type;        # Type
+global $txt_subscr_help;
+global $txt_subscr_ifpossible;
+global $txt_subscr_new;
+global $txt_submit;
 
 require_once(plugin_dir_path(__FILE__).'../../lhg-pricedb/includes/lhg.conf');
 
@@ -200,8 +209,8 @@ if (current_user_can('publish_posts') ) {
         if ($show_public_profile != 1) print '<br><a href="http://'.$rescan_url.'/rescan.php?sid='.$sid.'">Start rescan!</a><br>';
 }
 
-if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
-This way we can fill our Linux Hardware Database with valuable information for the Linux community.</b>';
+#if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
+#This way we can fill our Linux Hardware Database with valuable information for the Linux community.</b>';
 
 
 # link to other scans
@@ -217,15 +226,10 @@ $num_uid = $lhg_price_db->get_var($myquery);
 
 #print "<br>NUM:".$num_uid;
 
-if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
-	if ($show_public_profile != 1) print "<br>&nbsp;<br>See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
-	#var_dump( $uid );
-}
-
 $email = lhg_get_hwscanmail($sid);
 if ($email != "") $userknown = 1;
 
-$buttontext = "Submit";
+$buttontext = $txt_submit; #"Submit";
 if ($userknown == 1) $buttontext = "Update";
 print "";
 
@@ -350,12 +354,12 @@ print '
 
         $logo = get_distri_logo($distribution);
 
-	echo "<h2>".$txt_subscr_scanoverview.":</h2>";
+#	echo "<h2>".$txt_subscr_scanoverview.":</h2>";
 
                 #get and check session ID
                 #echo "Session ID: $sid <br>";
 
-                echo '<table id="registration">';
+                echo '<table id="registration" class="scanoverview-table">';
                 echo '<tr id="header">
 
 
@@ -427,6 +431,11 @@ print '
                         echo "</tr>\n";
 
                 echo "</table>";
+
+if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
+	if ($show_public_profile != 1) print "<br>&nbsp;<br>See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
+}
+
 
 
 # Add user feedback exchange
@@ -644,7 +653,7 @@ print                       " </td>";
 
 $usercomment = lhg_get_usercomment($sid);
 $buttontype = "green";
-$buttontext = "Submit";
+$buttontext = $txt_submit; #"Submit";
 if ($usercomment != "") $buttontype = "light";
 if ($usercomment != "") $buttontext = "Update";
 
@@ -888,7 +897,7 @@ print                       " </td>";
 
 		$usercomment_multi = lhg_get_usercomment_multi($sid,$id);
 		$buttontype = "green";
-		$buttontext = "Submit";
+		$buttontext = $txt_submit; #"Submit";
 		if ($usercomment_multi != "") $buttontype = "light";
 		if ($usercomment_multi != "") $buttontext = "Update";
 
@@ -928,15 +937,15 @@ if (count($unidentified_hw_pci) > 0) {
 
         $mb_name = lhg_get_mainboard_name( $sid );
         $clean_mb_name = lhg_clean_mainboard_name( $mb_name );
-	print "<h2>Unknown ".$mb_or_laptop."</h2>";
-        print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
+	print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
+        #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
         print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
 
 
 	$mb_usercomment = lhg_get_mb_usercomment($sid);
 	$url_mb = lhg_get_mb_url($sid);
 	$buttontype = "green";
-	$buttontext = "Submit";
+	$buttontext = $txt_submit; #"Submit";
 	if ($mb_usercomment != "") $buttontype = "light";
 	if ($mb_usercomment != "") $buttontext = "Update";
 
@@ -994,7 +1003,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                 $default_y = 'checked="checked"';
                 $default_n = "";
                 $buttontype = "green";
-		$buttontext = "Submit";
+		$buttontext = $txt_submit; #"Submit";
                 $showme = lhg_show_scanned_component( $title , $id, $pciid );
                 $short_pci_title = lhg_clean_pci_title( $title );
                 $is_onboard = lhg_pci_component_is_onboard( $title, $sid, $id, $pciid);
@@ -1274,7 +1283,7 @@ if ($num_skip_tmp == count($unidentified_hw) ) {
 
 if ( (count($unidentified_hw) > 0) && ($skip_unknown_hw != 1) ) {
 
-print "<h2>Unknown Hardware</h2>";
+print "<h2>".$txt_subscr_newhw."</h2>";
 
 
 
@@ -1564,12 +1573,12 @@ print '
                 echo '<tr id="header">
 
 
-                <td id="title-colhw">Found Hardware Identifier</td>
+                <td id="title-colhw">'.$txt_subscr_foundhwid.'</td>
                 <td>';
-	        if ($show_public_profile != 1) print "Rate Hardware";
+	        if ($show_public_profile != 1) print $txt_subscr_rate; #"Rate Hardware";
                 print '
                 </td>
-                <td id="col2" width="13%"><nobr>Type</nobr></td>
+                <td id="col2" width="13%"><nobr>'.$txt_subscr_type.'</nobr></td>
 
                 <!-- td id="col4">'.$txt_subscr_modus.'</td -->
 
@@ -1643,7 +1652,7 @@ print '
 
 
 $buttontype = "green";
-$buttontext = "Submit";
+$buttontext = $txt_submit ; #"Submit";
 if ( ($comment != "") or ($url != "") ) $buttontype = "light";
 if ( ($comment != "") or ($url != "") ) $buttontext = "Update";
 
@@ -1666,7 +1675,7 @@ if ($scantype == "cpu") {
 
         # only scanning person should be allowed to rate here!
         if ($show_public_profile != 1)
-	$article_created = "Please rate: <br><nobr>$out1</nobr>";
+	$article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
 
 }
 
@@ -1682,7 +1691,7 @@ if ($scantype == "drive") {
 
         # only scanning person should be allowed to rate here!
         if ($show_public_profile != 1)
-	$article_created = "Please rate: <br><nobr>$out1</nobr>";
+	$article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
 
 }
 
@@ -1699,7 +1708,7 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
 
         # only scanning person should be allowed to rate here!
         if ($show_public_profile != 1)
-        $article_created = "Please rate: <br><nobr>$out1</nobr>";
+        $article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
 
 }
 
@@ -1762,11 +1771,18 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
 
 if ($show_public_profile != 1)
 print '<form action="?" method="post" class="hwcomments">
-       <div id="updatearea-'.$id.'">
-       Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:<br>
-       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea><br>
-       If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
-       <input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
+       <div id="updatearea-'.$id.'">';
+
+       # Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:
+print $txt_subscr_help;
+
+print '<br>
+       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea><br>';
+
+       # If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
+print $txt_subscr_ifpossible;
+
+print '<input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
        <input id="postid-'.$id.'" name="postid-'.$id.'" type="hidden" value="'.$newPostID.'">
        </div>
        <br><input type="submit" name="scan-comments-'.$id.'" id="scan-comments-'.$id.'" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />
@@ -1928,6 +1944,11 @@ print '
 
 $scandate = lhg_get_hwscandate($sid);
 $scandate = gmdate("Y-m-d\TH:i:s\Z", $scandate);
+
+# Thank you for using...
+global $txt_subscr_thankyou;
+print $txt_subscr_thankyou;
+
 # This scan was performed at
 print "<br>".$txt_subscr_thisscan.": ".$scandate;
 
