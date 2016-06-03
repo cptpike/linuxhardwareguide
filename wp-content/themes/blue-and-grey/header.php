@@ -354,6 +354,10 @@ function country_list($metalist) {
 
 		}
 
+                # private profile page remains
+
+                $posturlcom = "/hardware-profile";
+        	$posturlde  = "/hardware-profile";
 
 	}
 
