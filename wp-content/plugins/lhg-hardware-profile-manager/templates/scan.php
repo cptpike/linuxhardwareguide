@@ -17,6 +17,7 @@ $scandebug = 0;
 
 
 global $lang;
+global $txt_category;
 global $txt_subscr_compat              ;//  		= "Legende: Y = all comments, R = replies only, C = inactive";
 global $txt_subscr_regist_date  	;// = "Registration Date";
 global $txt_subscr_modus	  	;//= "Status";
@@ -41,14 +42,40 @@ global $txt_subscr_edit_rating;
 global $txt_subscr_edit_comment;
 global $txt_subscr_notrated;
 global $show_public_profile;
+global $txt_subscr_scanoverview;
+global $txt_scan_distribution;
+global $txt_subscr_kernelversion; #   = 'Kernel version';
+global $txt_subscr_hwcomp; #          = "Hardware Components";
+global $txt_subscr_identified; #      = "Identified";
+global $txt_subscr_unknown; #         = "Unknown";
+global $txt_subscr_knownhw;
+global $txt_subscr_newhw;
+global $txt_subscr_addhw;#	    = "Add HW to your profile";
+global $txt_subscr_ratecomp;#        = "Please rate<br>Linux compatibility";
+global $txt_subscr_nohwfound;#       = "No hardware found";
+global $txt_subscr_hwfeedback; # Please let us know if ...
+global $txt_subscr_multiple;
+global $txt_subscr_identified_usb;
+global $txt_subscr_option;
+global $txt_subscr_thisscan; #        = "This scan was performed at";
+global $txt_subscr_notice; #          = "Please note that this web service is still under development....
+global $txt_subscr_limitation;
+global $txt_subscr_foundhwid; #        = "Hardware Identifier";
+global $txt_subscr_rate;#	     = "Hardware bewerten";
+global $txt_subscr_pleaserate;
+global $txt_subscr_type;        # Type
+global $txt_subscr_help;
+global $txt_subscr_ifpossible;
+global $txt_subscr_new;
+global $txt_submit;
 
+require_once(plugin_dir_path(__FILE__).'../../lhg-pricedb/includes/lhg.conf');
 
-global $lhg_price_db;
-if ( ($_SERVER['SERVER_ADDR'] == "192.168.56.12") or ($_SERVER['SERVER_ADDR'] == "192.168.56.13") )
-$lhg_price_db = new wpdb("wordpress", "6DQ2O3PR", "lhgpricedb", "192.168.56.14");
+# quickfix
+# link to .com server for images
+$urlprefix = "";
+if ($lang = "de") $urlprefix = "http://www.linux-hardware-guide.com";
 
-if ( ($_SERVER['SERVER_ADDR'] == "192.168.3.112") or ($_SERVER['SERVER_ADDR'] == "192.168.3.113") )
-$lhg_price_db = new wpdb("wordpress", "6DQ2O3PR", "lhgpricedb", "192.168.3.114");
 
 // Avoid direct access to this piece of code
 if (!function_exists('add_action')){
@@ -113,6 +140,7 @@ $sid = substr($urlpath,$hwscanpos+23);
        $myquery = $lhg_price_db->prepare("SELECT sid FROM `lhgscansessions` WHERE pub_id = %s", $pub_id);
        $sid = $lhg_price_db->get_var($myquery);
  }
+
 
 # store login data
 # we need this info to link scan results with users
@@ -181,6 +209,9 @@ if (current_user_can('publish_posts') ) {
         if ($show_public_profile != 1) print '<br><a href="http://'.$rescan_url.'/rescan.php?sid='.$sid.'">Start rescan!</a><br>';
 }
 
+#if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
+#This way we can fill our Linux Hardware Database with valuable information for the Linux community.</b>';
+
 
 # link to other scans
 
@@ -198,7 +229,7 @@ $num_uid = $lhg_price_db->get_var($myquery);
 $email = lhg_get_hwscanmail($sid);
 if ($email != "") $userknown = 1;
 
-$buttontext = "Submit";
+$buttontext = $txt_submit; #"Submit";
 if ($userknown == 1) $buttontext = "Update";
 print "";
 
@@ -239,7 +270,7 @@ echo '
                                 var button = this;
 
                                 // "we are processing" indication
-                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="/wp-uploads/2015/11/loading-circle.gif" />\';
+                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
                                 $(button).after(indicator_html);
 
 
@@ -279,18 +310,18 @@ echo '
                 /*]]> */
                 </script>';
 
-if ( !lhg_scan_is_linked_with_user_id($sid) )
+
 print '
 <br>&nbsp;<br>
 <h2>Contact information</h2>
 <form action="?" method="post">
-       Please enter your email address in order to allow us to contact you in case of questions regarding your hardware scan results.<br>
-       If you have an Linux-Hardware-Guide account please enter your registration mail address to link this scan with your account:<br>
+       Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:<br>
        <b>Email</b>: <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
        <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
 </form>
 <br>
 ';
+
 }
 
 
@@ -315,15 +346,15 @@ print '
 	$scandate = $identified_scans[0]->scandate;
 	$scandate_txt = gmdate("Y-m-d, H:i:s", $scandate);
 
-        $distribution = "unknown";
-        $kversion = "unkwnown";
+        $distribution = $txt_subscr_unknown; #"unknown";
+        $kversion = $txt_subscr_unknown; #"unkwnown";
 
         $distribution = $identified_scans[0]->distribution;
         $kversion = $identified_scans[0]->kversion;
 
         $logo = get_distri_logo($distribution);
 
-	#echo "<h2>Scan overview:</h2>";
+#	echo "<h2>".$txt_subscr_scanoverview.":</h2>";
 
                 #get and check session ID
                 #echo "Session ID: $sid <br>";
@@ -337,9 +368,9 @@ print '
                 #if ($userknown == 1)
                 #echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="30%">Distribution</td>
-                      <td id="hwscan-col2" width="20%">Kernel Version</td>
-                <td id="hwscan-col2" width="13%">Hardware Components</td>
+                echo '<td id="hwscan-col2" width="30%">'.$txt_scan_distribution.'</td>
+                      <td id="hwscan-col2" width="20%">'.$txt_subscr_kernelversion.'</td>
+                <td id="hwscan-col2" width="13%">'.$txt_subscr_hwcomp.'</td>
 
 
                 </tr>';
@@ -392,7 +423,7 @@ print '
 
                         echo "
                         <td id=\"col2\">
-                        <span class='subscribe-column-1'><center>Identified: $num_identified_hw <br> Unknown: $num_unidentified_hw  </center></span>
+                        <span class='subscribe-column-1'><center>".$txt_subscr_identified.": ".$num_identified_hw." <br> ".$txt_subscr_unknown.": $num_unidentified_hw  </center></span>
                         </td>";
 
 
@@ -401,12 +432,10 @@ print '
 
                 echo "</table>";
 
-
-# Link other scans of user
 if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
-	if ($show_public_profile != 1) print "See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
-	#var_dump( $uid );
+	if ($show_public_profile != 1) print "<br>&nbsp;<br>See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
 }
+
 
 
 # Add user feedback exchange
@@ -422,7 +451,7 @@ lhg_feedback_area( $sid );
 
 if (count($identified_hw) > 0) {
 
-echo "<h2>Known Hardware</h2>";
+echo "<h2>".$txt_subscr_knownhw."</h2>";
 
 echo '
                 <script type="text/javascript">
@@ -435,7 +464,7 @@ echo '
                                 var button = this;
 
                                 // "we are processing" indication
-                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="/wp-uploads/2015/11/loading-circle.gif" />\';
+                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
                                 $(button).after(indicator_html);
 
 
@@ -478,7 +507,7 @@ echo '
 
 
 if (count($identified_hw) == 0) {
-        print '<div class="no-hw-found">No hardware found</div>';
+        print '<div class="no-hw-found">'.$txt_subscr_nohwfound.'</div>';
 }else {
 
                 #get and check session ID
@@ -488,14 +517,14 @@ if (count($identified_hw) == 0) {
                 echo '<tr id="header">
 
 
-                <td id="title-colhw">Identified Hardware</td>';
+                <td id="title-colhw">'.$txt_subscr_knownhw.'</td>';
 
                 if ($userknown == 1)
-                echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
+                echo '<td id="hwscan-col3" width="13%"><nobr>'.$txt_subscr_addhw.'</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="13%"><nobr>Please rate<br>Linux compatibility </nobr></td>
+                echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>
 
-                <td id="col4">Category</td>
+                <td id="col4">'.$txt_category.'</td>
 
                 <!-- td id="col2">'.$txt_subscr_regist_date.'</td -->
 
@@ -507,6 +536,10 @@ if (count($identified_hw) == 0) {
                 foreach($identified_hw as $a_identified_hw){
 
                         $PID = $a_identified_hw->postid;
+
+                        # If on the German server, we need the transverse post ID
+                        # ToDo: Identify cases where no translation was done yet
+                        if ($lang == "de") $PID = lhg_get_postid_de_from_com( $PID );
 
                         # get the rating field
                         ob_start();
@@ -520,8 +553,8 @@ if (count($identified_hw) == 0) {
 
                         #List identified hw components
                         $comment_excerpt = "";
-			$permalink = get_permalink($a_identified_hw->postid);
-			$title = translate_title( get_the_title($a_identified_hw->postid) );
+			$permalink = get_permalink( $PID );
+			$title = translate_title( get_the_title( $PID ) );
 			$s=explode("(",$title);
 			$short_title=trim($s[0]);
 			$title_part2=str_replace(")","",trim($s[1]));
@@ -533,7 +566,7 @@ if (count($identified_hw) == 0) {
 					#'alt'	=> trim( strip_tags( $attachment->post_excerpt ) ),
 					#'title'	=> trim( strip_tags( $attachment->post_title ) ),
 				    );
-                        $art_image=get_the_post_thumbnail( $a_identified_hw->postid, array(55,55), $img_attr, array('class' => 'image55') );
+                        $art_image=get_the_post_thumbnail( $PID , array(55,55), $img_attr, array('class' => 'image55') );
 
                         if ($art_image == ""){
                                 #print "No Image";
@@ -546,14 +579,14 @@ if (count($identified_hw) == 0) {
 
 
                         #$category_ids[1]->cat_name = ""; #overwrite old values
-                        $category_ids   = get_the_category ( $a_identified_hw->postid );
+                        $category_ids   = get_the_category ( $PID );
                         $category_name = $category_ids[0]->cat_name;
                         #$category_name2 = "";
                         $category_name2 = $category_ids[1]->cat_name;
 
                         # --- Registered users
 		        global $wpdb;
-			$usernum = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->postmeta WHERE meta_key LIKE '\_stcr@\_%' AND post_id = ".$a_identified_hw->postid);
+			$usernum = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->postmeta WHERE meta_key LIKE '\_stcr@\_%' AND post_id = ".$PID);
 
 
                         // list HW entry
@@ -561,7 +594,7 @@ if (count($identified_hw) == 0) {
                         #$commenttext = "";
                         #if ($comment_excerpt != "") $commenttext='<div class="hwprofile-cite"><i>"'.wp_strip_all_tags($comment_excerpt).'"</i> <br>(<a href="'.$permalink.'#comment-'.$CID.'">'.$txt_subscr_more.'</a> - <a href="/wp-admin/comment.php?action=editcomment&c='.$CID.'">'.$txt_subscr_edit_comment.'</a>)</div>';
 
-			$rating=the_ratings_results($a_identified_hw->postid,0,0,0,10);
+			$rating=the_ratings_results( $PID ,0,0,0,10);
 
                         echo "
                         <td id=\"col-hw\"> <a class='hwscan-found-image' href='$permalink' target='_blank' >$art_image</a>
@@ -579,7 +612,7 @@ print                       " </td>";
 
                         // --- Add to HW profile
                         if ($userknown == 1) {
-	                        $hwbutton = lhg_add_hwbutton( $email, $a_identified_hw->postid);
+	                        $hwbutton = lhg_add_hwbutton( $email, $PID );
         	                #$hwbutton = "Test";
                 	        echo "
                         	<td id=\"col5\">
@@ -591,7 +624,7 @@ print                       " </td>";
 
                         // --- User to rate HW
 
-                        $postid = $a_identified_hw->postid;
+                        $postid = $PID; #a_identified_hw->postid;
 
                         #if ($myrating == "n.a.")
                         echo "
@@ -620,15 +653,14 @@ print                       " </td>";
 
 $usercomment = lhg_get_usercomment($sid);
 $buttontype = "green";
-$buttontext = "Submit";
+$buttontext = $txt_submit; #"Submit";
 if ($usercomment != "") $buttontype = "light";
 if ($usercomment != "") $buttontext = "Update";
 
 #Ask, if HW scanner made errors?
 if ($show_public_profile != 1)
-echo ' <form action="?" method="post" class="usercomment">
-       Please let us know if certain hardware was recognized incorrectly or not recognized at all.<br>
-       This helps us improving the automatic hardware recognition for future scans:<br>
+echo ' <form action="?" method="post" class="usercomment">'.$txt_subscr_hwfeedback.'
+       <br>
        <textarea id="known-hardware-usercomment" name="usercomment" cols="10" rows="3">'.$usercomment.'</textarea><br>
        <input type="submit" id="known-hardware-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />
 </form>
@@ -688,7 +720,7 @@ echo ' <form action="?" method="post" class="usercomment">
 
 
 if (count($multi_identified_hw) > 0) {
-	echo "<h2>Multiple possibilites (Ambiguously Identified Hardware)</h2>";
+	echo "<h2>".$txt_subscr_multiple."</h2>";
         #small table version at
         $multilimit = 4;
 
@@ -704,17 +736,17 @@ if (count($multi_identified_hw) > 0) {
 
 
                 <td id="title-colhw">
-                Identified USB Device<br>
+                '.$txt_subscr_identified_usb.'<br>
                 '.$title.' - (USB ID: '.$usbid.')
                 </td>';
 
 
                 if ($userknown == 1)
-                echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
+                echo '<td id="hwscan-col3" width="13%"><nobr>'.$txt_subscr_addhw.'</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="13%"><nobr>Please rate<br>Linux compatibility </nobr></td>
+                echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>
 
-                <td id="col4">Category</td>
+                <td id="col4">'.$txt_category.'</td>
 
                 <!-- td id="col2">'.$txt_subscr_regist_date.'</td -->
                 </tr>';
@@ -727,12 +759,17 @@ if (count($multi_identified_hw) > 0) {
 	        foreach($postids as $postid){
                         $i++;
 
+                        # If on the German server, we need the transverse post ID
+                        # ToDo: Identify cases where no translation was done yet
+                        if ($lang == "de") $postid = lhg_get_postid_de_from_com( $postid );
+
+
                         #print "IDs: ".count($postids)."<br>";
 			if (count($postids) > $multilimit) {
                                 # skip line
 
                         }else{
-		                echo '<tr><td><div class="hwscan_option">Option '.$i."</div>";
+		                echo '<tr><td><div class="hwscan_option">'.$txt_subscr_option.' '.$i."</div>";
 	                       #echo "PID: $postid";
         	                echo "</td><td></td><td>";
 	        	        if ($userknown == 1) echo "<td></td>";
@@ -833,6 +870,7 @@ print                       " </td>";
                         // --- User to rate HW
 
                         $postid = $a_identified_hw->postid;
+                        if ($lang == "de") $postid = lhg_get_postid_de_from_com($postid);
 
                         #if ($myrating == "n.a.")
                         echo "
@@ -859,7 +897,7 @@ print                       " </td>";
 
 		$usercomment_multi = lhg_get_usercomment_multi($sid,$id);
 		$buttontype = "green";
-		$buttontext = "Submit";
+		$buttontext = $txt_submit; #"Submit";
 		if ($usercomment_multi != "") $buttontype = "light";
 		if ($usercomment_multi != "") $buttontext = "Update";
 
@@ -899,7 +937,7 @@ if (count($unidentified_hw_pci) > 0) {
 
         $mb_name = lhg_get_mainboard_name( $sid );
         $clean_mb_name = lhg_clean_mainboard_name( $mb_name );
-	print "<h2>New ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
+	print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
         #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
         print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
 
@@ -907,7 +945,7 @@ if (count($unidentified_hw_pci) > 0) {
 	$mb_usercomment = lhg_get_mb_usercomment($sid);
 	$url_mb = lhg_get_mb_url($sid);
 	$buttontype = "green";
-	$buttontext = "Submit";
+	$buttontext = $txt_submit; #"Submit";
 	if ($mb_usercomment != "") $buttontype = "light";
 	if ($mb_usercomment != "") $buttontext = "Update";
 
@@ -944,7 +982,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
        </form>';
 
         print "<table id='mainboard-scan-table'>
-                 <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>Hardware Component Name</td><td class='pciid-column'>PCI ID</td></tr>";
+                 <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>".$txt_subscr_foundhwid."</td><td class='pciid-column'>PCI ID</td></tr>";
 
         # list of IDs that should be hidden in overview
         $hidearray = array();
@@ -965,10 +1003,13 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                 $default_y = 'checked="checked"';
                 $default_n = "";
                 $buttontype = "green";
-		$buttontext = "Submit";
+		$buttontext = $txt_submit; #"Submit";
                 $showme = lhg_show_scanned_component( $title , $id, $pciid );
                 $short_pci_title = lhg_clean_pci_title( $title );
                 $is_onboard = lhg_pci_component_is_onboard( $title, $sid, $id, $pciid);
+
+                global $txt_yes;
+                global $txt_no;
 
                 if ($is_onboard == "yes")  {  $default_y = 'checked'; $default_n = '';	}
                 if ($is_onboard == "no") {    $default_y = ''; $default_n = 'checked';  }
@@ -1010,8 +1051,8 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                         <form action="?" method="post" class="hwcomments">
                         <td class="pci-column-onboard pci-column-onboard-radiob">
                           <fieldset>
-                             yes <input type="radio" id="radio-y-'.$id.'" name="on-board" value="y" '.$default_y.' />
-                             <input type="radio" id="radio-n-'.$id.'" name="on-board" value="n" '.$default_n.' /> no
+                             '.$txt_yes.' <input type="radio" id="radio-y-'.$id.'" name="on-board" value="y" '.$default_y.' />
+                             <input type="radio" id="radio-n-'.$id.'" name="on-board" value="n" '.$default_n.' /> '.$txt_no.'
                           </fieldset>
                         </td>
                         <td><div class="pci-title"><b>'.$short_pci_title.'</b><span id="show-details-hw-'.$id.'"></span></div>
@@ -1031,8 +1072,8 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                 print '
                         <td class="pci-column-onboard pci-column-onboard-radiob">';
 
-                if ($default_y != "") print "yes";
-                if ($default_n != "") print "no";
+                if ($default_y != "") print $txt_yes;
+                if ($default_n != "") print $txt_no;
                 print '
                         </td>
                         <td><div class="pci-title"><b>'.$short_pci_title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
@@ -1068,7 +1109,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
 				$(\'.pciid-column\').hide();
 				$(\'.mb-default-hidden\').hide();
                                 $(\'<a href id="toggleButton">Show hidden components</a>\').prependTo(\'#mainboard-show-more\');
-                                //$(\'<a href id="show-more-mb">Show details</a>\').prependTo(\'#details-mb\');
+                                $(\'<a href id="show-more-mb">Show details</a>\').prependTo(\'#details-mb\');
                                 $(\'#hidden-details-mb\').hide();
 
                                 $(\'#details-mb\').click(function(){
@@ -1165,7 +1206,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
                                 var button = this;
 
                                 // "we are processing" indication
-                                var indicator_html = \'<img class="scan-load-button" id="button-load-mb-comment" src="/wp-uploads/2015/11/loading-circle.gif" />\';
+                                var indicator_html = \'<img class="scan-load-button" id="button-load-mb-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
                                 $(button).after(indicator_html);
 
 
@@ -1245,7 +1286,7 @@ if ($num_skip_tmp == count($unidentified_hw) ) {
 
 if ( (count($unidentified_hw) > 0) && ($skip_unknown_hw != 1) ) {
 
-print "<h2>New Hardware</h2>";
+print "<h2>".$txt_subscr_newhw."</h2>";
 
 
 
@@ -1261,23 +1302,6 @@ print "<h2>New Hardware</h2>";
                         onclose: function() { $("#my_popup_contents").empty();},
                         opacity: 0.3,
                         transition: "all 0.3s"
-                      });
-
-
-                      // show additional properties from the beginning if amazon URL was provided
-                      // hide otherwise
-                      $("[id^=url-]").each(function(){
-                      	  var id = $(this).attr(\'id\').substring(4);
-
-                          url = $("#url-"+id).val();
-			  //$("#updatearea-8921").append("URL: "+url);
-			  //$("#updatearea-8921").append("POS: "+ url.toLowerCase().indexOf("amazon.") );
-                          if ( url.toLowerCase().indexOf("amazon.") >= 0 ) {
-                          	$(\'#details-hw-\'+id).show("slow");
-                                //$("#updatearea-8921").append( "FOUND!" );
-                          } else {
-                          	$(\'#details-hw-\'+id).hide();
-                          }
                       });
 
 
@@ -1376,8 +1400,8 @@ print "<h2>New Hardware</h2>";
 
                                 $("[id^=show-details-hw-]").each(function(){
                                 	var id = $(this).attr(\'id\').substring(16);
-	                                // $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
-                                        // $("#details-hw-"+id).hide();
+	                                $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
+                                        $("#details-hw-"+id).hide();
                                 });
                                 $("[id^=show-details-hw-]").click(function(){
                                 	var id = $(this).attr(\'id\').substring(16);
@@ -1391,8 +1415,6 @@ print "<h2>New Hardware</h2>";
 
 
 
-
-                                // Submit a comment or an URL to a unknown hardware component
 
 				$(\'[name^="scan-comments-"]\').click(function(){
 
@@ -1461,10 +1483,6 @@ print "<h2>New Hardware</h2>";
                                         $("#properties-"+id).text(properties);
                                         $("#title-"+id).text(newtitle);
 
-                                        // show new title
-	                                $(\'#details-hw-\'+id).show("slow");
-
-
                                 });
 
                                 //prevent default behavior
@@ -1481,7 +1499,7 @@ print "<h2>New Hardware</h2>";
 
                                         $("#my_popup").popup("show");
 
-                                        var indicator_html = \'<div id="scan-load-area">Searching for hardware...<img class="scan-load-button" id="auto_search_ongoing" src="/wp-uploads/2015/11/loading-circle.gif" /></div>\';
+                                        var indicator_html = \'<div id="scan-load-area">Searching for hardware...<img class="scan-load-button" id="auto_search_ongoing" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" /></div>\';
 
 	                                var clickedlink = this;
         	                        var id = $(clickedlink).attr(\'id\').substring(7);
@@ -1558,12 +1576,12 @@ print '
                 echo '<tr id="header">
 
 
-                <td id="title-colhw">Found Hardware Identifier</td>
+                <td id="title-colhw">'.$txt_subscr_foundhwid.'</td>
                 <td>';
-	        if ($show_public_profile != 1) print "Rate Hardware";
+	        if ($show_public_profile != 1) print $txt_subscr_rate; #"Rate Hardware";
                 print '
                 </td>
-                <td id="col2" width="13%"><nobr>Type</nobr></td>
+                <td id="col2" width="13%"><nobr>'.$txt_subscr_type.'</nobr></td>
 
                 <!-- td id="col4">'.$txt_subscr_modus.'</td -->
 
@@ -1606,14 +1624,14 @@ print '
                         #        if ($is_mainboard_component == 1) $mainboard_array = array_merge($mainboard_array, $a_identified_hw);
 			#}
 
-                	if ($usbid != "") $logo = "<img src='/wp-uploads/2014/12/USB_logo.jpg' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown USB device'>";
+                	if ($usbid != "") $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/USB_logo.jpg' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown USB device'>";
                 	if ($pciid != "") $logo = "<div class='hwscan-pcilogo'>&nbsp;&nbsp;PCI</div>";
-                	if ($scantype == "cpu") $logo = "<img src='/wp-uploads/2014/12/cpu-image.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CPU'>";
+                	if ($scantype == "cpu") $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/cpu-image.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CPU'>";
 
                 	if ($scantype == "drive") {
-                        	$logo = "<img src='/wp-uploads/2014/12/drive-hdd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown Drive'>";
-                                if (strpos(" ".$title,"CD-ROM") > 0) $logo = "<img src='/wp-uploads/2014/12/drive-cd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CD/DVD Drive'>";
-                                if (strpos(" ".$title,"SSD") > 0) $logo = "<img src='/wp-uploads/2014/12/drive-ssd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown SSD Drive'>";
+                        	$logo = "<img src='".$urlprefix."/wp-uploads/2014/12/drive-hdd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown Drive'>";
+                                if (strpos(" ".$title,"CD-ROM") > 0) $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/drive-cd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CD/DVD Drive'>";
+                                if (strpos(" ".$title,"SSD") > 0) $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/drive-ssd.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown SSD Drive'>";
 
 	                        #clean title
         	                $title = str_replace("Direct-Access","",$title);
@@ -1637,7 +1655,7 @@ print '
 
 
 $buttontype = "green";
-$buttontext = "Submit";
+$buttontext = $txt_submit ; #"Submit";
 if ( ($comment != "") or ($url != "") ) $buttontype = "light";
 if ( ($comment != "") or ($url != "") ) $buttontext = "Update";
 
@@ -1660,7 +1678,7 @@ if ($scantype == "cpu") {
 
         # only scanning person should be allowed to rate here!
         if ($show_public_profile != 1)
-	$article_created = "Please rate: <br><nobr>$out1</nobr>";
+	$article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
 
 }
 
@@ -1676,7 +1694,7 @@ if ($scantype == "drive") {
 
         # only scanning person should be allowed to rate here!
         if ($show_public_profile != 1)
-	$article_created = "Please rate: <br><nobr>$out1</nobr>";
+	$article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
 
 }
 
@@ -1693,7 +1711,7 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
 
         # only scanning person should be allowed to rate here!
         if ($show_public_profile != 1)
-        $article_created = "Please rate: <br><nobr>$out1</nobr>";
+        $article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
 
 }
 
@@ -1743,31 +1761,37 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
                 print '<div class="subscribe-hwtext">';
                 print '   <div class="subscribe-hwtext-span"><b>'.$title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
 
-                $title_info = get_the_title( $newPostID );
-                $properties_string = lhg_get_properties_string( $newPostID );
-
                 if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
                 	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
                 	print '
                         	<div id="details-hw-'.$id.'" class="details">
+                    	    		<br>Properties: <span id="properties-'.$id.'">'.$meta_info.'</span>
                 	    		<br>Title: <span id="title-'.$id.'">'.$title_info.'</span>
-                    	    		<br>Properties: <span id="properties-'.$id.'">'.$properties_string.'</span>
 		        	</div>';
                 }
 
                 print '</div>';
 
-if ($show_public_profile != 1)
-print '<form action="?" method="post" class="hwcomments">
-       <div id="updatearea-'.$id.'">
-       Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:<br>
-       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea><br>
-       If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
-       <input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
+if ($show_public_profile != 1){
+	print '<form action="?" method="post" class="hwcomments">
+       <div id="updatearea-'.$id.'">';
+
+       # Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:
+	print $txt_subscr_help;
+
+	print '<br>
+       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea><br>';
+
+       # If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
+	print $txt_subscr_ifpossible;
+
+	print '<input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
        <input id="postid-'.$id.'" name="postid-'.$id.'" type="hidden" value="'.$newPostID.'">
        </div>
        <br><input type="submit" name="scan-comments-'.$id.'" id="scan-comments-'.$id.'" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />
-</form>';
+	</form>';
+ }
+
 print '
 </td><td>
 '.$article_created.'
@@ -1791,7 +1815,7 @@ print '
                           <span class='subscribe-column-2'>
                             USB Device: $usbid";
 
-                            if (current_user_can('publish_posts') ) {
+                            if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                    }
@@ -1815,7 +1839,7 @@ print '
                           <span class='subscribe-column-2'>
                             CPU";
 
-                            if (current_user_can('publish_posts') ) {
+                            if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
@@ -1834,7 +1858,7 @@ print '
                             <span class='subscribe-column-2'>
                               Drive";
 
-                              if (current_user_can('publish_posts') ) {
+                              if  ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
@@ -1926,22 +1950,26 @@ print '
 $scandate = lhg_get_hwscandate($sid);
 $scandate = gmdate("Y-m-d\TH:i:s\Z", $scandate);
 
-if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
-This way we can fill our Linux Hardware Database with valuable information for the Linux community.<br>';
+# Thank you for using...
+global $txt_subscr_thankyou;
+print $txt_subscr_thankyou;
 
+# This scan was performed at
+print "<br>".$txt_subscr_thisscan.": ".$scandate;
 
-print "<br>This scan was performed at: ".$scandate;
-print "<br>Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
-However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.";
+#Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
+#However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.
+print "<br>".$txt_subscr_notice;
 
-print "<p>This tool is currently limited to following hardware components:";
-print "<ul><li>USB devices";
-print "<li>PCI devices";
-print "<li>Mainboards (experimental)";
-print "<li>Laptops (experimental)";
-print "<li>CPUs";
-print "<li>Storage media (HDD, CD, DVD, SSD)";
-print "</ul>";
+#print "<p>This tool is currently limited to following hardware components:";
+#print "<ul><li>USB devices";
+#print "<li>PCI devices";
+#print "<li>Mainboards (experimental)";
+#print "<li>Laptops (experimental)";
+#print "<li>CPUs";
+#print "<li>Storage media (HDD, CD, DVD, SSD)";
+#print "</ul>";
+print $txt_subscr_limitation;
 
 function lhg_get_hwscandate( $sid ) {
 
@@ -2545,24 +2573,6 @@ function lhg_get_mainboard_name_from_DMI ( $dmesg ) {
         #print "<br>";
 
         return $mbstring;
-}
-
-function lhg_scan_is_linked_with_user_id( $sid ) {
-
-       # check if the scan session is linked with a user account
-       global $lhg_price_db;
-
-       $myquery = $lhg_price_db->prepare("SELECT wp_uid FROM `lhgscansessions` WHERE sid = %s", $sid);
-       $wp_uid = $lhg_price_db->get_var($myquery);
-       $myquery = $lhg_price_db->prepare("SELECT wp_uid_de FROM `lhgscansessions` WHERE sid = %s", $sid);
-       $wp_uid_de = $lhg_price_db->get_var($myquery);
-
-       #error_log("SID: $sid - UID: ".$result);
-       $linked = false;
-       if ($wp_uid != 0) $linked = true;
-       if ($wp_uid_de != 0) $linked = true;
-
-       return $linked;
 }
 
 ?>
