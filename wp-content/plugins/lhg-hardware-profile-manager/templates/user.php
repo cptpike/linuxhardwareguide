@@ -86,11 +86,15 @@ echo "$message<br>
     		$displayname = $current_user->display_name;
                 $avatar = get_avatar( $email, 45 );
 
+                global $region;
+                $urllang = lhg_get_lang_url_from_region( $region );
+                if ($urllang != "") $urllang = "/".$urllang;
+
 
                 if ( is_user_logged_in() )
 		if ( $lang != "de" ) {
-                        $url_public_profile_txt = "http://www.linux-hardware-guide.com/hardware-profile/user".get_current_user_id();
-                	$url_public_profile = "/hardware-profile/user".get_current_user_id();
+                        $url_public_profile_txt = "http://www.linux-hardware-guide.com".$urllang."/hardware-profile/user".get_current_user_id();
+                	$url_public_profile = $urllang."/hardware-profile/user".get_current_user_id();
                 }
 		if ( $lang == "de" ) {
                 	$url_public_profile_txt = "http://www.linux-hardware-guide.de/hardware-profile/user".get_current_user_id();
