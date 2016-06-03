@@ -5,6 +5,7 @@ add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
 add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
 add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
+add_shortcode( 'lhg_donation_testing', 'lhg_donation_testing');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -592,8 +593,8 @@ function lhg_donation_table_shortcode($attr) {
 
 
 <td class="quartery-points-avatar qrtly-2">';
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '<a href="./hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '<a href="./hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
 $output .='    <div class="userlist-avatar">'.
       $avatar.'
     </div> ';
@@ -604,8 +605,8 @@ $output .= '</td>
 
 <td class="qrtly-3">
           <div class="userlist-displayname">';
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '		<a href="./hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '		<a href="./hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '		<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '		<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
 	            	$output .= $user_nicename;
 
 if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '</a>';
@@ -816,3 +817,24 @@ function lhg_scancommand_shortcode($attr) {
 
         return $output;
 }
+
+
+# This function is needed temporarily only.
+# It allows creating contents visible only to users participating in our beta testing 
+function lhg_donation_testing($attr, $content) {
+        global $lang;
+        $uid = get_current_user_id();
+        $guid = lhg_get_guid( $uid );
+
+        # user accounts are currently hard coded. Will be removed after beta testing
+        if (
+        	( ($lang != "de") and ($uid == 24294)) or   # testuer1 .com
+        	  ($guid == 1)  or                          # cptpike .com & .de
+        	  ($uid == 1)                               # admin .com & .de
+           ) {                           
+                return do_shortcode( $content );
+	}
+
+        return;
+}
+

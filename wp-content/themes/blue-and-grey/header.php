@@ -306,19 +306,55 @@ function country_list($metalist) {
                 $urlpath = $pieces['path'];
 
 		$hwprofpos=strpos($urlpath,"hardware-profile/user");
+		$hwprofposg=strpos($urlpath,"hardware-profile/guser");
                 # if we have a public page this fails and we need the following value
                 $hwprofposs=strpos($urlpath,"hardware-profile/system");
 
                 #print "$urlpath - $hwprofpos - $hwprofposs<br>";
-                if ($hwprofpos != "") $rurl = substr($urlpath,$hwprofpos);
+
                 if ($hwprofposs != "") $rurl = substr($urlpath,$hwprofposs);
 
                 //echo "URL: $posturlcom";
                 //echo "<br>URL2: $rurl";
 
-
                 $posturlcom = "$rurl";
                 $posturlde  = "$rurl";
+
+                if ($hwprofpos != "") {
+                        # translate public user profile links to guid links to make them available on other servers
+                	$rurl = substr($urlpath,$hwprofpos);
+                        $hwprofpos   = strpos($urlpath,"/hardware-profile/user");
+			$uid = (int)substr($urlpath,$hwprofpos+22);
+			$guid = lhg_get_guid_from_uid( $uid );
+
+                        #locally linking to standard user profile, transversally linking to guid
+	                if ($lang != "de") $posturlde  = "/hardware-profile/guser".$guid;
+	                if ($lang != "de") $posturlcom  = "/hardware-profile/user".$uid;
+	                if ($lang == "de") $posturlcom  = "/hardware-profile/guser".$guid;
+	                if ($lang == "de") $posturlde  = "/hardware-profile/user".$uid;
+
+		}
+
+                if ($hwprofposg != "") {
+                        # translate public user profile links to guid links to make them available on other servers
+                	$rurl = substr($urlpath,$hwprofpos);
+                        $hwprofpos   = strpos($urlpath,"/hardware-profile/guser");
+			$guid = (int)substr($urlpath,$hwprofposg+22);
+			#$guid = lhg_get_guid_from_uid( $uid );
+
+                        #locally linking to standard user profile, transversally linking to guid
+	        	$rurl = "/hardware-profile/guser".$guid;
+	                #if ($lang != "de") $posturlcom  = "/hardware-profile/user".$uid;
+	                #if ($lang == "de") $posturlcom  = "/hardware-profile/guser".$guid;
+	                #if ($lang == "de") $posturlde  = "/hardware-profile/user".$uid;
+
+	                $posturlcom = "$rurl";
+        	        $posturlde  = "$rurl";
+
+
+		}
+
+
 	}
 
 
@@ -626,7 +662,8 @@ if ($lang =="en")
 if (!is_user_logged_in() ) {
 
 
-echo '
+# top banner disabled. disturbed layout too much!
+if (1==0) echo '
            <span class="topbanner">
 <script async src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- Linux-Hardware-Guide.com Top -->

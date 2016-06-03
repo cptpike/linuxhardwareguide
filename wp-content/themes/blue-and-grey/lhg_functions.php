@@ -591,7 +591,8 @@ function lhg_user_tooltip ( $uid ) {
         global $txt_avt_rank;
         global $txt_avt_click;
 
-	$karma = cp_getPoints( $uid );
+	#$karma = cp_getPoints( $uid );
+	$karma = lhg_get_karma( $uid );
         //$level = lhg_get_rank_level( $uid );
         $rank_txt = cp_module_ranks_getRank($public_user_ID);
 	$user = get_userdata( $uid );
@@ -616,7 +617,9 @@ function lhg_comment_percent_bar ( $uid ) {
 
         if ($lang == "de") return;
 
-	$karma = cp_getPoints( $uid );
+	#$karma = cp_getPoints( $uid );
+	$karma = lhg_get_karma( $uid );
+
         $level = lhg_get_rank_level( $uid );
         $rank_txt = cp_module_ranks_getRank($public_user_ID);
         $max_rank = 3;
@@ -642,7 +645,8 @@ function lhg_get_rank_level ( $uid ) {
 
         if (!function_exists('cp_getPoints') ) return;
 
-	$karma = cp_getPoints( $uid );
+	#$karma = cp_getPoints( $uid );
+        $karma = lhg_get_karma( $uid );
         if ($karma < 1000){ $karma_rank_total = 1000;  $rank_level = 2; }
         if ($karma < 100) { $karma_rank_total = 100 ; $rank_level = 1; }
 
@@ -1949,6 +1953,34 @@ function translate_category($url){
         return $url;
 }
 
+function lhg_translate_search_url($url){
+        # We can not translate by $region or $lang because these values are set incorrectly by the AJAX request.
+        # Instead, we use the HTTP_REFERER to identify the language
+
+	$ref = $_SERVER["HTTP_REFERER"];
+        $langurl = "";
+        if (strpos($ref, "/fr/") !== false ) $langurl = "fr";
+        if (strpos($ref, "/ca/") !== false ) $langurl = "ca";
+        if (strpos($ref, "/uk/") !== false ) $langurl = "uk";
+        if (strpos($ref, "/es/") !== false ) $langurl = "es";
+        if (strpos($ref, "/it/") !== false ) $langurl = "it";
+        if (strpos($ref, "/nl/") !== false ) $langurl = "nl";
+        if (strpos($ref, "/in/") !== false ) $langurl = "in";
+        if (strpos($ref, "/ja/") !== false ) $langurl = "ja";
+        if (strpos($ref, "/zh/") !== false ) $langurl = "zh";
+
+	if ($langurl == "") return $url;
+
+        //translate urls
+        $url = str_replace("http://192.168.3.113/", "http://192.168.3.113/".$langurl."/",$url);
+        $url = str_replace("http://192.168.56.13/", "http://192.168.56.13/".$langurl."/",$url);
+        $url = str_replace("http://www.linux-hardware-guide.com/", "http://www.linux-hardware-guide.com/".$langurl."/",$url);
+        $url = str_replace("http://linux-hardware-guide.com/", "http://linux-hardware-guide.com/".$langurl."/",$url);
+
+        return $url;
+}
+
+
 
 function translate_title($title){
         global $region;
@@ -3188,7 +3220,40 @@ global $txt_subscr_numart;
 global $txt_subscr_numcom;
 global $txt_subscr_public_hw_profile;
 global $txt_subscr_lat_sub; 	//= "Latest hardware submissions";
+global $txt_subscr_rank; 	//= "Latest hardware submissions";
+global $txt_subscr_nextpromo;  //Next promotion
+global $txt_subscr_nohw;
+global $txt_subscr_scanoverview;  # Scan overview
+global $txt_subscr_kernelversion; #   = 'Kernel version';
+global $txt_subscr_hwcomp; #          = "Hardware Components";
+global $txt_subscr_identified; #      = "Identified";
+global $txt_subscr_unknown; #         = "Unknown";
+global $txt_subscr_knownhw;
+global $txt_subscr_addhw;#	    = "Add HW to your profile";
+global $txt_subscr_ratecomp;#        = "Please rate<br>Linux compatibility";
+global $txt_subscr_nohwfound;#       = "No hardware found";
+global $txt_subscr_hwfeedback;
+global $txt_subscr_multiple;
+global $txt_subscr_identified_usb;
+global $txt_subscr_option;
+global $txt_subscr_thisscan;#        = "This scan was performed at";
+global $txt_subscr_notice;#          = "Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
+global $txt_subscr_limitation; #This tool is limited to...
+global $txt_subscr_newhw;
+global $txt_subscr_foundhwid; #        = "Hardware Identifier";
+global $txt_subscr_rate;
+global $txt_subscr_pleaserate;
+global $txt_subscr_type;
+global $txt_subscr_help;
+global $txt_subscr_ifpossible;
+global $txt_subscr_new;
+global $txt_subscr_thankyou;
+global $txt_subscr_hwscantitle;
+global $txt_yes;
+global $txt_no;
 
+
+global $txt_hwprof_of;
 
 //mobile theme
 global $txt_mobile_search; //Search by article title
@@ -3547,6 +3612,52 @@ $txt_subscr_numart	    = "Number of submitted hardware descriptions";
 $txt_subscr_numcom	    = "Number of comments";
 $txt_subscr_public_hw_profile = "Hardware Profile";
 $txt_subscr_lat_sub	    = "Latest hardware submissions";
+$txt_subscr_rank	    = "Rank";
+$txt_subscr_nextpromo       = "Next promotion";
+$txt_subscr_nohw	    = 'No hardware components were added to the profile so far.';
+$txt_subscr_scanoverview    = 'Scan overview';
+$txt_subscr_kernelversion   = 'Kernel version';
+$txt_subscr_hwcomp          = "Hardware Components";
+$txt_subscr_identified      = "Identified";
+$txt_subscr_unknown         = "Unknown";
+$txt_subscr_knownhw	    = "Known Hardware";
+$txt_subscr_addhw	    = "Add HW to your profile";
+$txt_subscr_ratecomp        = "Please rate<br>Linux compatibility";
+$txt_subscr_nohwfound       = "No hardware found";
+$txt_subscr_hwfeedback      = "Please let us know if certain hardware was recognized incorrectly or not recognized at all.<br>
+				       This helps us improving the automatic hardware recognition for future scans:";
+$txt_subscr_multiple        = "Multiple possibilites (Ambiguously Identified Hardware)";
+$txt_subscr_identified_usb  = "Identified USB Device";
+$txt_subscr_option          = "Option";
+$txt_subscr_thisscan        = "This scan was performed at";
+$txt_subscr_notice          = "Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
+			       However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.";
+$txt_subscr_limitation      = "
+<p>This tool is currently limited to following hardware components:
+<ul><li>USB devices
+<li>PCI devices
+<li>Mainboards (experimental)
+<li>Laptops (experimental)
+<li>CPUs
+<li>Storage media (HDD, CD, DVD, SSD)
+</ul>";
+$txt_subscr_newhw	     = "New Hardware";
+$txt_subscr_foundhwid        = "Hardware Identifier";
+$txt_subscr_rate	     = "Rate hardware";
+$txt_subscr_pleaserate	     = "Please rate";
+$txt_subscr_type             = "Hardware Type";
+$txt_subscr_help             = "Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:";
+$txt_subscr_ifpossible       = "If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:";
+$txt_subscr_new		     = "New";
+$txt_subscr_thankyou	     = '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
+This way we can fill our Linux Hardware Database with valuable information for the Linux community.<br>';
+$txt_subscr_hwscantitle	     = "Hardware Scan Overview:";
+$txt_yes                     = "yes";
+$txt_no                      = "no";
+
+
+
+$txt_hwprof_of              = "Public Hardware Profile of";
 
 
 //mobile theme
@@ -3898,6 +4009,50 @@ Ausgabe von lspci, lsusb und lshw...';
 	$txt_subscr_lat_sub	    = "Letzte Hardware-Eintr&auml;ge";
 	$txt_subscr_numart	    = "Anzahl eingereichter Hardware-Artikel";
 	$txt_subscr_numcom	    = "Anzahl an Kommentaren";
+	$txt_subscr_rank	    = "Rang";
+        $txt_subscr_nextpromo       = "N&auml;chster Rang" ;  //Next promotion
+	$txt_subscr_nohw	    = 'Der Nutzer hat bisher keine Hardware-Komponenten seinem Profil hinzugef&uuml;gt.';
+	$txt_subscr_scanoverview    = 'Hardware-Scan &Uuml;bersicht';
+	$txt_subscr_kernelversion   = 'Kernel-Version';
+	$txt_subscr_hwcomp          = "Hardware-Komponenten";
+	$txt_subscr_identified      = "Identifiziert";
+	$txt_subscr_unknown         = "Unbekannt";
+	$txt_subscr_knownhw	    = "Bekannte Hardware";
+	$txt_subscr_addhw	    = "Hardware dem Profil hinzuf&uuml;gen";
+	$txt_subscr_ratecomp        = "Bitte bewerte die<br>Linux-Kompatibilit&auml;t";
+	$txt_subscr_nohwfound       = "Keine Hardware gefunden";
+        $txt_subscr_hwfeedback      = "Bitte teile mit, falls Hardware-Komponenten nicht oder fehlerhaft identifiziert wurden.<br>
+				       Dies hilft uns die automatische Erkennung zu verbessern:";
+        $txt_subscr_multiple        = "Mehrere M&ouml;glichkeiten (Mehrdeutige Hardware-Identifizierung)";
+	$txt_subscr_identified_usb  = "Identifizierte USB-Ger&auml;te";
+	$txt_subscr_option          = "Option";
+	$txt_subscr_thisscan        = "Dieser Hardware-Scan wurde ausgef&uuml;hrt um";
+	$txt_subscr_notice          = "Bitte beachte, dass dieser Web-Service weiterhin in Entwicklung ist. Alle Scan-Resultate wurden an die Linux-Hardware-Guide Datenbank &uuml;bertragen.
+        Allerdings ist die automatische Hardware-Erkennung und die zugeh&ouml;rige &Uuml;bersicht auf dieser Seite nicht immer fehlerfrei.";
+	$txt_subscr_limitation      = "
+					<p>Dieses Tool ist momentan limitiert auf die Erkennung von:
+					<ul><li>USB Komponenten
+					<li>PCI Komponenten
+					<li>Mainboards (experimentell)
+					<li>Laptops (experimentell)
+					<li>CPUs
+					<li>Speichermedien (HDD, CD, DVD, SSD)
+					</ul>";
+	$txt_subscr_newhw	     = "Neue Hardware";
+        $txt_subscr_foundhwid        = "Hardware-Kennung";
+	$txt_subscr_rate	     = "Hardware bewerten";
+	$txt_subscr_pleaserate	     = "Bitte bewerten";
+	$txt_subscr_type             = "Typ";
+	$txt_subscr_help             = "Hilf uns die Hardware-Komponente der Datenbank hinzuzuf&uuml;gen. Bitte identifiziere die Hardware (falls n&ouml;tig) und beschreibe ihre Linux-Kompatibilit&auml;t:";
+        $txt_subscr_ifpossible       = "Bitte hinterlasse die URL einer Web-Seite, auf welcher die Hardware beschrieben wird (z.B. Hersteller-Spezifikation oder Amazon-Seite).<br>URL:";
+	$txt_subscr_new		     = "Neues";
+	$txt_subscr_thankyou	     = '<b>Danke, dass die die Linux-Hardware-Guide Scan-Software eingesetzt haben</b> (mehr Informationen zur Software unter <a href="https://github.com/paralib5/lhg_scanner">GitHub</a>).<br>
+					Auf diese Weise k&ouml;nnen wir die Linux Hardware Datenbank mit f&uuml;r die Linux-Community wertvollen Informationen f&uuml;llen.<br>';
+	$txt_subscr_hwscantitle	     = "&Uuml;bersicht Hardware-Scan:";
+
+	$txt_hwprof_of              = "�ffentliche Hardware-Profil von";
+	$txt_yes                     = "ja";
+	$txt_no                      = "nein";
 
 
 
@@ -4253,6 +4408,7 @@ output van lspci -nnk, lsusb en lshw...';
 	$txt_subscr_name 	    = "Naam";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "meer";
+	$txt_hwprof_of              = "Publieke Hardware Profiel van";
 
 
 	//mobile theme
@@ -4557,6 +4713,8 @@ Sortie de lspci -vnn, lsusb -v et lshw...
 	$txt_subscr_name 	    = "Nom";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "plus";
+        $txt_hwprof_of              = "Profil Matériel Public de";
+
 
 	//priceDB
 	$txt_lhgdb_overview         = "Vue d'ensemble des fournisseurs";
@@ -4815,6 +4973,7 @@ Suma Donación de mes en curso';
 	$txt_subscr_name 	    = "Nombre";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "más";
+        $txt_hwprof_of              = "Perfil de hardware público del";
 
 
         //user-submit-form.php
@@ -5098,6 +5257,7 @@ if ($region == "it") {
 	$txt_subscr_name 	    = "Nome";
 	$txt_subscr_email	    = "Email";
 	$txt_subscr_more	    = "di più";
+        $txt_hwprof_of              = "Profilo hardware pubblico di";
 
 
         //user-submit-form.php
@@ -5391,6 +5551,7 @@ $txt_product_rating     = "产品评级";
 	$txt_subscr_name 	    = "名称 ";
 	$txt_subscr_email	    = "电子邮件 ";
 	$txt_subscr_more	    = "更多";
+        $txt_hwprof_of              = "公共硬件配置文件";
 
 	//priceDB
 	$txt_lhgdb_overview         = "供应商的概述";
@@ -5637,6 +5798,7 @@ $txt_out_of = "最大のうち";
 	$txt_subscr_name 	    = "名前 ";
 	$txt_subscr_email	    = "Eメール ";
 	$txt_subscr_more	    = "もっと";
+        $txt_hwprof_of              = "の公共ハードウェアプロファイル";
 
 
 }

@@ -69,7 +69,7 @@ function lhg_article_scans_overview () {
 
                 # ToDo: Scan overview currently only available on .com servers:
                 $url_prefix = "./";
-                if ($lang == "de") $url_prefix = "http://www.linux-hardware-guide.com";
+                if ($lang == "de") $url_prefix = ""; #http://www.linux-hardware-guide.com";
 
                 if ( !is_int($known) ) {
 	          #if ($pid == 21006) print "AA<br>";

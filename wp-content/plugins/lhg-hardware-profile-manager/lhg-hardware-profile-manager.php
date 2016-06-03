@@ -13,6 +13,7 @@ Author URI: http://www.linux-hardware-guide.com/
 
 global $txt_subscr_answer;
 
+
 // Avoid direct access to this piece of code
 if (!function_exists('add_action')){
 	header('Location: /');
@@ -478,13 +479,17 @@ class wp_subscribe_reloaded{
                 $url     = ((empty($_SERVER['HTTPS'])) ? 'http' : 'https') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
                 $pieces  = parse_url($url);
                 $urlpath = $pieces['path'];
-                //echo "PATH: $urlpath";
+                #error_log("PATH: $urlpath");
 
 		$hwprofpos=strpos($urlpath,"/hardware-profile/user");
+		$hwprofpos_guid=strpos($urlpath,"/hardware-profile/guser");
 		$hwscanpos=strpos($urlpath,"/hardware-profile/scan-");
+		$hweditscanpos=strpos($urlpath,"/hardware-profile/editscan-");
 		$hwsystempos=strpos($urlpath,"/hardware-profile/system-");
 		$hwuidpos=strpos($urlpath,"/hardware-profile/uid-");
                 //echo "<br>POS: $hwprofpos";
+
+
 
                 if ( $hwprofpos > 1) {
                    //$include_post_content = show_public_profile();
@@ -495,11 +500,24 @@ class wp_subscribe_reloaded{
                    $show_user_profile = 1;
 	        }
 
+
+                if ( $hwprofpos_guid > 1) {
+                   //$include_post_content = show_public_profile();
+
+                   //echo "Test";
+                   //return $_posts;
+                   global $show_user_profile;
+                   $show_user_profile = 1;
+                   global $show_guser_profile;
+                   $show_guser_profile = 1;
+	        }
+
                 if ( $hwsystempos > 1) {
                    //$include_post_content = show_public_profile();
 
                    //echo "Test";
                    //return $_posts;
+                   #error_log("Show public!");
                    global $show_public_profile;
                    $show_public_profile = 1;
 	        }
@@ -511,6 +529,15 @@ class wp_subscribe_reloaded{
                    //return $_posts;
                    global $show_scan_profile;
                    $show_scan_profile = 1;
+	        }
+
+                if ( $hweditscanpos > 1) {
+                   //$include_post_content = show_public_profile();
+
+                   //echo "Test";
+                   //return $_posts;
+                   global $show_editscan_profile;
+                   $show_editscan_profile = 1;
 	        }
 
                 if ( $hwuidpos > 1) {
@@ -583,8 +610,72 @@ class wp_subscribe_reloaded{
 		global $wp_query;
 
 		$manager_page_title = html_entity_decode(get_option('subscribe_reloaded_manager_page_title', 'Manage subscriptions'), ENT_COMPAT, 'UTF-8');
+
+
+                # Show alternative title, if this is the public profile of someone else
+                $url     = ((empty($_SERVER['HTTPS'])) ? 'http' : 'https') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+		$pieces  = parse_url($url);
+		$urlpath = $pieces['path'];
+		$hwprofpos   = strpos($urlpath,"/hardware-profile/user");
+		$url_user_id = (int)substr($urlpath,$hwprofpos+22);
+
+
+		if ( (strpos($urlpath,"/hardware-profile/user") !== false) or (strpos($urlpath,"/hardware-profile/guser") !== false) )
+                if (get_current_user_id() != $url_user_id) {
+
+
+                        # sets name for user profile
+                        $user = get_userdata( $url_user_id );
+                        $name = $user->display_name;
+
+                        # sets name for guser profile
+                        if (strpos($urlpath,"/hardware-profile/guser") !== false) {
+	                        $hwprofposg   = strpos($urlpath,"/hardware-profile/guser");
+				$url_guid = (int)substr($urlpath,$hwprofposg+23);
+                        	$guser = lhg_get_userdata_guid( $url_guid );
+                                $name = $guser[0]->user_nicename;
+                                #error_log("GUID: $url_guid -> name: $name");
+                        }
+
+
+
+                        global $txt_hwprof_of;
+                        $manager_page_title = $txt_hwprof_of." ".$name;
+                }
+
+                # set title for system scans
+		if ( (strpos($urlpath,"/hardware-profile/system") !== false) ) {
+                        #extract SID
+                        $hwscanpos=strpos($urlpath,"/hardware-profile/system-");
+			$pub_id = substr($urlpath,$hwscanpos+25);
+
+			$myquery = $lhg_price_db->prepare("SELECT sid FROM `lhgscansessions` WHERE pub_id = %s", $pub_id);
+			$sid = $lhg_price_db->get_var($myquery);
+
+                        # get scan data for title
+                	$myquery = $lhg_price_db->prepare("SELECT id, scandate, kversion, distribution FROM `lhgscansessions` WHERE sid = %s", $sid);
+			#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
+			$identified_scans = $lhg_price_db->get_results($myquery);
+
+		        #var_dump($identified_scans);
+
+			$scandate = $identified_scans[0]->scandate;
+			$scandate_txt = gmdate("Y-m-d, H:i:s", $scandate);
+
+		        $distribution = $txt_subscr_unknown; #"unknown";
+		        $kversion = $txt_subscr_unknown; #"unkwnown";
+
+		        $distribution = $identified_scans[0]->distribution;
+		        $kversion = $identified_scans[0]->kversion;
+
+                        global $txt_subscr_hwscantitle;
+                        $manager_page_title = sanitize_text_field($txt_subscr_hwscantitle." ".$distribution." / ".$kversion." / ".$scandate_txt);
+                }
+
+
 		if(function_exists('qtrans_useCurrentLanguageIfNotFoundUseDefaultLanguage'))
 			$manager_page_title = qtrans_useCurrentLanguageIfNotFoundUseDefaultLanguage($manager_page_title);
+
 
 		$posts[] =
 			(object)array(
@@ -1218,4 +1309,5 @@ if (!empty($subscribe_to_comments_action) && !empty($_POST['subscribe_reloaded_e
 	$subscribe_to_comments_clean_email = $wp_subscribe_reloaded->clean_email($_POST['subscribe_reloaded_email']);
 	setcookie('comment_author_email'.COOKIEHASH, $subscribe_to_comments_clean_email, time()+1209600, '/');
 }
+
 
