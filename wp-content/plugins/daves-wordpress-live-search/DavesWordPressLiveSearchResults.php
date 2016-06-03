@@ -128,7 +128,7 @@ class DavesWordPressLiveSearchResults {
 
       $pt = qtrans_useCurrentLanguageIfNotFoundUseDefaultLanguage($result->post_title);
 
-      $result->post_title = $pt."<br>".the_ratings_results($result->ID,0,0,0,10);
+      $result->post_title = $pt."<br>".the_ratings_results($result->ID,0,0,0,10); #."<br>".$pt;
 
       $result->show_more = true;
 
