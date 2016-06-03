@@ -728,7 +728,7 @@ sub create_db_metadata {
     #if ($uid ne "") {
     if ($uid eq " \\n"){ $uid = "none"; }
     if ($uid eq "")  { $uid = "none"; }
-        print "UID: $uid \n";
+        print "UID: ".trim($uid)."\n";
     
     if ($lhguid eq " \\n"){ $lhguid = "none"; }
     if ($lhguid eq "")  { $lhguid = "none"; }
@@ -844,6 +844,14 @@ sub get_linux_distribution {
     # works for Ubuntu
     $i=0;
     while ( <FILE_R> ) {
+        
+        # Fedora introduces new lsb_release format...
+        if ( index($_,"Fedora") == 0 ) {
+            
+            $dist = trim($_);
+            break;
+        }
+        
         #print "Line: $_";
         $pos = index($_,"Description:");
         
@@ -870,7 +878,7 @@ sub get_linux_distribution {
         
         # Clean Gentoo name
         if ( index($dist,"NAME=") == 0) {
-            $dist = substr($dist,$pos+6);
+            $dist = trim(substr($dist,$pos+6));
         }
 
         print "Distribution: $dist \n";
@@ -1906,3 +1914,13 @@ sub rescan_all {
     }
 
 }
+
+# remove leading and tailing white spaces
+# miss this from PHP...
+sub  trim { 
+    my $s = shift; 
+    $s =~ s/^\s+|\s+$//g; 
+    $s =~ s/\\n$//g; 
+    return $s 
+}
+
