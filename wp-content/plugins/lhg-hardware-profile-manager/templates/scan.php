@@ -70,11 +70,12 @@ global $txt_subscr_new;
 global $txt_submit;
 
 require_once(plugin_dir_path(__FILE__).'../../lhg-pricedb/includes/lhg.conf');
+require_once('/var/www/wordpress/wp-content/plugins/lhg-pricedb/includes/lhg.conf');
 
 # quickfix
 # link to .com server for images
 $urlprefix = "";
-if ($lang = "de") $urlprefix = "http://www.linux-hardware-guide.com";
+if ($lang == "de") $urlprefix = "http://www.linux-hardware-guide.com";
 
 
 // Avoid direct access to this piece of code
@@ -161,7 +162,7 @@ if (sizeOf($_POST) > 0) lhg_scan_check_changes( $sid );
 
 
 # get list of identified HW
-
+global $lhg_price_db;
 $myquery = $lhg_price_db->prepare("SELECT id, postid FROM `lhghwscans` WHERE sid = %s AND postid <> 0 AND scantype <> \"multiple_results\"  GROUP BY postid", $sid);
 #$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 $identified_hw = $lhg_price_db->get_results($myquery);
@@ -445,7 +446,7 @@ lhg_feedback_area( $sid );
 
 #
 #
-##### Identified Hardware
+##### Identified Hardware / Known Hardware
 #
 #
 
