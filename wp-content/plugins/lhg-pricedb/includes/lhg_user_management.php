@@ -7,9 +7,10 @@ define ('LHG_KARMA_edit_posts', 50);
 define ('LHG_KARMA_delete_posts', 50);
 define ('LHG_KARMA_upload_files', 50);
 define ('LHG_KARMA_publish_posts', 300);
-define ('LHG_KARMA_edit_published_posts', 300);
+define ('LHG_KARMA_edit_published_posts', 500); # e.g. needed for translators
+define ('LHG_KARMA_edit_others_posts', 500); # e.g. needed for translators
 
-define ('LHG_KARMA_POINTS_hwscan', 50);
+define ('LHG_KARMA_POINTS_hwscan', 50); # How many points for an uploaded hardware scan
 
 # show comment menu for all users
 #add_menu_page('edit-comments.php');
@@ -23,6 +24,16 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 	$karma = lhg_get_karma( $user_id ); // get transversal karma (= sum of all servers)
 
 	#error_log("User $user_id permission check cap: $cap - caps:".join(",",$caps) );
+
+        if ( ( ( 'edit_post' == $cap )  && in_array( 'edit_others_posts', $caps) ) or
+             ( ( 'edit_others_posts' == $cap )  && in_array( 'edit_others_posts', $caps) ) ){
+                if ( $karma < LHG_KARMA_edit_others_posts ) {
+                	$caps[] = 'activate_plugins';
+                }else{
+			$caps = array();
+        	}
+                return $caps;
+	}
 
         if ( 'edit_posts' == $cap ) {
                 #error_log("User wants to edit post - caps:".join(",",$caps) );
@@ -44,6 +55,7 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 			$caps = array();
 			#$caps[] = '';
         	}
+                return $caps;
 	}
 
         if ( 'upload_files' == $cap ) {
@@ -53,32 +65,28 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 	#$caps[] = 'read';
 			$caps = array();
         	}
+                return $caps;
 	}
 
         if ( 'publish_posts' == $cap ) {
+                #error_log("Check publish_posts");
                 if ( $karma < LHG_KARMA_publish_posts ) {
                 	$caps[] = 'activate_plugins';
                 }else{
-                	#$caps[] = 'read';
-
-	#			$caps[] = '';
         		$caps = array();
 
         	}
+                return $caps;
 	}
 
         if ( 'edit_published_posts' == $cap ) {
                 if ( $karma < LHG_KARMA_edit_published_posts ) {
                 	$caps[] = 'activate_plugins';
                 }else{
-                	#$caps[] = 'read';
-
-	#		$caps[] = '';
 			$caps = array();
-
         	}
+                return $caps;
 	}
-
 
 
 	return $caps;
