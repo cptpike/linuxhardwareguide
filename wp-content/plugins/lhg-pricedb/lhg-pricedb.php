@@ -76,8 +76,8 @@ function lhg_custom_css_files () {
 }
 
 
-if (!is_admin()) return;
-if (!current_user_can('activate_plugins')) return;
+#if (!is_admin()) return;
+if (!current_user_can('publish_posts')) return;
 
 //echo "SADDR: ".$_SERVER['SERVER_ADDR'];
 
@@ -88,10 +88,10 @@ add_action ("admin_menu", "lhg_create_menu");
 function lhg_create_menu () {
 	add_menu_page ("LHG Tools", "LHG Tools",'publish_posts', "lhg_pricedb_update",'lhg_menu_settings_page',plugins_url('/images/lhg_logo_16x16.png',__FILE__) );
 
-        add_submenu_page( "lhg_pricedb_update","Overview Articles", "LHG Articles", "publish_posts",'lhg_menu_settings_page','lhg_menu_settings_page');
-	add_submenu_page( "lhg_pricedb_update","Overview Hardware Scans", "HW Scans", "publish_posts",'lhg_menu_hw_scans','lhg_menu_hw_scans');
-	add_submenu_page( "lhg_pricedb_update","Overview Tags", "Tags", "publish_posts",'lhg_menu_tags','lhg_menu_tags');
-	add_submenu_page( "lhg_pricedb_update","DB Sanity Checks", "Sanity", "publish_posts",'lhg_sanity_checks','lhg_sanity_checks');
+        add_submenu_page( "lhg_pricedb_update","Overview Articles", "Translations", "publish_posts",'lhg_menu_settings_page','lhg_menu_settings_page');
+	add_submenu_page( "lhg_pricedb_update","Overview Hardware Scans", "HW scans", "publish_posts",'lhg_menu_hw_scans','lhg_menu_hw_scans');
+	add_submenu_page( "lhg_pricedb_update","Overview Tags", "Manage tags", "publish_posts",'lhg_menu_tags','lhg_menu_tags');
+	add_submenu_page( "lhg_pricedb_update","DB Sanity Checks", "Sanity Checks", "activate_plugins",'lhg_sanity_checks','lhg_sanity_checks');
 
 }
 
