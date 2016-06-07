@@ -3277,6 +3277,9 @@ global $txt_lhgdb_karma_2;
 global $txt_lhgdb_karma_3;
 global $txt_lhgdb_karma_4;
 
+//Live Search
+global $moreResultsText;
+
 
 //
 //default translation = english
@@ -3690,6 +3693,9 @@ $txt_lhgdb_karma_4	    = 'Karma points to create new hardware articles.';
 //misc
 $lhg_txt_new		    = "New";
 
+//Live Search
+$moreResultsText	    = "View more results";
+
 
 if ($lang == "de") {
 
@@ -4090,6 +4096,9 @@ Ausgabe von lspci, lsusb und lshw...';
 	//misc
 	$lhg_txt_new		    = "Neu";
 
+	//Live Search
+	$moreResultsText	    = "Weitere Ergebnisse anzeigen";
+
 
 }
 
@@ -4441,6 +4450,9 @@ output van lspci -nnk, lsusb en lshw...';
 	$txt_lhgdb_karma_3	    = 'Je moet ten minste';
 	$txt_lhgdb_karma_4	    = 'Karma punten om nieuwe artikelen te creëren';
 
+	//Live Search
+	$moreResultsText	    = "Meer resultaten";
+
 
 }
 
@@ -4732,6 +4744,8 @@ Sortie de lspci -vnn, lsusb -v et lshw...
 	$txt_lhgdb_karma_3	    = "Vous avez besoin d'au moins";
 	$txt_lhgdb_karma_4	    = 'points de Karma pour créer de nouveaux articles.';
 
+	//Live Search
+	$moreResultsText	    = "Voir plus de résultats";
 
 
 }
@@ -5022,6 +5036,8 @@ pasos de configuración necesarios para utilizar el hardware con Linux, versión
 	$txt_lhgdb_karma_3	    = "Se necesita al menos";
 	$txt_lhgdb_karma_4	    = 'puntos de Karma para crear nuevos artículos.';
 
+	//Live Search
+	$moreResultsText	    = "Ver más resultados";
 
 
 }
@@ -5317,6 +5333,9 @@ Sotto trovi il tuo nome utente e la password generata automaticamente.\r\n";
 	$txt_lhgdb_karma_4	    = 'punti Karma per creare nuovi articoli.';
 	$txt_shipping_costs	    = "Costi di spedizione";
 
+	//Live Search
+	$moreResultsText	    = "Visualizza più risultati";
+
 
 }
 
@@ -5569,6 +5588,9 @@ $txt_product_rating     = "产品评级";
 	$txt_lhgdb_karma_3	    = '你至少需要';
 	$txt_lhgdb_karma_4	    = '噶点来创建新的文章。';
 
+	//Live Search
+	$moreResultsText	    = "查看更多结果";
+
 
 
 }
@@ -5799,6 +5821,9 @@ $txt_out_of = "最大のうち";
 	$txt_subscr_email	    = "Eメール ";
 	$txt_subscr_more	    = "もっと";
         $txt_hwprof_of              = "の公共ハードウェアプロファイル";
+
+	//Live Search
+	$moreResultsText	    = "もっと結果を見ます";
 
 
 }
