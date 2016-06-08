@@ -6,6 +6,7 @@ add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
 add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
 add_shortcode( 'lhg_donation_testing', 'lhg_donation_testing');
+add_shortcode( 'lhg_scan_overview', 'lhg_scan_overview_shortcode');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -379,7 +380,6 @@ if (!isset($attr['url'])) $output = '<h1>ERROR: URL missing</h1><br>'. $output;
 #
 #
 
-add_shortcode( 'lhg_scan_overview', 'lhg_scan_overview_shortcode');
 
 function lhg_scan_overview_shortcode($attr) {
 
@@ -412,7 +412,7 @@ function lhg_scan_overview_shortcode($attr) {
                         $SID = $a_identified_scan->sid;
                         $pub_id = $a_identified_scan->pub_id;
 
-		        if (pub_id == "") {
+		        if ($pub_id == "") {
         		        $pub_id = lhg_create_pub_id($SID);
 			}
 
