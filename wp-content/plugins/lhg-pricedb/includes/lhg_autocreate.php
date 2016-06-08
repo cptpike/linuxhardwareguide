@@ -1,9 +1,23 @@
 <?php
 
-function lhg_create_cpu_article ($title, $sid ) {
+function lhg_create_cpu_article ($title, $sid, $id ) {
 
   global $lhg_price_db;
   global $cpus_from_library;
+  global $lang;
+
+  # check if article was already created
+  #error_log("CPU ID: $id");
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
+
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
   $category = 874;
   $taglist = array( 874);
 
@@ -142,9 +156,24 @@ $cpu0 = implode("\n",$new_cpulines);
 #
 #
 
-function lhg_create_mainboard_article ($title, $sid ) {
+function lhg_create_mainboard_article ($title, $sid, $id ) {
 
   global $lhg_price_db;
+  global $lang;
+
+  # check if article was already created
+  #error_log("MB ID: $id");
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
+
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
+
   $otitle = $title;
   $title = lhg_clean_mainboard_name( $title );
   $laptop_probability = lhg_scan_is_laptop( $sid );
@@ -383,6 +412,21 @@ function lhg_create_pci_article ($title, $sid, $id ) {
 
   global $lhg_price_db;
   global $lspci_content_from_library;
+  global $lang;
+
+  # check if article was already created
+  #error_log("PCI article ID: $id");
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
+
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
+
   $otitle = $title;
 
   $category = "";
@@ -504,6 +548,20 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 
   global $lhg_price_db;
   global $dmesg_content_from_library;
+  global $lang;
+
+  # check if article was already created
+  #error_log("Drive article ID: $id");
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
+
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
 
   $taglist = array( 584);
 
@@ -811,6 +869,23 @@ function lhg_create_usb_article ($title, $sid, $usbid ) {
   global $lhg_price_db;
   global $lsusb_content_from_library;
   global $dmesg_content_from_library;
+  global $lang;
+
+  # check if article was already created
+  #error_log("USB article ID: $id");
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
+
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
+
+
+
   #$category = 478;
   $taglist = array( 156 );
 

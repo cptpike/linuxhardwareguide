@@ -119,7 +119,8 @@ STYLE;
     $yOffset = intval(get_option('daves-wordpress-live-search_yoffset'));
 
     // Translations
-    $moreResultsText = __('View more results', 'dwls');
+    global $moreResultsText;
+    #$moreResultsText = __('View more results', 'dwls');
     $outdatedJQueryText = __("Dave's WordPress Live Search requires jQuery 1.2.6 or higher. WordPress ships with current jQuery versions. But if you are seeing this message, it's likely that another plugin is including an earlier version.", 'dwls');
 
     // Neat trick: use wp_localize_script to generate the config object
