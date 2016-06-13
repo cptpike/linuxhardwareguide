@@ -887,6 +887,31 @@ function lhg_get_uid_from_guid( $guid ) {
 
 }
 
+# get GUID of scan uploader
+function lhg_get_scan_uploader_guid( $sid ) {
+        global $lhg_price_db;
+        global $lang;
+
+
+	$myquery = $lhg_price_db->prepare("SELECT wp_uid, wp_uid_de FROM `lhgscansessions` WHERE sid = %s", $sid);
+	$uids = $lhg_price_db->get_results($myquery);
+
+        $guid = 0; # default
+
+        if ( $uids[0]->wp_uid_de ) {
+        	$uid = $uids[0]->wp_uid_de;
+                $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
+	        $results = $lhg_price_db->get_results($sql);
+	        $guid = $results[0]->id;
+        } elseif ( $uids[0]->wp_uid ) {
+        	$uid = $uids[0]->wp_uid;
+                $sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+	        $results = $lhg_price_db->get_results($sql);
+	        $guid = $results[0]->id;
+        }
+        return $guid;
+}
+
 
 
 ?>
