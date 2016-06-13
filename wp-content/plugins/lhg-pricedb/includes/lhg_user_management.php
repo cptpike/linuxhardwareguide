@@ -181,13 +181,20 @@ function lhg_greeting_widget() {
                         $guserids = lhg_get_current_users_guids();
                         #error_log("DE: ".$guserids["de"]." COM: ".$guserids["com"]);
 
-                        global $lhg_price_db;
-        		$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid_de = \"".$guserids["de"]."\"";
-        		$num_hwscans_de = $lhg_price_db->get_var($sql);
+                        if ($guserids["de"] > 0) {
+                                # if uid = 0 all unassigned scans would be counted
+	                        global $lhg_price_db;
+        			$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid_de = \"".$guserids["de"]."\"";
+        			$num_hwscans_de = $lhg_price_db->get_var($sql);
+                        }
 
-                        global $lhg_price_db;
-        		$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid = \"".$guserids["com"]."\"";
-        		$num_hwscans_com = $lhg_price_db->get_var($sql);
+                        if ($guserids["com"] > 0) {
+                                # if uid = 0 all unassigned scans would be counted
+	                        global $lhg_price_db;
+        			$sql = "SELECT COUNT(id) FROM `lhgscansessions` WHERE wp_uid = \"".$guserids["com"]."\"";
+        			$num_hwscans_com = $lhg_price_db->get_var($sql);
+                        }
+
                         $num_hwscans = $num_hwscans_de + $num_hwscans_com;
 
                         #Fallback
