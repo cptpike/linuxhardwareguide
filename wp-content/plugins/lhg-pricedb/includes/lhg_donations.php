@@ -8,48 +8,41 @@ $donation = array(
 	1 => array (
                 "Name" => "Linux Hardware Guide",
                 "NameShort" => "LHG",
-                "Percentage" => .50
                 ),
 
 	2 => array (
                 "Name" => "Open Source Initiative",
                 "NameShort" => "Open Source In.",
-                "Percentage" => .10
                 ),
 
 	3 => array (
                 "Name" => "Free Software Foundation",
                 "NameShort" => "Free Software FND",
-                "Percentage" => .10
                 ),
 
 	4 => array (
                 "Name" => "Apache Software Foundation",
                 "NameShort" => "Apache Software FND",
-                "Percentage" => .10
                 ),
 
 	5 => array (
                 "Name" => "RedHat Foundation",
                 "NameShort" => "RedHat FND",
-                "Percentage" => .20
                 ),
 
 	6 => array (
                 "Name" => "Linux Mint",
                 "NameShort" => "Linux Mint",
-                "Percentage" => .20
                 ),
 
 	7 => array (
                 "Name" => "Apache Software Foundation",
-                "Percentage" => .20
+                "NameShort" => "ASF",
                 ),
 
 	8 => array (
                 "Name" => "Linux Foundation",
                 "NameShort" => "Linux FND",
-                "Percentage" => .50
                 ),
 
 
