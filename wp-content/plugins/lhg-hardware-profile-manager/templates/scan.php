@@ -68,6 +68,7 @@ global $txt_subscr_help;
 global $txt_subscr_ifpossible;
 global $txt_subscr_new;
 global $txt_submit;
+global $txt_username;
 
 require_once(plugin_dir_path(__FILE__).'../../lhg-pricedb/includes/lhg.conf');
 require_once('/var/www/wordpress/wp-content/plugins/lhg-pricedb/includes/lhg.conf');
@@ -89,58 +90,31 @@ global $wp_subscribe_reloaded;
 
 ob_start();
 
-#if (!empty($_POST['post_list'])){
-#	$post_list = array();
-#	foreach($_POST['post_list'] as $a_post_id){
-#		if (!in_array($a_post_id, $post_list))
-#			$post_list[] = intval($a_post_id);
-#	}
-#
-#	$action = !empty($_POST['sra'])?$_POST['sra']:(!empty($_GET['sra'])?$_GET['sra']:'');
-#	switch($action){
-#		case 'delete':
-#			$rows_affected = $wp_subscribe_reloaded->delete_subscriptions($post_list, $email);
-#			echo '<p class="updated">'.__('Subscriptions deleted:', 'subscribe-reloaded')." $rows_affected</p>";
-#			break;
-#		case 'suspend':
-#			$rows_affected = $wp_subscribe_reloaded->update_subscription_status($post_list, $email, 'C');
-#			echo '<p class="updated">'.__('Subscriptions suspended:', 'subscribe-reloaded')." $rows_affected</p>";
-#			break;
-#		case 'activate':
-#			$rows_affected = $wp_subscribe_reloaded->update_subscription_status($post_list, $email, '-C');
-#			echo '<p class="updated">'.__('Subscriptions activated:', 'subscribe-reloaded')." $rows_affected</p>";
-#			break;
-#		case 'force_r':
-#			$rows_affected = $wp_subscribe_reloaded->update_subscription_status($post_list, $email, 'R');
-#			echo '<p class="updated">'.__('Subscriptions updated:', 'subscribe-reloaded')." $rows_affected</p>";
-#			break;
-#		default:
-#			break;
-#	}
-#}
-
-
-#$message = html_entity_decode(stripslashes(get_option('subscribe_reloaded_user_text')), ENT_COMPAT, 'UTF-8');
-#if(function_exists('qtrans_useCurrentLanguageIfNotFoundUseDefaultLanguage'))
-#	$message = qtrans_useCurrentLanguageIfNotFoundUseDefaultLanguage($message);
-#echo "$message<br>
-
-
 # Extract Session ID fron URL
 $url     = ((empty($_SERVER['HTTPS'])) ? 'http' : 'https') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 $pieces  = parse_url($url);
 $urlpath = $pieces['path'];
-$hwscanpos=strpos($urlpath,"/hardware-profile/scan-");
-$sid = substr($urlpath,$hwscanpos+23);
+
+$hwscanpos     = strpos($urlpath,"/hardware-profile/scan-");
+$hweditscanpos = strpos($urlpath,"/hardware-profile/editscan-");
+
+if ($hwscanpos > 0) {
+	$sid = substr($urlpath,$hwscanpos+23);
+        $editmode = 0;
+} elseif ($hweditscanpos > 0) {
+	$sid = substr($urlpath,$hweditscanpos+27);
+        $editmode = 1;
+}
+
 
 # get scan id from public id
- if ($show_public_profile) {
+if ($show_public_profile) {
        $hwscanpos=strpos($urlpath,"/hardware-profile/system-");
        $pub_id = substr($urlpath,$hwscanpos+25);
 
        $myquery = $lhg_price_db->prepare("SELECT sid FROM `lhgscansessions` WHERE pub_id = %s", $pub_id);
        $sid = $lhg_price_db->get_var($myquery);
- }
+}
 
 
 # store login data
@@ -257,7 +231,31 @@ echo '
 }
 
 
-if ($show_public_profile != 1) {
+$uploader_guid = lhg_get_scan_uploader_guid( $sid );
+
+if (
+	($show_public_profile == 1) or   
+        ( $uploader_guid > 0 )
+   ){
+
+	# do not show link box in public profile
+	# do not show if scan was already linked to registered user (e.g. by personified upload)
+
+} else {
+
+print '
+<br>&nbsp;<br>
+<h2>Contact information</h2>
+<form action="?" method="post">
+       Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:<br>
+       <b>Email</b>: <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
+       <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
+</form>
+<br>
+';
+
+}
+
 echo '
 	<script src="https://cdn.rawgit.com/vast-engineering/jquery-popup-overlay/1.7.11/jquery.popupoverlay.js"></script>
 
@@ -312,20 +310,6 @@ echo '
                 </script>';
 
 
-print '
-<br>&nbsp;<br>
-<h2>Contact information</h2>
-<form action="?" method="post">
-       Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:<br>
-       <b>Email</b>: <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
-       <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
-</form>
-<br>
-';
-
-}
-
-
 # allow registration
 
 
@@ -355,6 +339,16 @@ print '
 
         $logo = get_distri_logo($distribution);
 
+        # get data from guid
+        $user_tmp = lhg_get_userdata_guid( $uploader_guid );
+        $user=$user_tmp[0];
+        $user_nicename = $user->user_nicename;
+        $avatar = $user->avatar;
+        $wpuid_de = $user->wpuid_de;
+        $wpuid_com = $user->wpuid;
+
+
+
 #	echo "<h2>".$txt_subscr_scanoverview.":</h2>";
 
                 #get and check session ID
@@ -369,8 +363,14 @@ print '
                 #if ($userknown == 1)
                 #echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="30%">'.$txt_scan_distribution.'</td>
-                      <td id="hwscan-col2" width="20%">'.$txt_subscr_kernelversion.'</td>
+        if ($uploader_guid != "") {
+                echo '<td id="hwscan-col2" width="8%">';
+                echo $txt_username.'</td>';
+        } 
+
+                echo '
+                <td id="hwscan-col2" width="25%">'.$txt_scan_distribution.'</td>
+                <td id="hwscan-col2" width="20%">'.$txt_subscr_kernelversion.'</td>
                 <td id="hwscan-col2" width="13%">'.$txt_subscr_hwcomp.'</td>
 
 
@@ -388,6 +388,36 @@ print '
 
 	print                       " </td>";
 
+
+
+        if ($uploader_guid != "") {
+                $user_output="";
+
+                if ( ($lang == "de") && ($user->wpuid_de != 0) ) $user_output .= '<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+		if ( ($lang != "de") && ($user->wpuid != 0) ) $user_output .= '<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+		$user_output .='    <div class="userlist-avatar">'.
+		      		$avatar.'
+			    </div> ';
+		if ( ($lang == "de") && ($user->wpuid_de != 0) ) $user_output .= '</a>';
+		if ( ($lang != "de") && ($user->wpuid != 0) ) $user_output .= '</a>';
+
+		$user_output .= '<div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">';
+		if ( ($lang == "de") && ($user->wpuid_de != 0) ) $user_output .= '		<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+		if ( ($lang != "de") && ($user->wpuid != 0) ) $user_output .= '		<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+	        $user_output .= $user_nicename;
+
+		if ( ($lang == "de") && ($user->wpuid_de != 0) ) $user_output .= '</a>';
+		if ( ($lang != "de") && ($user->wpuid != 0) ) $user_output .= '</a>';
+		$user_output .='          </div></div>';
+
+
+	        echo "
+                        <td id=\"col-hw\">
+			".$user_output."
+                        </td>";
+        } else {
+                # nothing shown if user unknown
+        }
 
         echo "
                         <td id=\"col4\">
@@ -2337,7 +2367,7 @@ function lhg_feedback_area ( $sid  ) {
 
         $rand=rand(1,9999); # prevent browser caching... ugly
         # admin can always post
-        if ( current_user_can ('edit_posts') ) {
+        if ( $editmode == 1 ) {
 
 	echo ' <form action="?'.$rand.'" method="post" class="scan-feedback">
       		Ask additional questions to scan submitter:<br>
