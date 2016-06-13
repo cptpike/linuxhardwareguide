@@ -211,6 +211,27 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
         		#var_dump ($sid ."--".$sid2);
                		#print "SID: $sid<br>";
 
+                        #extract userdata
+                        $uploader_guid = lhg_get_scan_uploader_guid( $sid );
+                        $usertxt = "";
+
+                        if ($uploader_guid > 0) {
+	                        $user_tmp = lhg_get_userdata_guid( $uploader_guid );
+        			$user=$user_tmp[0];
+			        $user_nicename = $user->user_nicename;
+		        	$avatar = $user->avatar;
+			        $wpuid_de = $user->wpuid_de;
+			        $wpuid_com = $user->wpuid;
+                	        $start = strpos($avatar, "src='");
+                                $imgurl = substr($avatar, $start+5);
+                                $tmp = explode("' class", $imgurl);
+                                $imgurl = $tmp[0];
+
+                                $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
+			}
+
+
+
 	                $statusSelector = '
 				<select name="status-'.$sid.'">';
 
@@ -234,7 +255,7 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 
 	                print "<tr>";
         	        print "<td>$date </td>";
-                	print '<td><a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a> (<a href="/hardware-profile/system-'.$pub_id.'">pub</a>)</td>';
+                	print '<td><a href="/hardware-profile/editscan-'.$sid.'">'.$sid.'</a> (<a href="/hardware-profile/system-'.$pub_id.'">pub</a>)</td>';
 
                         $tooltiptext ="Distribution: ".preg_replace( "/\r|\n/", "", $resN->distribution)."\nKernel: ".preg_replace( "/\r|\n/", "",$resN->kversion);
 
@@ -243,6 +264,7 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
                           '.$maillogo." "
                           .$commentavail." "
                           .$ratingavail. " "
+                          .$usertxt." "
                           .$ucomment_short."</td>";
         	        print '<td>
 	        	        <input name="hwscan_acomment_'.$sid.'" type="text" size="20" value="'.$acomment.'">

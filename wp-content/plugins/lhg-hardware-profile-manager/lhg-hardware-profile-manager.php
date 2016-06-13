@@ -601,6 +601,9 @@ class wp_subscribe_reloaded{
 		if ($show_scan_profile == 1)
 			$include_post_content = include(WP_PLUGIN_DIR.'/lhg-hardware-profile-manager/templates/scan.php');
 
+		if ($show_editscan_profile == 1)
+			$include_post_content = include(WP_PLUGIN_DIR.'/lhg-hardware-profile-manager/templates/scan.php');
+
 		if ($show_public_profile == 1)
 			$include_post_content = include(WP_PLUGIN_DIR.'/lhg-hardware-profile-manager/templates/scan.php');
 
