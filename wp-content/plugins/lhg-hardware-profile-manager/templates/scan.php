@@ -101,6 +101,7 @@ $hweditscanpos = strpos($urlpath,"/hardware-profile/editscan-");
 if ($hwscanpos > 0) {
 	$sid = substr($urlpath,$hwscanpos+23);
         $editmode = 0;
+        $uploadermode = 1;
 } elseif ($hweditscanpos > 0) {
 	$sid = substr($urlpath,$hweditscanpos+27);
         $editmode = 1;
@@ -128,6 +129,8 @@ if ($show_public_profile) {
 # different CSS class needed for public page
 $csspub = "";
 if ($show_public_profile == 1) $csspub = "-pub";
+
+
 
 
 
@@ -938,6 +941,7 @@ if (count($unidentified_hw_pci) > 0) {
         $clean_mb_name = lhg_clean_mainboard_name( $mb_name );
 	print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
         #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
+        if ($show_public_profile != 1)
         print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
 
 
@@ -973,7 +977,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
        <br>
        <input type="submit" id="mb-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />';
 
-       if (current_user_can('publish_posts') && ($show_public_profile != 1) ) {
+       if (current_user_can('publish_posts') && ($show_public_profile != 1) && ($editmode == 1) ) {
            print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit">finalize article</a>)';
        }
 
@@ -1097,7 +1101,7 @@ echo ' <form action="?" method="post" class="mb-usercomment">
         	   print '&nbsp;&nbsp;&nbsp;(<a href id="update-pcilist">Update PCI lists</a>)';
         }
 
-
+        if ($show_public_profile != 1)
 	echo '
                 <script type="text/javascript">
                 /* <![CDATA[ */
@@ -1290,6 +1294,7 @@ print "<h2>".$txt_subscr_newhw."</h2>";
 
 
                 //print "Insert AJAX";
+                if ($show_public_profile != 1)
 		echo '
                 <script type="text/javascript">
                 /* <![CDATA[ */
@@ -1945,30 +1950,39 @@ print '
 #</form>
 
 
-
-$scandate = lhg_get_hwscandate($sid);
-$scandate = gmdate("Y-m-d\TH:i:s\Z", $scandate);
-
-# Thank you for using...
-global $txt_subscr_thankyou;
-print $txt_subscr_thankyou;
-
+# Scan date not needed. Already listed in overview box at top
+#$scandate = lhg_get_hwscandate($sid);
+#$scandate = gmdate("Y-m-d\TH:i:s\Z", $scandate);
 # This scan was performed at
-print "<br>".$txt_subscr_thisscan.": ".$scandate;
+#print "<br>".$txt_subscr_thisscan.": ".$scandate;
 
-#Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
-#However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.
-print "<br>".$txt_subscr_notice;
+#if ( ($editmode == "") or ($editmode != 1) ) {
+#        # nothing to show for editors
+#}else{
 
-#print "<p>This tool is currently limited to following hardware components:";
-#print "<ul><li>USB devices";
-#print "<li>PCI devices";
-#print "<li>Mainboards (experimental)";
-#print "<li>Laptops (experimental)";
-#print "<li>CPUs";
-#print "<li>Storage media (HDD, CD, DVD, SSD)";
-#print "</ul>";
-print $txt_subscr_limitation;
+if  ($uploadermode == 1) {
+        # not public, not in edit mode
+
+	# Thank you for using...
+	global $txt_subscr_thankyou;
+	print $txt_subscr_thankyou;
+
+	#Please note that this web service is still under development. All your scan results were successfully transferred to the Linux-Hardware-Guide team.
+	#However, the automatic recognition of hardware and its representation on this scan overview page for sure is still incomplete.
+	print "<br>".$txt_subscr_notice;
+
+	#print "<p>This tool is currently limited to following hardware components:";
+	#print "<ul><li>USB devices";
+	#print "<li>PCI devices";
+	#print "<li>Mainboards (experimental)";
+	#print "<li>Laptops (experimental)";
+	#print "<li>CPUs";
+	#print "<li>Storage media (HDD, CD, DVD, SSD)";
+	#print "</ul>";
+	print $txt_subscr_limitation;
+}
+
+
 
 function lhg_get_hwscandate( $sid ) {
 
