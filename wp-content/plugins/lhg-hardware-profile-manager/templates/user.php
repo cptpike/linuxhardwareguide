@@ -75,37 +75,43 @@ echo "$message<br>
 <fieldset style="border:0">
 <?php
 	$subscriptions = $wp_subscribe_reloaded->get_subscriptions('email', 'equals', $email, 'dt', 'DESC');
+
+
+        # always show user info
+	$current_user = wp_get_current_user();
+
+	#echo 'Username: ' . $current_user->user_login . '<br />';
+        #echo 'User email: ' . $current_user->user_email . '<br />';
+    	#echo 'User first name: ' . $current_user->user_firstname . '<br />';
+    	#echo 'User last name: ' . $current_user->user_lastname . '<br />';
+    	$displayname = $current_user->display_name;
+        $avatar = get_avatar( $email, 45 );
+
+        global $region;
+        $urllang = lhg_get_lang_url_from_region( $region );
+        if ($urllang != "") $urllang = "/".$urllang;
+
+
+        if ( is_user_logged_in() )
+	if ( $lang != "de" ) {
+        	$url_public_profile_txt = "http://www.linux-hardware-guide.com".$urllang."/hardware-profile/user".get_current_user_id();
+                $url_public_profile = $urllang."/hardware-profile/user".get_current_user_id();
+        }
+
+        if ( $lang == "de" ) {
+        	$url_public_profile_txt = "http://www.linux-hardware-guide.de/hardware-profile/user".get_current_user_id();
+                $url_public_profile = "/hardware-profile/user".get_current_user_id();
+        }
+
+        echo '<div class="hwprofile-avatar">'.$avatar.'</div>';
+	if ($displayname != "") echo '<div id="subscribe-reloaded-displayname">'.__('<strong>'.$txt_subscr_name.'</strong>','subscribe-reloaded').': '.$displayname.'</div>';
+	echo '<div id="subscribe-reloaded-email-p">'.__('<strong>'.$txt_subscr_email.'</strong>','subscribe-reloaded').': '.$email.'</div>';
+	if ($url_public_profile != "") echo '<div id="subscribe-reloaded-url-p">'.__('<strong>'.$txt_subscr_pub_hw_prof.'</strong>','subscribe-reloaded').': <a href="'.$url_public_profile.'">'.$url_public_profile_txt.'</a></div>';
+	echo '<p id="subscribe-reloaded-legend-p">'.__($txt_subscr_legend.'', 'subscribe-reloaded').'</p>';
+
+
 	if (is_array($subscriptions) && !empty($subscriptions)){
 
-		$current_user = wp_get_current_user();
-
-	    	#echo 'Username: ' . $current_user->user_login . '<br />';
-    		#echo 'User email: ' . $current_user->user_email . '<br />';
-    		#echo 'User first name: ' . $current_user->user_firstname . '<br />';
-    		#echo 'User last name: ' . $current_user->user_lastname . '<br />';
-    		$displayname = $current_user->display_name;
-                $avatar = get_avatar( $email, 45 );
-
-                global $region;
-                $urllang = lhg_get_lang_url_from_region( $region );
-                if ($urllang != "") $urllang = "/".$urllang;
-
-
-                if ( is_user_logged_in() )
-		if ( $lang != "de" ) {
-                        $url_public_profile_txt = "http://www.linux-hardware-guide.com".$urllang."/hardware-profile/user".get_current_user_id();
-                	$url_public_profile = $urllang."/hardware-profile/user".get_current_user_id();
-                }
-		if ( $lang == "de" ) {
-                	$url_public_profile_txt = "http://www.linux-hardware-guide.de/hardware-profile/user".get_current_user_id();
-                	$url_public_profile = "/hardware-profile/user".get_current_user_id();
-                }
-
-                echo '<div class="hwprofile-avatar">'.$avatar.'</div>';
-		if ($displayname != "") echo '<div id="subscribe-reloaded-displayname">'.__('<strong>'.$txt_subscr_name.'</strong>','subscribe-reloaded').': '.$displayname.'</div>';
-		echo '<div id="subscribe-reloaded-email-p">'.__('<strong>'.$txt_subscr_email.'</strong>','subscribe-reloaded').': '.$email.'</div>';
-		if ($url_public_profile != "") echo '<div id="subscribe-reloaded-url-p">'.__('<strong>'.$txt_subscr_pub_hw_prof.'</strong>','subscribe-reloaded').': <a href="'.$url_public_profile.'">'.$url_public_profile_txt.'</div>';
-		echo '<p id="subscribe-reloaded-legend-p">'.__($txt_subscr_legend.'', 'subscribe-reloaded').'</p>';
 		//echo '<ul id="subscribe-reloaded-list">';
 
 
@@ -266,7 +272,8 @@ echo "$message<br>
 
 	}
 	else{
-		echo '<p>'.__('No subscriptions match your search criteria.', 'subscribe-reloaded').'</p>';
+		echo '<p>'.__('No subscriptions found. <br>');
+		echo __('Please add the hardware components you are interested in to your profile by using the "Add" button available on each hardware page.').'</p>';
 	}
 ?>
 </fieldset>
