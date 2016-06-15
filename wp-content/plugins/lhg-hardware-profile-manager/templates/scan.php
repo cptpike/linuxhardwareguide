@@ -235,11 +235,13 @@ $uploader_guid = lhg_get_scan_uploader_guid( $sid );
 
 if (
 	($show_public_profile == 1) or   
-        ( $uploader_guid > 0 )
+        ( $uploader_guid > 0 ) or
+        ( $editmode == 1 )
    ){
 
 	# do not show link box in public profile
 	# do not show if scan was already linked to registered user (e.g. by personified upload)
+        # hide email from other uses
 
 } else {
 
@@ -698,40 +700,6 @@ echo ' <form action="?" method="post" class="usercomment">'.$txt_subscr_hwfeedba
 <br>
 ';
 
-/*		//echo '</ul>';
-		echo '<p id="subscribe-reloaded-select-all-p"><a class="subscribe-reloaded-small-button" href="#" onclick="t=document.forms[\'post_list_form\'].elements[\'post_list[]\'];c=t.length;if(!c){t.checked=true}else{for(var i=0;i<c;i++){t[i].checked=true}};return false;">'.__($txt_subscr_select_all,'subscribe-reloaded').'</a> ';
-		echo '<a class="subscribe-reloaded-small-button" href="#" onclick="t=document.forms[\'post_list_form\'].elements[\'post_list[]\'];c=t.length;if(!c){t.checked=!t.checked}else{for(var i=0;i<c;i++){t[i].checked=false}};return false;">'.__($txt_subscr_select_inv,'subscribe-reloaded').'</a></p>';
-
-
-		echo '<table id="subscribe-actions-table"><tr><td id="subscribe-actions" ><p id="subscribe-reloaded-action-p">'.__($txt_subscr_action.':<br>','subscribe-reloaded').'
-			</td><td id="subscribe-actions">
-                        <div class="sub-selector">
-                          <input type="radio" name="sra" value="delete" id="action_type_delete" />
-                            <label id="registration2" for="action_type_delete">'.__($txt_subscr_delete,'subscribe-reloaded').'</label>
-                          </div> 
-			</td>
-
-                        <td id="subscribe-actions"><div class="sub-selector">
-                          <input type="radio" name="sra" value="suspend" id="action_type_suspend"  />
-                          <label id="registration2" for="action_type_suspend">'.__($txt_subscr_suspend,'subscribe-reloaded').'</label> </div>
-                        </td>
-
-                        <!-- td id="subscribe-actions"><div class="sub-selector">
-                          <input type="radio" name="sra" value="force_r" id="action_type_force_y" />
-                          <label id="registration2" for="action_type_force_y">'.__($txt_subscr_reply_only,'subscribe-reloaded').'</label> </div>
-                        </td -->
-
-                        <td id="subscribe-actions"><div class="sub-selector">
-                          <input type="radio" name="sra" value="activate" id="action_type_activate" checked="checked" />
-                          <label id="registration2" for="action_type_activate">'.__($txt_subscr_activate,'subscribe-reloaded').'</label> </div>
-                        </td>
-
-                      </tr></table>
-                      </p>';
-
-		echo '<p id="subscribe-reloaded-update-p"><button type="submit" class="subscribe-form-button" value="'.__($txt_subscr_update,'subscribe-reloaded').'" />'.__($txt_subscr_update,'subscribe-reloaded').'&nbsp;<i class="icon-arrow-right icon-button"></i></button><input type="hidden" name="sre" value="'.urlencode($email).'"/></p>';
-
-*/
 
 	#}
 	#else{
@@ -829,7 +797,7 @@ if (count($multi_identified_hw) > 0) {
 
                         $img_attr = array(
 					#'src'	=> $src,
-					'class'	=> "hwscan-image",
+					'class'	=> "hwscan-image image55",
 					#'alt'	=> trim( strip_tags( $attachment->post_excerpt ) ),
 					#'title'	=> trim( strip_tags( $attachment->post_title ) ),
 				    );
