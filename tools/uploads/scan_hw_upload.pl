@@ -92,6 +92,10 @@ if ($ARGV[0] eq "ALL") {
 #cycle > 0 -> scan was performed before
 $cycle = create_db_metadata();
 
+# prevent upload spam. Check if this upload is a duplicate
+check_duplicates();
+
+
 #send_mail_with_scaninputs();
 $laptop_probability = calculate_laptop_probability();
 
@@ -1922,5 +1926,50 @@ sub  trim {
     $s =~ s/^\s+|\s+$//g; 
     $s =~ s/\\n$//g; 
     return $s 
+}
+
+sub check_duplicates {
+    # look into DB if similar upload was carried out before.
+    # Should prevent upload spam to steal Karma
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT kversion, distribution, scandate, status FROM `lhgscansessions` WHERE sid = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $sid );
+    ($kversion, $distribution, $scandate, $status) = $sth_glob->fetchrow_array();
+
+    print "KV: $kversion - D: $distribution - S: $scandate";
+    
+    # check if similar uploads exist
+    
+    $myquery = "SELECT sid FROM `lhgscansessions` WHERE kversion = ? AND distribution = ? AND scandate < ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $kversion, $distribution, $scandate );
+    @sids = $sth_glob->fetchrow_array();
+    
+    # own fingerprint
+    $lfp = `/var/www/uploads/fingerprints.pl $sid 2> /dev/null`;
+    
+    
+    foreach ( @sids ) {
+        print "\nDuplicate candidate found: $_ \n";
+        
+        # compare fingerprints
+        $fp = `/var/www/uploads/fingerprints.pl $_ 2> /dev/null`;
+        
+        #print "FP\n: $fp\n";
+        #print "LFP\n: $lfp";
+        
+        if ($fp eq $lfp) {
+            print "-> Scan looks like a duplicate of $_\n";
+            
+            # do not overwrite status value 
+            if ($status eq "") {
+                $myquery = "UPDATE `lhgscansessions` SET status = ? WHERE sid = ?";
+                $sth_glob = $lhg_db->prepare($myquery);
+                $sth_glob->execute("duplicate", $sid);
+            }
+        }
+    }
 }
 

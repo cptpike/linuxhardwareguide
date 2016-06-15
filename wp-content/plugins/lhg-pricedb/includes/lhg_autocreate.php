@@ -1762,6 +1762,7 @@ function lhg_clean_mainboard_name ( $title  ) {
 	$title = str_replace("System manufacturer System Product Name","",$title);
 	$title = str_replace("To be filled by O.E.M./","",$title);
 	$title = str_replace("To be filled by O.E.M.","",$title);
+        $title = str_replace("\\xffffffff","",$title);
 
 	$s=explode(", BIOS",$title);
         $title=trim($s[0]);
@@ -1781,6 +1782,7 @@ function lhg_clean_mainboard_name ( $title  ) {
 
 
         # make title beautiful
+        $title = str_replace("ZOTAC","Zotac", $title);
         $title = str_replace("FUJITSU","Fujitsu", $title);
         $title = str_replace("LENOVO ","Lenovo ", $title);
         $title = str_replace("LIFEBOOK","Lifebook", $title);
