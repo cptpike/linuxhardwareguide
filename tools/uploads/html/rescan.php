@@ -28,8 +28,11 @@ if ( (substr($ref,0,21) == "http://192.168.3.113/") or
         print "executing rescan<br>";
         $out = shell_exec('cd /var/www/uploads/ && ./scan_hw_upload.pl '.$sid.' -r');
         print "OUT:<pre> $out </pre>";
-	print '<a href="http://'.$scan_url.'/hardware-profile/scan-'.$sid.'">back to HW overview</a><br>';
-
+	if ( strpos( $ref, "/scan-") > 0 ) {
+        	print '<a href="http://'.$scan_url.'/hardware-profile/scan-'.$sid.'">back to HW overview</a><br>';
+        } else {
+        	print '<a href="http://'.$scan_url.'/hardware-profile/editscan-'.$sid.'">back to HW overview</a><br>';
+	}
 }
 
 
