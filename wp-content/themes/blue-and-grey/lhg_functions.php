@@ -69,6 +69,10 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linux-from-scratch-logo.png";
         if ( strpos($distribution,"Mageia") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/mageia-logo.png";
+        if ( strpos($distribution,"Mageia") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/mageia-logo.png";
+        if ( strpos($distribution,"Pisi") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/pisi-linux-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
