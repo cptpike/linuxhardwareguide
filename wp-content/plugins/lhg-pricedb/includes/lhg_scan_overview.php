@@ -184,6 +184,7 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
         	$status  = $resN->status;
 
                 if ( ( ($status == "") ) or
+        	     ( ($status == "duplicate") ) or
                      ( ($status == "new") && ($show_new == true) ) or
                      ( ($status == "ongoing") && ($show_ongoing == true) ) or
                      ( ($status == "feedback") && ($show_feedback == true) ) or
@@ -214,6 +215,8 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
                         #extract userdata
                         $uploader_guid = lhg_get_scan_uploader_guid( $sid );
                         $usertxt = "";
+                        $duplicate_txt = "";
+                        if ($status == "duplicate") $duplicate_txt = "dup";
 
                         if ($uploader_guid > 0) {
 	                        $user_tmp = lhg_get_userdata_guid( $uploader_guid );
@@ -265,6 +268,7 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
                           .$commentavail." "
                           .$ratingavail. " "
                           .$usertxt." "
+                          .$duplicate_txt." "
                           .$ucomment_short."</td>";
         	        print '<td>
 	        	        <input name="hwscan_acomment_'.$sid.'" type="text" size="20" value="'.$acomment.'">
