@@ -1938,30 +1938,47 @@ sub check_duplicates {
     $sth_glob->execute( $sid );
     ($kversion, $distribution, $scandate, $status) = $sth_glob->fetchrow_array();
 
-    print "KV: $kversion - D: $distribution - S: $scandate";
+    #print "KV: $kversion - D: $distribution - S: $scandate";
     
     # check if similar uploads exist
     
     $myquery = "SELECT sid FROM `lhgscansessions` WHERE kversion = ? AND distribution = ? AND scandate < ?";   
     $sth_glob = $lhg_db->prepare($myquery);
     $sth_glob->execute( $kversion, $distribution, $scandate );
-    @sids = $sth_glob->fetchrow_array();
+    #@sids = $sth_glob->fetchrow_array();
+    $sids = $sth_glob->fetchall_arrayref();
+    
+    #print "\n--------SIDS\n";
+    #    foreach (@{$sids}){
+    #        print "@{$_}";
+    #    }
+
     
     # own fingerprint
-    $lfp = `/var/www/uploads/fingerprints.pl $sid 2> /dev/null`;
+    @lfp = `/var/www/uploads/fingerprints.pl $sid 2> /dev/null`;
     
     
-    foreach ( @sids ) {
-        print "\nDuplicate candidate found: $_ \n";
+    foreach ( @{$sids} ) {
+        print "Duplicate candidate: @{$_} ";
         
         # compare fingerprints
-        $fp = `/var/www/uploads/fingerprints.pl $_ 2> /dev/null`;
+        @fp = `/var/www/uploads/fingerprints.pl @{$_} 2> /dev/null`;
         
         #print "FP\n: $fp\n";
         #print "LFP\n: $lfp";
         
-        if ($fp eq $lfp) {
-            print "-> Scan looks like a duplicate of $_\n";
+        #print "\n--------Own FP\n";
+        #foreach (@fp){
+        #    print "$_";
+        #}
+        #print "\n--------Candidate FP\n";
+        #foreach (@lfp){
+        #    print "$_";
+        #}
+        
+        if (@fp ~~ @lfp) {
+            #if ( array_diff(@fp, @lfp) == "" ) {
+            print "-> dup\n";# Scan looks like a duplicate of @{$_}\n";
             
             # do not overwrite status value 
             if ($status eq "") {
@@ -1969,7 +1986,10 @@ sub check_duplicates {
                 $sth_glob = $lhg_db->prepare($myquery);
                 $sth_glob->execute("duplicate", $sid);
             }
+        } else {
+            print "-> OK\n"; #Scan @{$_} is NOT a duplicate\n";
         }
+
     }
 }
 
