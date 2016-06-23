@@ -1404,7 +1404,7 @@ print "<h2>".$txt_subscr_newhw."</h2>";
 
                                 $("[id^=show-details-hw-]").each(function(){
                                 	var id = $(this).attr(\'id\').substring(16);
-	                                $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
+	                                // $(\'<a href id="show-more-details-\'+id+\'" class="show-details-link">Show details</a>\').prependTo(\'#show-details-hw-\'+id);
                                         $("#details-hw-"+id).hide();
                                 });
                                 $("[id^=show-details-hw-]").click(function(){
@@ -1486,6 +1486,8 @@ print "<h2>".$txt_subscr_newhw."</h2>";
                                         $(indicatorid).remove();
                                         $("#properties-"+id).text(properties);
                                         $("#title-"+id).text(newtitle);
+                                        $(\'#details-hw-\'+id).show("slow");
+
 
                                 });
 
