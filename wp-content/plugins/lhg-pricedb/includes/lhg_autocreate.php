@@ -578,7 +578,7 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 
 
 
-  $taglist = array( 584);
+  $taglist = array( 584 );
 
   if ( $dmesg_content_from_library == "" ) {
 	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
@@ -781,6 +781,10 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 [/code]
 ';
 
+  # The scsi line shows a truncated title, if the device name is too long.
+  # For the title we will need the full title
+  $title = lhg_search_long_title( $title , $dmesg );
+
   #if (preg_match('/Athlon(tm) II/',$title)) array_push ( $taglist , 880);
 
   $title = wp_strip_all_tags($title);
@@ -799,6 +803,14 @@ function lhg_create_drive_article ($title, $sid, $id ) {
   #print "<br>Title: $title <br> ScanID: $sid<br>";
 
 	#$title = $title;
+
+  # Do nothing, if article already exists
+  $page = get_page_by_title( "<!--:us-->".$title."<!--:-->" );
+  if ( ( $page->ID != "") && is_page($page->ID) ) return $page->ID;
+
+  $page = get_page_by_title( $title );
+  if ( ( $page->ID != "") && is_page($page->ID) ) return $page->ID;
+
 
 	$myPost = array(
 			'post_status' => 'draft',
@@ -2339,3 +2351,37 @@ function lhg_correct_authors( $input ) {
         return $output;
 
 }
+
+function lhg_search_long_title( $title , $dmesg ) {
+
+        # look if the title was truncated and if a longer version exists in dmesg output
+        $otitle = $title;
+        $longtitle = ""; # longer version of title
+
+        $title = trim(str_replace(" ATA ", "", $title));
+        #error_log('Search for "'.$title.'"');
+
+        # search for all appearances of "title" in dmesg output and search for longer version:
+        $keys = array_keys( $dmesg, $title);
+        $keyword = $title;
+
+        foreach($dmesg as $key => $arrayItem){
+        	if( stristr( $arrayItem, $keyword ) ){
+	            #error_log( "Key: $key - ".$dmesg[$key] );
+        	    $foundkey = $key;
+                    $startpos = strpos( $arrayItem, $keyword);
+                    $endpos = strpos( $arrayItem, ",");
+
+                    # candidate found - compare lengths
+                    # see if longer than former finding
+		    $newname = substr( $arrayItem, $startpos, $endpos-$startpos ) ;
+                    if ( ( strlen($newname) > strlen($title) ) && ( strlen($newname) > strlen($longtitle) ) ) $longtitle = $newname;
+        	}
+  	}
+
+        # Did we find something, then return longer title, otherwise original title is returned
+        #error_log("Old tite: $otitle -> new title: $longtitle");
+        if (strlen($longtitle) < strlen($title)) return $otitle;
+        return $longtitle;
+}
+
