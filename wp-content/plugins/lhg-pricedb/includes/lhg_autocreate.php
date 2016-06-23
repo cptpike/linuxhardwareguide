@@ -26,7 +26,8 @@ function lhg_create_cpu_article ($title, $sid, $id ) {
   #
   $title = lhg_clean_cpu_title($title);
   $page = get_page_by_title( $title );
-  if ( is_page($page->ID) ) return $page->ID;
+  if ( ( $page->ID != "") && is_page($page->ID) ) return $page->ID;
+  #if ( is_page($page->ID) ) return $page->ID;
 
 
   $category = 874;
@@ -183,7 +184,8 @@ function lhg_create_mainboard_article ($title, $sid, $id ) {
   $otitle = $title;
   $title = lhg_clean_mainboard_name( $title );
   $page = get_page_by_title( $title );
-  if ( is_page($page->ID) ) return $page->ID;
+  if ( ( $page->ID != "") && is_page($page->ID) ) return $page->ID;
+  #if ( is_page($page->ID) ) return $page->ID;
 
 
   $laptop_probability = lhg_scan_is_laptop( $sid );
@@ -290,24 +292,32 @@ $lspci0 = str_replace("\n\n","",$lspci0);
   $version_line = str_replace("Linux version ","",$version_line);
   list($version, $null) = split(" ",$version_line);
 
-  $article =  'The '.$title." ";
+  #$article =  'The '.$title." ";
 
-  if ($laptop_probability > 0.8) $article .= 'is a laptop and ';
+  #if ($laptop_probability > 0.8) $article .= 'is a laptop and ';
 
-  $article .= 'was successfully tested in configuration
-[code lang="plain" title="dmesg | grep DMI"]
-'.$dmi_line.'
-[/code]
-under '.trim($distribution).' with Linux kernel version '.trim($version).'.
+#  $article .= 'was successfully tested in configuration
+#[code lang="plain" title="dmesg | grep DMI"]
+#'.$dmi_line.'
+#[/code]
+#under '.trim($distribution).' with Linux kernel version '.trim($version).'.
+#
+#';
 
-';
+#  $article .= '<h3>Hardware Overview</h3>
+#The following hardware components are part of the '.$title.' and are supported by the listed kernel drivers:
+#[code lang="plain" title="lspci -nnk"]
+#'.$lspci0.'
+#[/code]
+#';
 
-  $article .= '<h3>Hardware Overview</h3>
-The following hardware components are part of the '.$title.' and are supported by the listed kernel drivers:
-[code lang="plain" title="lspci -nnk"]
-'.$lspci0.'
-[/code]
-';
+
+$article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" version=\"".trim($version)."\" dmi_output=\"".trim($dmi_line)."\"]
+
+[lhg_mainboard_lspci]
+".trim($lspci0)."
+[/lhg_mainboard_lspci]
+";
 
 #print $article;
 
@@ -440,7 +450,8 @@ function lhg_create_pci_article ($title, $sid, $id ) {
   # see if article was already created based on title
   $otitle = $title;
   $page = get_page_by_title( $title );
-  if ( is_page($page->ID) ) return $page->ID;
+  if ( ( $page->ID != "") && is_page($page->ID) ) return $page->ID;
+  #if ( is_page($page->ID) ) return $page->ID;
 
 
   $category = "";
