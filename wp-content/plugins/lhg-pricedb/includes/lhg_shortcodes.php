@@ -2,6 +2,8 @@
 
 add_shortcode( 'lhg_hplip', 'lhg_hplip_shortcode');
 add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
+add_shortcode( 'lhg_mainboard_intro', 'lhg_mainboard_intro_shortcode');
+add_shortcode( 'lhg_mainboard_lspci', 'lhg_mainboard_lspci_shortcode');
 add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
 add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
@@ -100,6 +102,64 @@ function lhg_drive_intro_shortcode($attr) {
 	if ($region == "es") $output = $output_es;
 	if ($region == "it") $output = $output_it;
 
+        return $output;
+}
+
+
+function lhg_mainboard_intro_shortcode($attr) {
+        global $lang;
+        global $region;
+
+        # Printer name = $printer_name
+	$title=translate_title(get_the_title());
+	$title_orig=get_the_title();
+	$s=explode("(",$title);
+	$mainboard_name=trim($s[0]);
+	$mainboard_properties=trim($s[1]);
+
+        # Mainboard type
+        if ( strpos($mainboard_properties,"Laptop") > 0 ) $type = "laptop";
+        if ( strpos($mainboard_properties,"Desktop") > 0 ) $type = "desktop PC";
+        if ( $type != "" ) $typetext = "is a $type and ";
+
+        $output = "<p>The ".$title.' '. $typetext.' was successfully tested in configuration</p>
+<pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
+'.$attr['dmi_output'].'
+</pre>
+<p>
+under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'
+</p>
+';
+        return $output;
+}
+
+function lhg_mainboard_lspci_shortcode($attr, $content) {
+        global $lang;
+        global $region;
+
+        # Printer name = $printer_name
+	$title=translate_title(get_the_title());
+	$title_orig=get_the_title();
+	$s=explode("(",$title);
+	$mainboard_name=trim($s[0]);
+	$mainboard_properties=trim($s[1]);
+
+        $lspci_lines = explode("\n",$content);
+
+        $output =
+
+'<h3>Hardware Overview</h3>
+<p>
+The following hardware components are part of the '.$title.' and are supported by the listed kernel drivers:
+</p>
+<pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
+
+#Strange things happen with out lspci output. Somehow, newlines are replaced by <br> if text is transferred as $content
+foreach ($lspci_lines as $line) {
+        $output .= str_replace("<br />","\n",$line);
+}
+
+$output .= '</pre>';
         return $output;
 }
 
