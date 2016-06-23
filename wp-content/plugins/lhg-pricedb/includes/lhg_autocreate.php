@@ -1,22 +1,33 @@
 <?php
 
 function lhg_create_cpu_article ($title, $sid, $id ) {
+  # returns the post id of created or already existing draft article
 
   global $lhg_price_db;
   global $cpus_from_library;
   global $lang;
-
-  # check if article was already created
-  #error_log("CPU ID: $id");
-  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
-  $created_id = $lhg_price_db->get_var($sql);
-  if ($created_id != 0) return $created_id;
 
   # article creation should be limited to .com server
   if ($lang == "de") {
                 error_log("Article creation on .de server should not happen. ID: $id");
                 return;
   }
+
+  # check 1:
+  # see if article was already created based on article ID
+  #error_log("CPU ID: $id");
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
+
+  # check 2:
+  # see if article was already created based on title
+  # Use clean CPU title
+  #
+  $title = lhg_clean_cpu_title($title);
+  $page = get_page_by_title( $title );
+  if ( is_page($page->ID) ) return $page->ID;
+
 
   $category = 874;
   $taglist = array( 874);
@@ -66,12 +77,6 @@ $cpu0 = implode("\n",$new_cpulines);
   $tagstring = lhg_convert_tag_array_to_string( $taglist );
 
 
-
-  #
-  ### Clean CPU title
-  #
-
-  $title = lhg_clean_cpu_title($title);
 
 
 
@@ -161,21 +166,26 @@ function lhg_create_mainboard_article ($title, $sid, $id ) {
   global $lhg_price_db;
   global $lang;
 
-  # check if article was already created
-  #error_log("MB ID: $id");
-  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
-  $created_id = $lhg_price_db->get_var($sql);
-  if ($created_id != 0) return $created_id;
-
   # article creation should be limited to .com server
   if ($lang == "de") {
                 error_log("Article creation on .de server should not happen. ID: $id");
                 return;
   }
 
+  # check 1:
+  # see if article was already created based on article ID
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
 
+  # check 2:
+  # see if article was already created based on title
   $otitle = $title;
   $title = lhg_clean_mainboard_name( $title );
+  $page = get_page_by_title( $title );
+  if ( is_page($page->ID) ) return $page->ID;
+
+
   $laptop_probability = lhg_scan_is_laptop( $sid );
 
   // if mainboard
@@ -414,20 +424,24 @@ function lhg_create_pci_article ($title, $sid, $id ) {
   global $lspci_content_from_library;
   global $lang;
 
-  # check if article was already created
-  #error_log("PCI article ID: $id");
-  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
-  $created_id = $lhg_price_db->get_var($sql);
-  if ($created_id != 0) return $created_id;
-
   # article creation should be limited to .com server
   if ($lang == "de") {
                 error_log("Article creation on .de server should not happen. ID: $id");
                 return;
   }
 
+  # check 1:
+  # see if article was already created based on article ID
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
 
+  # check 2:
+  # see if article was already created based on title
   $otitle = $title;
+  $page = get_page_by_title( $title );
+  if ( is_page($page->ID) ) return $page->ID;
+
 
   $category = "";
   $taglist = array( );
@@ -550,20 +564,21 @@ function lhg_create_drive_article ($title, $sid, $id ) {
   global $dmesg_content_from_library;
   global $lang;
 
-  # check if article was already created
-  #error_log("Drive article ID: $id");
-  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
-  $created_id = $lhg_price_db->get_var($sql);
-  if ($created_id != 0) return $created_id;
-
   # article creation should be limited to .com server
   if ($lang == "de") {
                 error_log("Article creation on .de server should not happen. ID: $id");
                 return;
   }
 
+  # check 1:
+  # see if article was already created based on article ID
+  $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  if ($created_id != 0) return $created_id;
 
-  $taglist = array( 584);
+
+
+  $taglist = array( 584 );
 
   if ( $dmesg_content_from_library == "" ) {
 	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
@@ -766,6 +781,10 @@ function lhg_create_drive_article ($title, $sid, $id ) {
 [/code]
 ';
 
+  # The scsi line shows a truncated title, if the device name is too long.
+  # For the title we will need the full title
+  $title = lhg_search_long_title( $title , $dmesg );
+
   #if (preg_match('/Athlon(tm) II/',$title)) array_push ( $taglist , 880);
 
   $title = wp_strip_all_tags($title);
@@ -784,6 +803,14 @@ function lhg_create_drive_article ($title, $sid, $id ) {
   #print "<br>Title: $title <br> ScanID: $sid<br>";
 
 	#$title = $title;
+
+  # Do nothing, if article already exists
+  $page = get_page_by_title( "<!--:us-->".$title."<!--:-->" );
+  if ( ( $page->ID != "") && is_page($page->ID) ) return $page->ID;
+
+  $page = get_page_by_title( $title );
+  if ( ( $page->ID != "") && is_page($page->ID) ) return $page->ID;
+
 
 	$myPost = array(
 			'post_status' => 'draft',
@@ -871,17 +898,18 @@ function lhg_create_usb_article ($title, $sid, $usbid ) {
   global $dmesg_content_from_library;
   global $lang;
 
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
   # check if article was already created
   #error_log("USB article ID: $id");
   $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
   $created_id = $lhg_price_db->get_var($sql);
   if ($created_id != 0) return $created_id;
 
-  # article creation should be limited to .com server
-  if ($lang == "de") {
-                error_log("Article creation on .de server should not happen. ID: $id");
-                return;
-  }
 
 
 
@@ -2323,3 +2351,37 @@ function lhg_correct_authors( $input ) {
         return $output;
 
 }
+
+function lhg_search_long_title( $title , $dmesg ) {
+
+        # look if the title was truncated and if a longer version exists in dmesg output
+        $otitle = $title;
+        $longtitle = ""; # longer version of title
+
+        $title = trim(str_replace(" ATA ", "", $title));
+        #error_log('Search for "'.$title.'"');
+
+        # search for all appearances of "title" in dmesg output and search for longer version:
+        $keys = array_keys( $dmesg, $title);
+        $keyword = $title;
+
+        foreach($dmesg as $key => $arrayItem){
+        	if( stristr( $arrayItem, $keyword ) ){
+	            #error_log( "Key: $key - ".$dmesg[$key] );
+        	    $foundkey = $key;
+                    $startpos = strpos( $arrayItem, $keyword);
+                    $endpos = strpos( $arrayItem, ",");
+
+                    # candidate found - compare lengths
+                    # see if longer than former finding
+		    $newname = substr( $arrayItem, $startpos, $endpos-$startpos ) ;
+                    if ( ( strlen($newname) > strlen($title) ) && ( strlen($newname) > strlen($longtitle) ) ) $longtitle = $newname;
+        	}
+  	}
+
+        # Did we find something, then return longer title, otherwise original title is returned
+        #error_log("Old tite: $otitle -> new title: $longtitle");
+        if (strlen($longtitle) < strlen($title)) return $otitle;
+        return $longtitle;
+}
+
