@@ -1802,6 +1802,8 @@ sub calculate_laptop_probability {
     if ( ( index($title,"Dell") != -1 )  && index($title,"Inspiron")  != -1 )    {$probability = 1;}
     if ( index($title,"LIFEBOOK")  != -1 ) {$probability = 1;}
     if ( index($title,"Notebook")  != -1 ) {$probability = 1;}
+    if ( index($title,"SAMSUNG")  != -1 ) {$probability = 1;}
+    if ( index($title,"Samsung")  != -1 ) {$probability = 1;}
     if ( index($title,"Compaq Presario")  != -1 ) {$probability = 1;}
 
     if ( ( $title =~ /ASUSTeK/ ) && ( $title =~ / K[0-9][0-9]/ ) ) {$probability = 1;}
