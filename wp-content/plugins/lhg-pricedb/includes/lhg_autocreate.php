@@ -1823,6 +1823,10 @@ function lhg_clean_mainboard_name ( $title  ) {
         # make title beautiful
         $title = str_replace("ZOTAC","Zotac", $title);
         $title = str_replace("FUJITSU","Fujitsu", $title);
+        $title = str_replace("SAMSUNG ELECTRONICS CO., LTD.","Samsung", $title);
+        $title = str_replace("SAMSUNG","Samsung", $title);
+        $title = str_replace("TOSHIBA","Toshiba", $title);
+        $title = str_replace("SATELLITE","Satellite", $title);
         $title = str_replace("LENOVO ","Lenovo ", $title);
         $title = str_replace("LIFEBOOK","Lifebook", $title);
         $title = str_replace("COMPUTER INC.","", $title);
@@ -1946,6 +1950,8 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( stristr($string, "Socket AM2") != false ) array_push($props,"Socket AM2");
         if ( stristr($string, "Quad-Core") != false ) array_push($props,"Quad Core");
         if ( stristr($string, "Dual-Core") != false ) array_push($props,"Dual Core");
+        if ( stristr($string, "Socket G2") != false ) array_push($props,"Socket G2");
+
                 #repair broken cache string
         if ( preg_match("/ [0-9]{3}K Cache/i", $string, $match) == 1 ) array_push($props, str_replace("K Cache","KB Cache",$match[0]));
         if ( preg_match("/ [0-9]{1} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
