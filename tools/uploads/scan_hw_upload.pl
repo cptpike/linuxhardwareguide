@@ -1944,6 +1944,10 @@ sub check_duplicates {
     $sth_glob = $lhg_db->prepare($myquery);
     $sth_glob->execute( $sid );
     ($kversion, $distribution, $scandate, $status) = $sth_glob->fetchrow_array();
+    
+    # scandate needs to be set manually, if this is the first scan attemp
+    # In this case $scandate is set to 1 
+    if ($scandate < 2) { $scandate = time(); }
 
     #print "KV: $kversion - D: $distribution - S: $scandate";
     
