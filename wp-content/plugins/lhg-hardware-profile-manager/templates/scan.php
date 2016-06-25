@@ -2599,6 +2599,8 @@ function lhg_check_if_recent_upload ( $sid ) {
 	global $lhg_price_db;
 
         # look when scan was uploaded
+        # scandate = 1 means that scan is still ongoing
+        # scandate = 0 means not yet created in DB
         $myquery = $lhg_price_db->prepare("SELECT scandate FROM `lhgscansessions` WHERE sid = %s", $sid);
         $scandate = $lhg_price_db->get_var($myquery);
 
@@ -2608,7 +2610,7 @@ function lhg_check_if_recent_upload ( $sid ) {
 
         $diff = time() - $scandate;
 
-        if ($diff < 15) {
+        if ( ($diff < 15) or ($scandate < 2) ) {
 
         # The data was uploaded less than 15 seconds ago
         # in order to keep the visitor informed that something is ongoing on server side

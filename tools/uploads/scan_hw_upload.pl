@@ -110,6 +110,7 @@ check_pci_devices();
 #print "Found devices: $found_devices";
 
 print "Scan finished \n";
+cleanup();
 exit 0;
 
 
@@ -758,11 +759,15 @@ sub create_db_metadata {
     #print "ID: $id";
     
     if ($id == "") {
-        # fist scan store info
+        # fist scan store info 
+        # Scandate needs to be set at the end of the script (see cleanup() routine)
+        # Otherwise, data processing can
+        # take too long and web site can not see if data was alread processed
+        $scandate_ongoing = 1;
         $lhg_db = DBI->connect($database, $user, $pw);
         $myquery = "INSERT INTO `lhgscansessions` (sid, scandate, uid, kversion, distribution, wp_uid, wp_uid_de) VALUES (? ,? ,? ,? ,?, ?, ?)";   
         $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $scandate, $uid, $k_version, $distribution, $lhguid, $lhguidde);
+        $sth_glob->execute($sid, $scandate_ongoing, $uid, $k_version, $distribution, $lhguid, $lhguidde);
         $cycle=0;
         create_pub_id();
         return $cycle;
@@ -1993,5 +1998,29 @@ sub check_duplicates {
         }
 
     }
+}
+
+sub  cleanup { 
+    # Whats left at the end?
+    
+    # 1. write final scandate
+    # 1.1 check if scandate still set to 1
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT scandate FROM `lhgscansessions` WHERE sid = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $sid );
+    ($scandate_db) = $sth_glob->fetchrow_array();
+    
+    if ($scandate_db == 1) {
+        # first scan. No scandate yet set
+        $scandate = time;
+        $myquery = "UPDATE `lhgscansessions` SET scandate = ? WHERE sid = ?";   
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($scandate, $sid);
+        #print "New scandate set";
+    } else {
+        #print "Nothing to do";
+    }
+
 }
 
