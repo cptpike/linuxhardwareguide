@@ -7,6 +7,7 @@ define ('LHG_KARMA_edit_posts', 50);
 define ('LHG_KARMA_delete_posts', 50);
 define ('LHG_KARMA_upload_files', 50);
 define ('LHG_KARMA_publish_posts', 300);
+define ('LHG_KARMA_manage_categories', 500);
 define ('LHG_KARMA_edit_published_posts', 500); # e.g. needed for translators
 define ('LHG_KARMA_edit_others_posts', 500); # e.g. needed for translators
 
@@ -45,6 +46,7 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 	#$caps[] = 'read';
 			$caps = array();
         	}
+                return $caps;
 	}
 
         if ( 'delete_posts' == $cap ) {
@@ -87,6 +89,22 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
         	}
                 return $caps;
 	}
+
+        # category modificaitons should only be possible for admins
+	#if ( 'manage_categories' == $cap ) {
+        #        #error_log("User wants to edit cat - caps:".join(",",$caps) );
+        #        if ( $karma < LHG_KARMA_manage_categories ) {
+        #                #error_log("Not enough points!");
+        #        	$caps[] = 'activate_plugins';
+        #        }else{
+        #                #error_log("Enough points. Let go!");
+        #        	#$caps[] = 'read';
+	#		$caps = array();
+        #	}
+        #        return $caps;
+	#}
+
+        #error_log("Unknown cap: $cap - caps:".join(",",$caps) );
 
 
 	return $caps;
