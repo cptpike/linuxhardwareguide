@@ -2596,6 +2596,9 @@ function lhg_get_mainboard_name_from_DMI ( $dmesg ) {
 
 function lhg_check_if_recent_upload ( $sid ) {
 
+        if ($sid == "") return;
+        #error_log( "SID: $sid" );
+
 	global $lhg_price_db;
 
         # look when scan was uploaded
