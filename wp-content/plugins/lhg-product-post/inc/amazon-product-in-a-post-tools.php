@@ -162,6 +162,13 @@ echo '
                  $pid = absint( $_REQUEST['post_id'] );
                  $asin = $_REQUEST['asin'] ;
 
+                 if ( ($asin == "") or (substr($asin,0,5) == "00000") ) {
+                        # No ASIN of no valid ASIN provided - spare us the hazzle
+                        print "ASIN not valid";
+                        die();
+		 }
+
+
                $output = lhg_aws_get_price($asin,"com");
                  list($image_url_com, $product_url_com, $price_com , $product_title) = split(";;",$output);
 
@@ -236,19 +243,25 @@ echo '
                  </tr>
                  <td>com</td> <td><span class="amz-ajax-return">'.$success_image_com.'</span></td>
                  <td> '.$price_com.'</td>
-                 <td> (<a href="'.$product_url_com.'">visit</a>) </td>
+                 <td> ';
+                 if ($product_url_com != "") print '(<a href="'.$product_url_com.'">visit</a>)';
+                 print '</td>
                  </tr>
 
                  </tr>
                  <td>fr</td> <td><span class="amz-ajax-return">'.$success_image_fr.'</span></td>
                  <td> '.$price_fr.'</td>
-                 <td> (<a href="'.$product_url_fr.'">visit</a>) </td>
+                 <td> ';
+                 if ($product_url_fr != "") print '(<a href="'.$product_url_fr.'">visit</a>)';
+                 print '</td>
                  </tr>
 
                  </tr>
                  <td>de</td> <td><span class="amz-ajax-return">'.$success_image_de.'</span></td>
                  <td> '.$price_de.'</td>
-                 <td> (<a href="'.$product_url_de.'">visit</a>) </td>
+                 <td>';
+                 if ($product_url_de != "") print '(<a href="'.$product_url_de.'">visit</a>)';
+                 print '</td>
                  </tr>
 
                  </table>
