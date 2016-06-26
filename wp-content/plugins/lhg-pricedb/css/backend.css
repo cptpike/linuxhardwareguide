@@ -32,3 +32,32 @@ tr#quarterly-points-header-row {
 .qrtly-3 {
 	min-width: 110px;
 }
+.amz-ajax-image {
+	float: right;
+}
+
+.amz-ajax-image img {
+	width: 100px;
+}
+
+.amz-ajax-found {
+	color: green;
+}
+
+div#amz-info-reload-box {
+	float: right;
+        margin-top: -36px;
+}
+
+.ajax-amazon-table table tr td{
+	border: solid 1px;
+}
+
+.ajax-amazon-table  {
+	float: right;
+}
+
+.attachment-40x40  {
+	width: 40px;
+        height: 40px;
+}
