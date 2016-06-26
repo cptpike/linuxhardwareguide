@@ -653,24 +653,69 @@ function lhg_donation_table_shortcode($attr) {
 
 
 <td class="quartery-points-avatar qrtly-2">';
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+
+# TODO: localized hardware profile should be linked. Not US version
+
+# linked avatar to user page if on local server
+# link avatar to guser page, if user present on other servers
+if ($lang == "de") {
+	if ($user->wpuid_de != 0) {
+		$output .= '<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+                $close0 = 1; # remember that link has to be closed
+        } else {
+		$output .= '<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+                $close0 = 1;
+        }
+}
+
+if ($lang != "de") {
+	if ($user->wpuid != 0) {
+		$output .= '<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+                $close0 = 1; # remember that link has to be closed
+        } else {
+		$output .= '<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+                $close0 = 1; # remember that link has to be closed
+        }
+}
+
 $output .='    <div class="userlist-avatar">'.
       $avatar.'
     </div> ';
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '</a>';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '</a>';
+
+if ($close0 == 1) $output .= '</a>';
+
 $output .= '</td>
 
 
 <td class="qrtly-3">
           <div class="userlist-displayname">';
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '		<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '		<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
-	            	$output .= $user_nicename;
 
-if ( ($lang == "de") && ($user->wpuid_de != 0) ) $output .= '</a>';
-if ( ($lang != "de") && ($user->wpuid != 0) ) $output .= '</a>';
+# show link to user page if on local server
+# link to guser page, if user present on other servers
+if ($lang == "de") {
+	if ($user->wpuid_de != 0) {
+        	$output .= '		<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+                $close1 = 1; # remember that link has to be closed
+        } else {
+        	$output .= '		<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+                $close1 = 1;
+        }
+}
+
+if ($lang != "de") {
+	if ($user->wpuid != 0) {
+        	$output .= '		<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+                $close1 = 1;
+        } else {
+        	$output .= '		<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+                $close1 = 1;
+        } 
+}
+
+$output .= $user_nicename;
+
+if ($close1 == 1) $output .= '</a>';
+
 $output .='
           </div>
 </td>
