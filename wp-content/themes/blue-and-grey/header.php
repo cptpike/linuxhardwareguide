@@ -299,11 +299,16 @@ function country_list($metalist) {
         $posturlcom = str_replace("?lang=nl","",$posturlcom);
         $posturlcom = str_replace("?lang=br","",$posturlcom);
 
+        #error_log("PURLC: $posturlcom");
+
 
         if ($posturlcom == "hardware-profile") {
         	$url     = getCurrentUrl();
                 $pieces  = parse_url($url);
                 $urlpath = $pieces['path'];
+
+
+	        #error_log("UP: $urlpath");
 
 		$hwprofpos=strpos($urlpath,"hardware-profile/user");
 		$hwprofposg=strpos($urlpath,"hardware-profile/guser");
@@ -311,6 +316,7 @@ function country_list($metalist) {
                 $hwprofposs=strpos($urlpath,"hardware-profile/system");
 
                 #print "$urlpath - $hwprofpos - $hwprofposs<br>";
+                #error_log("HWP: $hwprofpos - HWPG: $hwprofposg");
 
                 if ($hwprofposs != "") $rurl = substr($urlpath,$hwprofposs);
 
@@ -333,14 +339,13 @@ function country_list($metalist) {
 	                if ($lang == "de") $posturlcom  = "/hardware-profile/guser".$guid;
 	                if ($lang == "de") $posturlde  = "/hardware-profile/user".$uid;
 
-		}
-
-                if ($hwprofposg != "") {
+		}elseif ($hwprofposg != "") {
                         # translate public user profile links to guid links to make them available on other servers
                 	$rurl = substr($urlpath,$hwprofpos);
                         $hwprofpos   = strpos($urlpath,"/hardware-profile/guser");
 			$guid = (int)substr($urlpath,$hwprofposg+22);
 			#$guid = lhg_get_guid_from_uid( $uid );
+                        #error_log("guid: $guid");
 
                         #locally linking to standard user profile, transversally linking to guid
 	        	$rurl = "/hardware-profile/guser".$guid;
@@ -352,13 +357,14 @@ function country_list($metalist) {
         	        $posturlde  = "$rurl";
 
 
+		}else{
+
+                	# private profile page remains
+
+	                $posturlcom = "/hardware-profile";
+        		$posturlde  = "/hardware-profile";
+
 		}
-
-                # private profile page remains
-
-                $posturlcom = "/hardware-profile";
-        	$posturlde  = "/hardware-profile";
-
 	}
 
 

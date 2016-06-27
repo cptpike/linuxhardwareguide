@@ -121,6 +121,7 @@ echo "$message<br>
 <?php
 
 if ($public_user_ID != 0) {
+                # we have user data
         	$user = get_userdata( $public_user_ID );
                 $email = $user->user_email;
 	        $karma = lhg_get_karma( $public_user_ID ); //$num_com * 3 + $num_art * 50;
@@ -129,12 +130,19 @@ if ($public_user_ID != 0) {
 }
 
 if ($public_user_ID == 0) {
+                # we are limited to guser data
         	$user_tmp = lhg_get_userdata_guid($guid);
                 $user=$user_tmp[0];
                 $email = $user->emails;
 		$karma = $user->karma_com + $user->karma_de; //$num_com * 3 + $num_art * 50;
         	$displayname = $user->user_nicename;
                 $avatar = $user->avatar;
+                # make it bigger!
+                $avatar = str_replace("s=40","s=96",$avatar);
+                $avatar = str_replace("s%3D40","s%3D96",$avatar);
+                $avatar = str_replace("avatar-40","avatar-96",$avatar);
+                $avatar = str_replace("height='40'","height='96'",$avatar);
+                $avatar = str_replace("width='40'","width='96'",$avatar);
                 #error_log("Avatar: $avatar");
                 #var_dump($user);
 }
@@ -218,7 +226,7 @@ if ($public_user_ID == 0) {
                 if ($show_email_address)
                 echo '<div id="subscribe-reloaded-email-p">'.__('<strong>Email</strong>','subscribe-reloaded').': '.$email.'</div>';
 
-                echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_regdate.': '.$regdate.'</div>';
+                if ($public_user_ID != 0) echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_regdate.': '.$regdate.'</div>';
                 echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_language.': '.$user_language_flag.'</div>';
 
                 //Rank+Title info
