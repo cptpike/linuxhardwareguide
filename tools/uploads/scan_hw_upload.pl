@@ -4,10 +4,14 @@
 # 0.2b - Laptop recognition added
 # 0.2c - Possibility for user linking by LHG user ID added
 # 0.2d - Possibility for user linking by LHG.de user ID added
+# 0.2e - Mainboard recognition improved (using fingerprint of unique PCIIDs)
+#      - Ignore mainboards in PCI device recognition  
+
+no warnings experimental::smartmatch; 
 
 $sid = $ARGV[0];
 
-print "Version: 0.2d  \n";
+print "Version: 0.2e  \n";
 
 # MYSQL CONFIG VARIABLES
 use DBI;
@@ -22,7 +26,6 @@ if ($address eq "192.168.3.115") {
     print "On Test Server \n";
     $host = "192.168.3.114";
 }
-
 
 our    $database = "DBI:mysql:lhgpricedb;host=$host";
 require ("/var/www/uploads/lhg.conf");
@@ -129,13 +132,20 @@ sub check_mainboard {
     open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
     open(FILEN, "<", "/var/www/uploads/".$sid."/lspci.txt");
     $nextline=<FILEN>;
-    $i=0;
+    my $i=0;
+    my @identifiedmb=qw();
+    my @pciids_tmp=qw(); # array of unique PCI IDs of lspci output
+    my $n_fingerprint_total = 0; # total number of elements in lspci output
     while ( <FILE> ) {
+        
+        # read PCI IDs and Subsystem IDs
+        #
         $nextline = <FILEN>;
         #print "Line: $_";
-        
         $pciid   = grab_pciid($_);
         if ($pciid != "")  { 
+            $n_fingerprint_total++;
+            
             #print "PCIID: $pciid \n";
             $subsystemid   = grab_subsystemid($nextline);
             #print "Subsystem: $subsystemid \n";
@@ -146,20 +156,76 @@ sub check_mainboard {
         
         #print "PCIID: $pciid -- ";
         #        
+        
+        # identify posts that have this pciid
+        # 
         $identifiedmb[0]=0;
         if ($pciid != "") {
-            @postids = checkdb_mainboard_pci($pciid);
-            #print "#PIDs: ".scalar(@postids)."  \n";
-            foreach $postid (@postids) {
-                #print "found Pciid: $pciid -> PDI: $postid \n";
-                $identifiedmb[int($postid)] +=1;
+            
+            # check if this Pciid was seen before
+            if ($pciid ~~ @pciids_tmp) {
+                #print "PCIID $pciid was already counted. Skipping\n";
+            }else {
+                #print "append $pciid to array. Elements: ";
+                push @pciids_tmp, $pciid;
+                #print scalar(@pciids_tmp)."\n";
+
+                # count number of pciids of lspci output
+                $n_fingerprint +=1; # is identical to scalar(@pciids_tmp)
+            
+                @postids = checkdb_mainboard_pci($pciid);
+                #print "#PIDs: ".scalar(@postids)."  \n";
+                foreach $postid (@postids) {
+                
+                    # Debug
+                    #if ( $postid == 154254 ) {
+                    #    print "found Pciid: $pciid -> PID: $postid -> counter: $identifiedmb[int($postid)]+1 \n";
+                    #}
+
+                    #print $identifiedmb[int($postid)]+1;#."\n";
+                    $identifiedmb[int($postid)] +=1;
+                }
             }
         }
+
         #
         #print "\n";
     }
+    
+    # get number of unique PCI IDs
+    
     #print "SA0: ".scalar(@identifiedmb);
     $mindex=findMaxValueIndex(@identifiedmb);
+    
+    # Cycle through candidates.
+    # Look how many percent of mainboards PCIIDs we have found (pure counting not sufficient)
+    my $prob_max = 0;
+    my $mindex2 = 0;
+    my $unique_npciids = 0;
+    for (my $i = 0; $i < scalar(@identifiedmb); $i++) {
+        if ( $identifiedmb[$i] > 3 ) { # at least 4 pciids to count as mainboard
+            
+            # get number of unique pciids of postid ($i)
+            $unique_npciids_tmp = get_number_unique_pciids($i);
+            
+            my $prob = $identifiedmb[$i] / $unique_npciids_tmp;
+            # 
+            #print "PID: $i -> uniq elements: $unique_npciids -> found elements: $identifiedmb[$i]: $prob %\n";
+            
+            if ($prob > $prob_max) { 
+                $prob_max = $prob; 
+                $mindex2 = $i;
+                $unique_npciids = $unique_npciids_tmp;
+            }
+        }
+    }
+    
+    # we found pciid $mindex2 with matching probability $prob
+    if ($mindex2 != $mindex) { 
+        print "         Warning: new matching algorithm found different postid: $mindex -> $mindex2 (prob: $prob_max)\n";
+        $mindex = $mindex2;
+    }
+        
     #    print "
     #MAX finding PostID: $mindex
     #";
@@ -168,10 +234,12 @@ sub check_mainboard {
     # therefore, get number of PCI IDs
     
     $Npciid = get_number_pciids($mindex);
-    print "       Fingerprint has $Npciid elements\n";
-    if ( $Npciid > 0 ) {
-        $mb_recognition = $identifiedmb[$mindex]/$Npciid;
-    }
+    print "       lspci fingerprint has $n_fingerprint_total elements (unique: $n_fingerprint)\n";
+    print "       Found Postid $mindex -> fingerprint has $unique_npciids elements\n";
+    $mb_recognition = $prob_max;
+    #if ( $Npciid > 0 ) {
+    #    $mb_recognition = $identifiedmb[$mindex]/$Npciid;
+    #}
     
     
     if (( $Npciid > 3 ) and ($mb_recognition > 0.85) ) {
@@ -264,7 +332,8 @@ sub check_mainboard {
     open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
     $i=0;
     @knownpciids = qw();
-    print "Blacklist:".join(", ", @pciid_blacklist)."\n";
+    print "       Mainboard based blacklist created\n";
+    #print "Blacklist:".join(", ", @pciid_blacklist)."\n";
 
     while ( <FILE> ) {
         #print "Line: $_";
@@ -284,7 +353,7 @@ sub check_mainboard {
             
             if ( ( $pciid ~~ @pciid_blacklist  ) ) {
                 # MB component
-                 print "found $pciid  \n";
+                #print "found $pciid  \n";
                 storescan_mainboard_found($sid, $mindex, $pciid, $pciname);
         #    } elsif ($postid == -1) {
         #        #print "ignored; $postid; $usbid; $usbname \n";
@@ -1033,16 +1102,39 @@ sub check_pci_devices {
             
             # also ignore empty ids and duplicates
             if ( ($pciid ne "") && (! ($pciid ~~ @knownpciids)) ){
+                
                 push(@knownpciids, $pciid);
                 #print "PCIID: $pciid -  \n";
                 @postids = checkdb_pci($pciid);
                 #print "options: ".scalar(@postids);
-            
+                
+                # use first result as default
+                $postid = $postids[0];
+
+                # check if this is a mainboard -> try next option
+                for (my $i; $i < scalar(@postids); $i++){
+                    if ( postid_is_mainboard( $postids[$i] ) ) {
+                        print "-> skip! \n";
+
+                        # check if we have more results
+                        if ( defined( $postids[$i+1] ) ) {
+                            print "OK. Next try";
+                        }else{
+                            # nothing left, so ignore this result
+                            $postid = "";
+                            break;
+                        }
+                    }else{
+                        $postid = $postids[$i];
+                    }
+
+                }
+                
+                
                 if ( scalar(@postids) > 1 ) {
                     print "too many results - not smart enough... please program me \n";
                 }
             
-                $postid = $postids[0];
                 #print "PID: $postid - $postids[0] - $postids[1] \n";
                 if ($postid == "") {
                     storescan_pci_notfound($sid, $pciid, $pciname);
@@ -1148,7 +1240,7 @@ sub checkdb_mainboard_pci {
     $sth_glob = $lhg_db->prepare($myquery);
     $search = "%".$pciid."%";
     $sth_glob->execute($search);
-    @postids = @{$lhg_db->selectcol_arrayref($sth_glob)};
+    my @postids = @{$lhg_db->selectcol_arrayref($sth_glob)};
     
     #print "Postids-found: ".scalar(@postids)." ";
     return @postids;
@@ -1181,11 +1273,46 @@ sub get_number_pciids {
     if (index($pciids, ";") != -1) {
         @pciarray = split(';',$pciids);
     }
-
+    
+    
     $Npciids = scalar(@pciarray);
     #print "PID: $postid -- $pciids -- ";
     return $Npciids;
 
+}
+
+sub get_number_unique_pciids {
+    #get number of unique pciids of mainboard with article id $postid
+    my $postid   = shift;
+    
+    # get array of pciids
+    # 
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT pciids FROM lhgtransverse_posts WHERE postid_com = ? AND (status_com = \"published\" OR status_com = \"\") ";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $search = $postid;
+    $sth_glob->execute($search);
+    my $pciids = $sth_glob->fetchrow_array();
+    # separated by , or by ;
+    my @pciarray=();
+    if (index($pciids, ",") != -1) {
+        @pciarray = split(',',$pciids);
+    }
+    if (index($pciids, ";") != -1) {
+        @pciarray = split(';',$pciids);
+    }
+
+    # cycle through pciids to get array of unique elements
+    my @pciarray_unique = qw();
+    for (my $i = 0; $i < scalar(@pciarray); $i++) {
+        if ( $pciarray[$i] ~~ @pciarray_unique ) {
+            # already in array -> skip
+        } else {
+            push @pciarray_unique , $pciarray[$i];
+        }
+    }
+    #print "unique PCIIDs: PID $postid: ".scalar(@pciarray)." -> ".scalar(@pciarray_unique)."\n";
+    return scalar(@pciarray_unique);
 }
 
 sub get_pciid_blacklist {
@@ -2026,5 +2153,25 @@ sub  cleanup {
         #print "Nothing to do";
     }
 
+}
+
+sub  postid_is_mainboard { 
+    #check if this postid is part of a mainboard
+    my $postid = shift;
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT categories_com FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($categories) = $sth_glob->fetchrow_array();
+    
+    #print "CAT: $categories \n";
+    
+    if (index($categories, "mainboard") != -1) {
+        print "This ($postid) is a mainboard ";
+        return 1;
+    }else{
+        return 0;
+    }
 }
 
