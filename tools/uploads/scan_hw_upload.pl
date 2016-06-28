@@ -1927,9 +1927,12 @@ sub calculate_laptop_probability {
 
     # get mainboard name
     $title = get_mainboard_name( $sid );
+    #print "Mainboard name: $title\n";
 
     if ( ( index($title,"TOSHIBA") != -1 )  && index($title,"Satellite") != -1 ) {$probability = 1;}
     if ( ( index($title,"Toshiba") != -1 )  && index($title,"Satellite") != -1 ) {$probability = 1;}
+    if ( ( index($title,"TOSHIBA") != -1 )  && index($title,"SATELLITE") != -1 ) {$probability = 1;}
+    if ( ( index($title,"Toshiba") != -1 )  && index($title,"SATELLITE") != -1 ) {$probability = 1;}
     if ( ( index($title,"FUJITSU") != -1 )  && index($title,"LIFEBOOK")  != -1 ) {$probability = 1;}
     if ( ( index($title,"Dell") != -1 )  && index($title,"Inspiron")  != -1 )    {$probability = 1;}
     if ( index($title,"LIFEBOOK")  != -1 ) {$probability = 1;}
@@ -2156,7 +2159,7 @@ sub  cleanup {
 }
 
 sub  postid_is_mainboard { 
-    #check if this postid is part of a mainboard
+    #check if this postid is part of a mainboard or laptop
     my $postid = shift;
     
     $lhg_db = DBI->connect($database, $user, $pw);
@@ -2167,8 +2170,10 @@ sub  postid_is_mainboard {
     
     #print "CAT: $categories \n";
     
-    if (index($categories, "mainboard") != -1) {
-        print "This ($postid) is a mainboard ";
+    if ( (index($categories, "mainboard") != -1) 
+        or (index($categories, "notebook") != -1) )
+        {
+        print "This ($postid) is a mainboard / laptop";
         return 1;
     }else{
         return 0;
