@@ -687,6 +687,15 @@ print                       " </td>";
 
 
                         echo "</tr>\n";
+
+                        # check if laptop or mainboard was identified
+                        if ( (strpos($category_name, 'Laptop') !== false) or
+                             (strpos($category_name, 'Mainboard') !== false) or
+                             (strpos($category_name2, 'Laptop') !== false) or
+                             (strpos($category_name, 'Mainboard') !== false) ) {
+                                #error_log("Laptop/Mainboard was identified");
+                                $mainboard_found = 1;
+        		}
 		}
                 echo "</table>";
 }
@@ -936,57 +945,65 @@ print                       " </td>";
 
 if (count($unidentified_hw_pci) > 0) {
 
-        # check if mainboard or laptop
-        $laptop_prob = lhg_scan_is_laptop($sid);
-        if ($laptop_prob > 0.8) $mb_or_laptop = "Laptop";
-        if ($laptop_prob <= 0.8) $mb_or_laptop = "Mainboard";
 
-        $mb_name = lhg_get_mainboard_name( $sid );
-        $clean_mb_name = lhg_clean_mainboard_name( $mb_name );
-	print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
-        #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
-        if ($show_public_profile != 1)
-        print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
+        if ($mainboard_found != 1) {
+	        # We are still searching for a mainboard/laptop
 
 
-	$mb_usercomment = lhg_get_mb_usercomment($sid);
-	$url_mb = lhg_get_mb_url($sid);
-	$buttontype = "green";
-	$buttontext = $txt_submit; #"Submit";
-	if ($mb_usercomment != "") $buttontype = "light";
-	if ($mb_usercomment != "") $buttontext = "Update";
+        	# check if mainboard or laptop
+	        $laptop_prob = lhg_scan_is_laptop($sid);
+        	if ($laptop_prob > 0.8) $mb_or_laptop = "Laptop";
+	        if ($laptop_prob <= 0.8) $mb_or_laptop = "Mainboard";
 
-        $newPostID_mb = lhg_create_mainboard_article($mb_name, $sid);
-
-        // creating rating stars
-	ob_start();
-	$returnval .= the_ratings("div",$newPostID_mb);
-	$out1 = ob_get_contents();
-        ob_end_clean();
-        if (!strpos($out1,"onmouseout")>0) $out1 = "already rated";
-        $out1 = str_replace("(No Ratings Yet)","",$out1);
-
-        # only scanning person should be allowed to rate here!
-        if ($show_public_profile != 1)
-	$article_created = '<span class="rating-mb"><nobr>'.$out1.'</nobr></span>';
+	        $mb_name = lhg_get_mainboard_name( $sid );
+        	$clean_mb_name = lhg_clean_mainboard_name( $mb_name );
+		print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
+	        #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
+	        if ($show_public_profile != 1)
+		        print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
 
 
-if ($show_public_profile != 1)
-echo ' <form action="?" method="post" class="mb-usercomment">
-       Please rate the '.$mb_or_laptop.': '.$article_created.'
-       Let us know if the '.$mb_or_laptop.' was recognized incorrectly and how it is supported under Linux:<br>
-       <textarea id="mb-usercomment" name="mb-usercomment" cols="10" rows="3">'.$mb_usercomment.'</textarea><br>
-       If possible, please leave an URL to a web page where the '.$mb_or_laptop.' is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
-       <input id="url-mb" name="url-mb" type="text" value="'.$url_mb.'" size="40" maxlenght="290">
-       <br>
-       <input type="submit" id="mb-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />';
+		$mb_usercomment = lhg_get_mb_usercomment($sid);
+		$url_mb = lhg_get_mb_url($sid);
+		$buttontype = "green";
+		$buttontext = $txt_submit; #"Submit";
+		if ($mb_usercomment != "") $buttontype = "light";
+		if ($mb_usercomment != "") $buttontext = "Update";
 
-       if (current_user_can('publish_posts') && ($show_public_profile != 1) && ($editmode == 1) ) {
-           print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit">finalize article</a>)';
-       }
+	        $newPostID_mb = lhg_create_mainboard_article($mb_name, $sid);
 
-       print '
-       </form>';
+	        // creating rating stars
+		ob_start();
+		$returnval .= the_ratings("div",$newPostID_mb);
+		$out1 = ob_get_contents();
+	        ob_end_clean();
+        	if (!strpos($out1,"onmouseout")>0) $out1 = "already rated";
+	        $out1 = str_replace("(No Ratings Yet)","",$out1);
+
+        	# only scanning person should be allowed to rate here!
+	        if ($show_public_profile != 1)
+			$article_created = '<span class="rating-mb"><nobr>'.$out1.'</nobr></span>';
+
+
+		if ($show_public_profile != 1)
+			echo ' <form action="?" method="post" class="mb-usercomment">
+		       Please rate the '.$mb_or_laptop.': '.$article_created.'
+		       Let us know if the '.$mb_or_laptop.' was recognized incorrectly and how it is supported under Linux:<br>
+		       <textarea id="mb-usercomment" name="mb-usercomment" cols="10" rows="3">'.$mb_usercomment.'</textarea><br>
+		       If possible, please leave an URL to a web page where the '.$mb_or_laptop.' is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
+		       <input id="url-mb" name="url-mb" type="text" value="'.$url_mb.'" size="40" maxlenght="290">
+		       <br>
+		       <input type="submit" id="mb-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />';
+
+	       if (current_user_can('publish_posts') && ($show_public_profile != 1) && ($editmode == 1) ) {
+        	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit">finalize article</a>)';
+	       }
+
+	       print '</form>';
+	}else{
+		print "<h2>Unknown PCI components</h2>";
+        }
+
 
         print "<table id='mainboard-scan-table'>
                  <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>".$txt_subscr_foundhwid."</td><td class='pciid-column'>PCI ID</td></tr>";
