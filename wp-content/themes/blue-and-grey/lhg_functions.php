@@ -4060,7 +4060,7 @@ Ausgabe von lspci, lsusb und lshw...';
 					Auf diese Weise k&ouml;nnen wir die Linux Hardware Datenbank mit f&uuml;r die Linux-Community wertvollen Informationen f&uuml;llen.<br>';
 	$txt_subscr_hwscantitle	     = "&Uuml;bersicht Hardware-Scan:";
 
-	$txt_hwprof_of              = "Öffentliche Hardware-Profil von";
+	$txt_hwprof_of              = "&Ouml;ffentliche Hardware-Profil von";
 	$txt_yes                     = "ja";
 	$txt_no                      = "nein";
 
