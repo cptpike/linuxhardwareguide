@@ -94,6 +94,7 @@ $most_voted = lhg_most_voted ($topvotes);
 
 	//$script_lang = "fr";
         global $lang_array;
+        global $lang;
 
         //print "Test";
 
@@ -103,6 +104,11 @@ $most_voted = lhg_most_voted ($topvotes);
 		$piechart = lhg_create_pie_script($script_lang, $percent1, $percent2, $percent3 , $donationID1, $donationID2, $donationID3, $most_voted);
 		lhg_create_file($filename, $piechart);
         }
+
+        # also create .de chart
+        $filename = "/var/www/charts/pie/piechart-donation.js.".$lhg_chart_id.".de";
+	$piechart = lhg_create_pie_script("de", $percent1, $percent2, $percent3 , $donationID1, $donationID2, $donationID3, $most_voted);
+	lhg_create_file($filename, $piechart);
 
 }else{
     // print "no update needed";
@@ -180,6 +186,7 @@ function lhg_create_pie_script($scriptlang , $percent1, $percent2, $percent3, $d
 
         #print "Test:<br>";
         #var_dump($donation_users);
+        #var_dump($top_donation_target_names);
 
 $piechart=
 "

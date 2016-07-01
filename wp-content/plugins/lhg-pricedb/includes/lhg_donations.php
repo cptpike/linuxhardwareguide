@@ -163,25 +163,45 @@ function lhg_return_donation_results($startdate, $enddate) {
         # ToDo: Currently, provided time frame is ignored
         # ongoing quarter is always used
 
-	list($list_uid, $list_points) = cp_getAllQuarterlyPoints();
+	list($list_guid, $list_points) = cp_getAllQuarterlyPoints_transverse();
 
         #print "Userpoints: ";
         #var_dump($list_points);
         #print "<br>";
 
         $i=0;
-	foreach($list_uid as $uid){
+	foreach($list_guid as $guid){
                 # Skip anonymously submitted posts
                 if ($uid != 12378){
 
         	//$user = get_userdata($uid);
                 //$name = $user->first_name." ".$user->last_name;
                 $points = $list_points[$i];
+
+
                 //donates to
-		$donation_target = get_user_meta($uid,'user_donation_target',true);
+                # target has to be extracted from transverse database!
+		#$donation_target = get_user_meta($uid,'user_donation_target',true);
+
+	        # checking for latest change
+        	global $lhg_price_db;
+		$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+                $results = $lhg_price_db->get_results($sql);
+                $timestamp_de = $results[0]->donation_target_date_de;
+                $timestamp_com = $results[0]->donation_target_date_com;
+
+
+                if ($timestamp_de > $timestamp_com) {
+                	$donation_target = $results[0]->donation_target_de;
+		} else {
+                	$donation_target = $results[0]->donation_target_com;
+		} 
+
+                #error_log("TSde/com: $timestamp_de/$timestamp_com -> Target: $donation_target");
 
                 # sum up points, default = LHG:
                 if ($donation_target == "") $donation_target = 1;
+                if ($donation_target == 0) $donation_target = 1;
                 $donation_target_sum[$donation_target] += $points;
                 $donation_target_users[$donation_target] += 1;
 		}
