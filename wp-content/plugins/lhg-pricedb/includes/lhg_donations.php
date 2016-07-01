@@ -163,7 +163,7 @@ function lhg_return_donation_results($startdate, $enddate) {
         # ToDo: Currently, provided time frame is ignored
         # ongoing quarter is always used
 
-	list($list_uid, $list_points) = cp_getAllQuarterlyPoints();
+	list($list_uid, $list_points) = cp_getAllQuarterlyPoints_transverse();
 
         #print "Userpoints: ";
         #var_dump($list_points);
