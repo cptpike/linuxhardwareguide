@@ -258,11 +258,11 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
                         global $lang;
                         if ($lang == "de") {
-                        $content2.= "<ul class=\"wpp-list\">" . "\n";
+	                        $content2.= "<ul class=\"wpp-list\">" . "\n";
 
-                        $content2 .='<h2 class="widgettitle">Diskussionen zur Web-Seite</h2>';
+        	                $content2 .='<h2 class="widgettitle">Diskussionen zur Web-Seite</h2>';
 
-                        $content2 .='<li><a href="/linux-hardware-guide-team" title="Diskussion mit dem LHG-Team"><div class="popular-post">
+                	        $content2 .='<li><a href="/linux-hardware-guide-team" title="Diskussion mit dem LHG-Team"><div class="popular-post">
                                                 <img width="40" height="40" src="http://www.linux-hardware-guide.de/avatars/lhg60-avatar.png" class="wp-cpl-sc-thumb wp-post-image" alt="Diskussion mit dem LHG-Team" title="Diskussion mit dem LHG-Team" />
                                                 <!-- span class="post-stats">
                                                 <!-- span class="wpp-comments">2 new comments</span -->
@@ -272,7 +272,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
                         		Forum f&uuml;r Diskussionen mit dem Linux-Hardware-Guide Team. Vorschl&auml;ge, Korrekturen, allgemeine Fragen und W&uuml;nsche zur Seite bitte hier &auml;u&#223;ern.</span></div></a>
                                                 </li>';
 
-                        $content2 .='<li><a href="/linux-hardware-diskussionen" title="Allgemeine Linux Hardware-Diskussionen"><div class="popular-post">
+                        	$content2 .='<li><a href="/linux-hardware-diskussionen" title="Allgemeine Linux Hardware-Diskussionen"><div class="popular-post">
                                                 <img width="40" height="40" src="http://www.linux-hardware-guide.de/avatars/lhg60-avatar.png" class="wp-cpl-sc-thumb wp-post-image" alt="Allgemeine Linux Hardware-Diskussionen" title="Allgemeine Linux Hardware-Diskussionen" />
                                                 <!-- span class="post-stats">
                                                 <!-- span class="wpp-comments">2 new comments</span -->
@@ -282,9 +282,38 @@ if ( !class_exists('WordpressPopularPosts') ) {
                                                 Hinweise auf oder Anfragen nach fehlender Hardware in unserer Datenbank. Hier finden sie Hilfe beim Einstellen neuer Hardware-Artikel in die Datenbank.</span></div></a>
                                                 </li>';
 
-                        $content2 .= "</ul>";
+	                        $content2 .= "</ul>";
 
-                        echo $content2;
+        	                echo $content2;
+                        }else{
+
+                	        $content2.= "<ul class=\"wpp-list\">" . "\n";
+
+                        	$content2 .='<h2 class="widgettitle">Diskussionen zur Web-Seite</h2>';
+
+	                        $content2 .='<li><a href="/linux-hardware-guide-team" title="Discussions with the LHG team"><div class="popular-post">
+                                                <img width="40" height="40" src="http://www.linux-hardware-guide.com/avatars/lhg60-avatar.png" class="wp-cpl-sc-thumb wp-post-image" alt="Discussions with the LHG team" title="Discussions with the LHG team" />
+                                                <!-- span class="post-stats">
+                                                <!-- span class="wpp-comments">2 new comments</span -->
+                                                </span -->
+                                                <b>General discussion with the team</b>:
+                                                <span class="wpp-excerpt">
+                        			Forum for general discussions with the Linux-Hardware-Guide team. Proposals, bug reports, ideas, general question can be discussed here.</span></div></a>
+                                                </li>';
+
+        	                $content2 .='<li><a href="/linux-hardware-discussions" title="Allgemeine Linux Hardware-Diskussionen"><div class="popular-post">
+                                                <img width="40" height="40" src="http://www.linux-hardware-guide.de/avatars/lhg60-avatar.png" class="wp-cpl-sc-thumb wp-post-image" alt="Allgemeine Linux Hardware-Diskussionen" title="Allgemeine Linux Hardware-Diskussionen" />
+                                                <!-- span class="post-stats">
+                                                <!-- span class="wpp-comments">2 new comments</span -->
+                                                </span -->
+                                                <b>Linux Hardware - Requests for help and articles</b>:
+                                                <span class="wpp-excerpt">
+                                                Request articles for missing hardware components or in here. Get support if you are having troubles adding an article by yourselfin to the data base.</span></div></a>
+                                                </li>';
+
+                	        $content2 .= "</ul>";
+
+                        	echo $content2;
                         }
 
 			echo $before_widget . "\n";
