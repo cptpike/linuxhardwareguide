@@ -289,7 +289,7 @@ if ( !class_exists('WordpressPopularPosts') ) {
 
                 	        $content2.= "<ul class=\"wpp-list\">" . "\n";
 
-                        	$content2 .='<h2 class="widgettitle">Diskussionen zur Web-Seite</h2>';
+                        	$content2 .='<h2 class="widgettitle">General discussions</h2>';
 
 	                        $content2 .='<li><a href="/linux-hardware-guide-team" title="Discussions with the LHG team"><div class="popular-post">
                                                 <img width="40" height="40" src="http://www.linux-hardware-guide.com/avatars/lhg60-avatar.png" class="wp-cpl-sc-thumb wp-post-image" alt="Discussions with the LHG team" title="Discussions with the LHG team" />
