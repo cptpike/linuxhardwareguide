@@ -2643,3 +2643,8 @@ tr#quarterly-points-header-row {
 .scanoverview-table {
 	margin-bottom: 4px !important; 
 }
+
+.pci-feedback textarea {
+	height: 39px;
+        width: 300px;
+}
