@@ -500,6 +500,8 @@ function lhg_scan_overview_shortcode($attr) {
                         #unassigned scan
                         #print "SST:
                         if ($scan_status_raw == "") $scan_status_raw = "new";
+                        if ($scan_status_raw == "duplicate") $scan_status_raw = "new";
+                        # ToDo: Duplicates should be handled separately with pointing system not taking scans into account
 
                         if ($scan_status_raw == "new")     $scan_status = '<span class="scan-status-new">New</span>';
                         if ($scan_status_raw == "ongoing") $scan_status = '<span class="scan-status-ongoing">Ongoing</span>';
