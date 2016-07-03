@@ -225,7 +225,13 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 		        	$avatar = $user->avatar;
 			        $wpuid_de = $user->wpuid_de;
 			        $wpuid_com = $user->wpuid;
-                	        $start = strpos($avatar, "src='");
+                                #Gravatar stored avatar image
+                                if (strpos($avatar,"gravatar") > 1) {
+                                	$start = strpos($avatar, "src='");
+				}else{
+                                #local avatar
+                                	$start = strpos($avatar, 'src="');
+                                }
                                 $imgurl = substr($avatar, $start+5);
                                 $tmp = explode("' class", $imgurl);
                                 $imgurl = $tmp[0];
@@ -238,7 +244,7 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 	                $statusSelector = '
 				<select name="status-'.$sid.'">';
 
-	                $statusSelector .= ($status == "new")? '<option value="new" selected>New</option>' : '<option value="new">New</option>';
+	                $statusSelector .= ( ($status == "new")or ($status == "duplicate"))? '<option value="new" selected>New</option>' : '<option value="new">New</option>';
        		        $statusSelector .= ($status == "ongoing")? '<option value="ongoing" selected>Ongoing</option>' : '<option value="ongoing">Ongoing</option>';
 	                $statusSelector .= ($status == "complete")? '<option value="complete" selected>Complete</option>' : '<option value="complete">Complete</option>';
 	                $statusSelector .= ($status == "feedback")? '<option value="feedback" selected>Feedback needed</option>' : '<option value="feedback">Feedback needed</option>';
