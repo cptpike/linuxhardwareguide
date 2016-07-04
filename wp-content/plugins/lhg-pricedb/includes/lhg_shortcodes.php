@@ -122,7 +122,7 @@ function lhg_mainboard_intro_shortcode($attr) {
         if ( strpos($mainboard_properties,"Desktop") > 0 ) $type = "desktop PC";
         if ( $type != "" ) $typetext = "is a $type and ";
 
-        $output = "<p>The ".$title.' '. $typetext.' was successfully tested in configuration</p>
+        $output = "<p>The ".$mainboard_name.' '. $typetext.' was successfully tested in configuration</p>
 <pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
 '.$attr['dmi_output'].'
 </pre>
@@ -150,7 +150,7 @@ function lhg_mainboard_lspci_shortcode($attr, $content) {
 
 '<h3>Hardware Overview</h3>
 <p>
-The following hardware components are part of the '.$title.' and are supported by the listed kernel drivers:
+The following hardware components are part of the '.$mainboard_name.' and are supported by the listed kernel drivers:
 </p>
 <pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
 
