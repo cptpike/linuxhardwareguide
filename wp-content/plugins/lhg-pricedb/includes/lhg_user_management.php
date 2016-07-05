@@ -27,6 +27,7 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 	#error_log("User $user_id permission check cap: $cap - caps:".join(",",$caps) );
 
         if ( ( ( 'edit_post' == $cap )  && in_array( 'edit_others_posts', $caps) ) or
+             ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) or   # needed for comment activation
              ( ( 'edit_others_posts' == $cap )  && in_array( 'edit_others_posts', $caps) ) ){
                 if ( $karma < LHG_KARMA_edit_others_posts ) {
                 	$caps[] = 'activate_plugins';
@@ -521,6 +522,7 @@ function lhg_update_karma_values( $type ) {
                         $donation_target = get_user_meta($uid,'user_donation_target',true);
                         if ($lang != "de") $user_language = get_user_meta($uid,'user_language',true);
 
+                        error_log("User $username -> quarterly_karma: $points");
 
 
 			# check if user exists
