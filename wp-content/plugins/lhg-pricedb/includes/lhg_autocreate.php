@@ -1388,10 +1388,11 @@ function lhg_show_translate_process($postid) {
 			'post_status' => 'draft',
                         'post_content' => $result_content,
 			'post_type' => 'post',
-			'post_author' => 1,
+			'post_author' => get_current_user_id(),
 			'post_title' =>  $result_title_translated,
 			'post_category' => $category_ids,
                         'tags_input' => $tagarray_names,
+                        'comment_status' => 'open'
 		);
 
   	$newPostID = wp_insert_post($myPost);
