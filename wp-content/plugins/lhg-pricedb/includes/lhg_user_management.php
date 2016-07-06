@@ -28,6 +28,7 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
         if ( ( ( 'edit_post' == $cap )  && in_array( 'edit_others_posts', $caps) ) or
              ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) or   # needed for comment activation
+             ( ( 'edit_post' == $cap )  && in_array( 'edit_published_posts', $caps) ) or   # edit translated posts
              ( ( 'edit_others_posts' == $cap )  && in_array( 'edit_others_posts', $caps) ) ){
                 if ( $karma < LHG_KARMA_edit_others_posts ) {
                 	$caps[] = 'activate_plugins';
