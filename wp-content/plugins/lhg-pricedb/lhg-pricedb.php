@@ -98,6 +98,7 @@ function lhg_create_menu () {
 
 
 // Add a column to the edit post list
+if ( current_user_can('manage_options') )
 add_filter( 'manage_edit-post_columns', 'lhg_db_add_new_columns');
 /**
  * Add new columns to the post table
