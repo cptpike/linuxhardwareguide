@@ -2403,3 +2403,26 @@ function lhg_search_long_title( $title , $dmesg ) {
         return $longtitle;
 }
 
+# autocreated articles have comments deactivated (for non-admins)
+# we have to correct this
+add_action( 'save_post', 'lhg_correct_post_comment_status', 10, 2 );
+add_action( 'transition_post_status', 'lhg_correct_post_comment_status', 10, 2);
+add_action( 'edit_post', 'lhg_correct_post_comment_status', 10, 2 );
+function lhg_correct_post_comment_status( $post_ID, $post_after ) {
+
+        # check if this is draft or pending
+        if (!is_int( $post_ID ) ) return;
+
+        global $wpdb;
+        if ( $post_after->comment_status != "open" ) {
+                #error_log("Comments closed for post $post_ID -> reopen");
+
+                # open the comment section
+                $sql = "UPDATE wp_posts set comment_status = 'open' WHERE ID  = $post_ID ";
+        	$result = $wpdb->query($sql);
+                #error_log("SQL: ".$wpdb->last_error);
+
+	}
+}
+
+
