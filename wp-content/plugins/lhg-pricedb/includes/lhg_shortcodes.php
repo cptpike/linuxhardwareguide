@@ -619,7 +619,12 @@ function lhg_donation_table_shortcode($attr) {
                                 #print sizeof($uid)."<p>";
         	                $user_nicename = $user->user_nicename;
                 	        $points = $list_points_guid[$i];
-                        	$avatar = $user->avatar;
+
+				# get user's avatar
+                                $avatar = $user->avatar;
+                                # repair URL if linking to .de avatar on .com server
+                                if (strpos($avatar,"src='/avatars/") > 0) $avatar = str_replace( "src='/avatars/" , "src='http://www.linux-hardware-guide.de/avatars/" , $avatar );
+
                                 $wpuid_de = $user->wpuid_de;
                                 $wpuid_com = $user->wpuid;
 	                        $user_language_txt = $user->language;
