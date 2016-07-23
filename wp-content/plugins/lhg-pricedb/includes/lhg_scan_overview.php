@@ -249,7 +249,7 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 		                                $imgurl = substr($avatar, $start+5);
         		                        $tmp = explode("' class", $imgurl);
                 		                $imgurl = $tmp[0];
-                        		        $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
+                        		        $usertxt = '<img src="http://www.linux-hardware-guide.de'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
                                         }
                                 }
 			}
