@@ -37,6 +37,8 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/ubuntu-logo.png";
         if ( strpos($distribution,"Mint") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linuxmint-logo.png";
+        if ( strpos($distribution,"LMDE") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linuxmint-logo.png";
         if ( strpos($distribution,"Debian") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/debian-logo.jpg";
         if ( strpos($distribution,"Fedora") > -1 )
@@ -4060,7 +4062,7 @@ Ausgabe von lspci, lsusb und lshw...';
 					Auf diese Weise k&ouml;nnen wir die Linux Hardware Datenbank mit f&uuml;r die Linux-Community wertvollen Informationen f&uuml;llen.<br>';
 	$txt_subscr_hwscantitle	     = "&Uuml;bersicht Hardware-Scan:";
 
-	$txt_hwprof_of              = "&Ouml;ffentliche Hardware-Profil von";
+	$txt_hwprof_of              = "Öffentliche Hardware-Profil von";
 	$txt_yes                     = "ja";
 	$txt_no                      = "nein";
 
