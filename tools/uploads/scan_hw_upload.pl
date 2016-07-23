@@ -222,7 +222,7 @@ sub check_mainboard {
     
     # we found pciid $mindex2 with matching probability $prob
     if ($mindex2 != $mindex) { 
-        print "         Warning: new matching algorithm found different postid: $mindex -> $mindex2 (prob: $prob_max)\n";
+        print "       Warning: new matching algorithm found different postid: $mindex -> $mindex2 (prob: $prob_max)\n";
         $mindex = $mindex2;
     }
         
@@ -1935,6 +1935,7 @@ sub calculate_laptop_probability {
     if ( ( index($title,"Toshiba") != -1 )  && index($title,"SATELLITE") != -1 ) {$probability = 1;}
     if ( ( index($title,"FUJITSU") != -1 )  && index($title,"LIFEBOOK")  != -1 ) {$probability = 1;}
     if ( ( index($title,"Dell") != -1 )  && index($title,"Inspiron")  != -1 )    {$probability = 1;}
+    if ( index($title,"Dell Inc. Studio")  != -1 ) {$probability = 1;}
     if ( index($title,"LIFEBOOK")  != -1 ) {$probability = 1;}
     if ( index($title,"Notebook")  != -1 ) {$probability = 1;}
     if ( index($title,"SAMSUNG")  != -1 ) {$probability = 1;}
@@ -2083,9 +2084,9 @@ sub check_duplicates {
     
     # check if similar uploads exist
     
-    $myquery = "SELECT sid FROM `lhgscansessions` WHERE kversion = ? AND distribution = ? AND scandate < ?";   
+    $myquery = "SELECT sid FROM `lhgscansessions` WHERE kversion = ? AND distribution = ? AND scandate < ? AND sid != ?";   
     $sth_glob = $lhg_db->prepare($myquery);
-    $sth_glob->execute( $kversion, $distribution, $scandate );
+    $sth_glob->execute( $kversion, $distribution, $scandate, $sid );
     #@sids = $sth_glob->fetchrow_array();
     $sids = $sth_glob->fetchall_arrayref();
     
