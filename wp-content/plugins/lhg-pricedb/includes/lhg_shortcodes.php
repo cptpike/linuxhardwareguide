@@ -122,12 +122,16 @@ function lhg_mainboard_intro_shortcode($attr) {
         if ( strpos($mainboard_properties,"Desktop") > 0 ) $type = "desktop PC";
         if ( $type != "" ) $typetext = "is a $type and ";
 
-        $output = "<p>The ".$mainboard_name.' '. $typetext.' was successfully tested in configuration</p>
+        $output = "<p>The ".$mainboard_name.' '. $typetext.' was successfully tested ';
+
+        if ( $attr['dmi_output'] != "")
+        	$output .= 'in configuration</p>
 <pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
 '.$attr['dmi_output'].'
 </pre>
-<p>
-under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'
+<p>';
+
+	$output .= 'under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'
 </p>
 ';
         return $output;

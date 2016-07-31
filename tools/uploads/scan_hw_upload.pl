@@ -846,9 +846,24 @@ sub create_db_metadata {
         
         # insert user id
         $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "UPDATE `lhgscansessions` SET uid = ? , kversion = ? , distribution = ? , wp_uid = ? , wp_uid_de = ?  WHERE id = ?";   
+        $myquery = "UPDATE `lhgscansessions` SET uid = ? , kversion = ? , distribution = ? WHERE id = ?";   
         $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($uid, $k_version, $distribution, $lhguid, $lhguidde, $id );
+        $sth_glob->execute($uid, $k_version, $distribution, $id );
+        
+        # do not overwrite UIDs
+        if ( ($lhguid != "") && ($lhguid != 0) ){
+            $lhg_db = DBI->connect($database, $user, $pw);
+            $myquery = "UPDATE `lhgscansessions` SET wp_uid = ? WHERE id = ?";
+            $sth_glob = $lhg_db->prepare($myquery);
+            $sth_glob->execute($lhguid, $id );
+        }
+        if ( ($lhguidde != "") && ($lhguidde != 0) ){
+            $lhg_db = DBI->connect($database, $user, $pw);
+            $myquery = "UPDATE `lhgscansessions` SET wp_uid_de = ? WHERE id = ?";
+            $sth_glob = $lhg_db->prepare($myquery);
+            $sth_glob->execute($lhguidde, $id );
+        }
+
         create_pub_id();
 
         return $cycle;
