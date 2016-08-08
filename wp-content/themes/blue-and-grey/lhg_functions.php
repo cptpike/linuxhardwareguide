@@ -79,6 +79,8 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/kde-neon-logo.png";
         if ( strpos($distribution,"elementary OS") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/elementary-os-logo.png";
+        if ( strpos($distribution,"Netrunner") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/netrunner-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
