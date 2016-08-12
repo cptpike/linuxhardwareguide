@@ -25,7 +25,97 @@ add_action('wp_ajax_nopriv_lhg_scan_update_known_hardware_comment_ajax', 'lhg_sc
 add_action('wp_ajax_lhg_scan_update_mb_comment_ajax', 'lhg_scan_update_mb_comment_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_mb_comment_ajax', 'lhg_scan_update_mb_comment_ajax');
 
+# HW scan results: comment on existing hardware
+add_action('wp_ajax_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_created_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
+
 # AJAX funcitonalities
+
+# process user comments on existing posts / hw -> write to WPdB
+function lhg_scan_create_hardware_comment_ajax() {
+        global $lhg_price_db;
+
+	$session   = $_REQUEST['session'] ;
+	$comment   = $_REQUEST['comment'] ;
+	$username  = $_REQUEST['username'] ;
+	$wpuid_de  = $_REQUEST['username'] ;
+	$wpuid_com = $_REQUEST['wpuid_com'] ;
+	$email     = $_REQUEST['email'] ;
+	$postid    = $_REQUEST['postid'] ;
+
+        # check if a email address is available for this scan
+	$myquery = $lhg_price_db->prepare("SELECT email FROM `lhgscansessions` WHERE sid = %s", $session);
+	$email = $lhg_price_db->get_var($myquery);
+        if ($email != "") {
+                $tmp = explode("@",$email,2);
+                $email_front = $tmp[0];
+
+                $tmp = explode(".",$email);
+                $email_end = end ( $tmp );
+
+                $email_comment = $email_front."@___.".$email_end;
+	}
+
+        #global $lhg_price_db;
+	#$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET usercomment = %s WHERE sid = %s ", $comment, $session);
+	#$result = $lhg_price_db->query($myquery);
+
+        error_log("RET: $comment - $session - $postid - WPUIDDE $wpuid_de - WPUIDCOM $wpuid_com - em: $email_comment ");
+        #print "RET: $comment - $session - $postid <br>";
+
+        # what comment to show?
+        $return_comment = $comment;
+
+        #add comment to DB
+        if ($wpuid_de  != "") $userid = $wpuid_de;
+        if ($wpuid_com != "") $userid = $wpuid_com;
+        $time = current_time('mysql');
+
+	if ($userid != 0) {
+	        $commentdata = array(
+		    'comment_post_ID' => $postid,
+		    'comment_content' => $comment,
+		    'comment_type' => '',
+		    'comment_parent' => 0,
+		    'user_id' => $userid,
+		    'comment_date' => $time
+		);
+	} else {
+                if ($email == "") $email_comment = "Anonymous";
+
+	        $commentdata = array(
+		    'comment_post_ID' => $postid,
+		    'comment_content' => $comment,
+		    'comment_type' => '',
+		    'comment_parent' => 0,
+		    'comment_date' => $time,
+        	    'comment_author_email' => $email,
+        	    'comment_author' => $email_comment
+		);
+        }
+
+        $comment_id = wp_new_comment ( $commentdata );
+
+        # store comment_id in PriceDB allow linking comment with scan
+	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET commentid = %s WHERE sid = %s AND postid = %s ", $comment_id, $session, $postid);
+	$result = $lhg_price_db->query($myquery);
+
+        # ajax: return data
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'text' => "Debug: $pid - $id - $asin - $comment - SID: $session -- END",
+        	         'return_comment' => "$return_comment",
+        	         'comment_id' => "$comment_id",
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
 
 # process user comment on known hardware
 function lhg_scan_update_known_hardware_comment_ajax() {

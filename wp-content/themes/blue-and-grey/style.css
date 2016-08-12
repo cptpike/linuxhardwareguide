@@ -2644,7 +2644,51 @@ tr#quarterly-points-header-row {
 	margin-bottom: 4px !important; 
 }
 
+
 .pci-feedback textarea {
 	height: 39px;
         width: 300px;
+}
+
+.scan-comment-on-hardware {
+	// height: 10px;
+        // width: 100px;
+}
+
+.known-hardware-comments form {
+	padding: 0px;
+        border: 0px;
+        background: none !important;
+        
+}
+
+.known-hardware-comments {
+        height: 80px;
+}
+
+.hwscan-comment-button {
+	height: 23px;
+        padding: 0px;
+	border: none;
+	background: #b1e54c url("images/button.png") bottom repeat-x;
+	color: #fff;
+	font: bold 1.083em/25px PTSans,Arial,sans-serif;
+	cursor: pointer;
+	vertical-align: middle;
+        float: left;
+}
+
+.known-hardware-comments textarea {
+	width: 90%;
+        height: 35px;
+        margin-bottom:-2px;
+}
+
+
+.hwscan-comment-col {
+	width: 250px;
+}
+
+.rot-indicator {
+	float: left;
 }
