@@ -126,10 +126,16 @@ function lhg_article_scans_overview () {
 
 }
 
+#
+#
+###### wpadmin scan overview (part of LHG Tools menu)
+#
+#
 function lhg_menu_hw_scans () {
 
-if ($_POST != "") lhg_db_update_scaninfo();
+        global $lhg_price_db;
 
+	if ($_POST != "") lhg_db_update_scaninfo();
 
         $res = lhg_db_get_scan_sids ();
         print "<h1>Hardware Scans</h1>";
@@ -200,7 +206,20 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
                 	$date = gmdate("m/d/Y g:i:s A", $time);
 	        	$acomment = $resN->admincomment;
         		$ucomment = $resN->usercomment;
-        		$email = $resN->email;
+
+                        #
+                        # check for comments on articles, i.e. cycle through all postids
+			$myquery = $lhg_price_db->prepare("SELECT usercomment FROM `lhghwscans` WHERE sid = %s", $sid);
+                        $commentlist = $lhg_price_db->get_results($myquery);
+		        foreach($commentlist as $usercomment){
+                                if ($usercomment->usercomment != "") {
+                                	if ($ucomment == "") $ucomment .= $usercomment->usercomment;
+                                	if ($ucomment != "") $ucomment .= ";".$usercomment->usercomment;
+				}
+			}
+
+
+                        $email = $resN->email;
                 	$ucomment_short = $ucomment;
 	        	if (strlen($ucomment) > 50)
                         $ucomment_short = substr(sanitize_text_field($ucomment),0,50)."...";
@@ -270,8 +289,8 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
                         if ($email != "") $maillogo = '<span class="emailgreen" style="color: green; font-weight: bold; font-size: 1.4em; position: relative; top: -3px;">@</span>';#<i class="icon-envelope icon-large2"></i>';
 
                         $commentavail = '<span class="emailgrey" style="color: grey; font-weight: bold; font-size: 1.4em; position: relative; top: -3px;">C</span>';
-                        if ( ($acomment != "") or ($uceomment != "") )
-                        $commentavail = '<span class="emailgreen" style="color: green; font-weight: bold; font-size: 1.4em; position: relative; top: -3px;">C</span>';#<i class="icon-envelope icon-large2"></i>';
+                        if ($ucomment != "")
+	                        $commentavail = '<span class="emailgreen" style="color: green; font-weight: bold; font-size: 1.4em; position: relative; top: -3px;">C</span>';#<i class="icon-envelope icon-large2"></i>';
 
                         $ratingavail = '<img src="/wp-content/plugins/wp-postratings/images/stars_crystal/rating_off.gif">';
                         if ( ($rated != "") )
