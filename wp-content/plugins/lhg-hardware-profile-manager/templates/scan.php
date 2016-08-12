@@ -315,7 +315,10 @@ echo '
 
                 });
 
+
+
                 /*]]> */
+
                 </script>';
 
 
@@ -541,6 +544,70 @@ echo '
 
                 });
 
+                // Comment on known hardware
+                jQuery(document).ready( function($) {
+
+                                $("[id^=known-hardware-comment-submit]").click(function() {
+
+                                var id = $(this).attr(\'id\').substring(30);
+                                var button = this;
+
+                                // "we are processing" indication
+                                var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+                                //$(button).after(indicator_html);
+                                $("#rot-indicator-"+id).html(indicator_html);
+                                $("#known-hardware-comments-outerbox-"+id).css(\'background-color\',\'#dddddd\');
+
+
+                                //prepare Ajax data:
+                                var session = "'.$sid.'";
+                                var postid = id;
+                                var wpuid_de = "'.$wpuid_de.'";
+        			var wpuid_com = "'.$wpuid_com.'";
+                                var email = "";
+                                var comment = $("#known-hardware-comment-"+id).val();
+                                var data ={
+                                        action: \'lhg_scan_create_hardware_comment_ajax\',
+                                        session: session,
+                                        comment: comment,
+                                        wpuid_de: wpuid_de,
+                                        wpuid_com: wpuid_com,
+                                        email: email,
+                                        postid: postid
+                                };
+
+
+                                //load & show server output
+                                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+                                	var return_comment     = $(response).find("supplemental return_comment").text();
+
+                         		//$(button).append("Response");
+                                        //$(button).after(response);
+                                        //$(button).append("Response: <br>PID: "+postid);
+
+                                        //return to normal state
+                                        $(button).val("Update");
+                                        $(button).attr("class", "hwscan-comment-button-light");
+                                        var indicatorid = "#button-load-known-hardware-comment";
+                                        $("#known-hardware-comments-outerbox-"+postid).html("<i>&quot;"+return_comment+"&quot;</i>");
+
+                                        //$(indicatorid).remove();
+                                        $("#rot-indicator-"+id).remove();
+                                        $("#known-hardware-comments-outerbox-"+id).css(\'background-color\',\'#ffffff\');
+
+
+                                });
+
+                                //prevent default behavior
+                                return false;
+
+                                });
+
+
+                });
+
+
                 /*]]> */
                 </script>';
 
@@ -559,12 +626,17 @@ if (count($identified_hw) == 0) {
 
                 <td id="title-colhw">'.$txt_subscr_knownhw.'</td>';
 
+                # comment column
+                echo '<td id="hwscan-comment-col"><nobr>Please comment on Linux compatibility</nobr></td>';
+
+                echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>';
+
+
                 if ($userknown == 1)
                 echo '<td id="hwscan-col3" width="13%"><nobr>'.$txt_subscr_addhw.'</nobr></td>';
 
-                echo '<td id="hwscan-col2" width="13%"><nobr>'.$txt_subscr_ratecomp.'</nobr></td>
 
-                <td id="col4">'.$txt_category.'</td>
+                echo '<td id="col4">'.$txt_category.'</td>
 
                 <!-- td id="col2">'.$txt_subscr_regist_date.'</td -->
 
@@ -636,30 +708,53 @@ if (count($identified_hw) == 0) {
 
 			$rating=the_ratings_results( $PID ,0,0,0,10);
 
-                        echo "
+                        $output_tmp = "
                         <td id=\"col-hw\"> <a class='hwscan-found-image' href='$permalink' target='_blank' >$art_image</a>
 
                         ".'<div class="subscribe-hwtext"><div class="subscribe-hwtext-span-scan"><a href='.$permalink.' target="_blank">'.$short_title.'</a></div></div>'.$title_part2.'</label>'.
                           "<span class='subscribe-column-23'>$rating</span>";
 
+                        $output_tmp .= "</td>";
 
-print                       " </td>";
+                        // --- Leave comment on Linux compatibility of hardware component
+                        // check if comment already exists
+                        $myquery = $lhg_price_db->prepare("SELECT commentid FROM `lhghwscans` WHERE sid = %s AND postid = %s ", $sid, $PID);
+			$result = $lhg_price_db->get_var($myquery);
 
+
+                        // if no comment provided in past, show comment box
+                        if ($result == 0) {
+
+                                if ( ($show_public_profile == 1) or ($editmode == 1) ) {
+                                        # do not allow commenting if public profile or editmode
+	                        	$output_tmp .= '<td>
+                                                 (No comment)
+						</td>';
+
+                                }else{
+	                        	$output_tmp .= '<td>
+	                        		  <div class="known-hardware-comments" id="known-hardware-comments-outerbox-'.$PID.'">
+						    <form action="?" method="post" class="scan-comment-on-hardware">
+				        	      <textarea id="known-hardware-comment-'.$PID.'" name="hwcomment" cols="10" rows="3"></textarea><br>
+				        	      <input type="submit" id="known-hardware-comment-submit-'.$PID.'" name="hwcomment-login" value="Post comment" class="hwscan-comment-button" />
+	                                	      <div class="rot-indicator" id="rot-indicator-'.$PID.'"></div>
+						    </form>
+        		                          </div>
+						</td>';
+                                }
+                        } else {
+                                $comment_found = get_comment( $result, ARRAY_A );
+                                $comment_text = $comment_found['comment_content'];
+	                        $output_tmp .= '<td>
+        	                		  <div class="known-hardware-comments-middle" id="known-hardware-comments-outerbox-'.$PID.'">
+		                                        <i>&quot;'.$comment_text.'&quot;</i>
+                	  		          </div>
+						</td>';
+                        }
 
                         //<td id=\"col4\">
                         //<span class='subscribe-column-2'>$deact<br>({$a_subscription->status})</span>
                         //</td>
-
-                        // --- Add to HW profile
-                        if ($userknown == 1) {
-	                        $hwbutton = lhg_add_hwbutton( $email, $PID );
-        	                #$hwbutton = "Test";
-                	        echo "
-                        	<td id=\"col5\">
-	                        <span class='column-hwbutton'>".$hwbutton."</span>
-                                <div class='regusers'>(Reg. Linux users: ".$usernum.")</div>
-        	                </td>";
-                        }
 
 
                         // --- User to rate HW
@@ -667,10 +762,23 @@ print                       " </td>";
                         $postid = $PID; #a_identified_hw->postid;
 
                         #if ($myrating == "n.a.")
-                        echo "
+                        $output_tmp .= "
                         <td id=\"col4\">
                         <span class='subscribe-column-2'>".$out1."</span>
                         </td>";
+
+
+                        // --- Add to HW profile
+                        if ($userknown == 1) {
+	                        $hwbutton = lhg_add_hwbutton( $email, $PID );
+        	                #$hwbutton = "Test";
+                	        $output_tmp .= "
+                        	<td id=\"col5\">
+	                        <span class='column-hwbutton'>".$hwbutton."</span>
+                                <div class='regusers'>(Reg. Linux users: ".$usernum.")</div>
+        	                </td>";
+                        }
+
 
 
 
@@ -679,14 +787,14 @@ print                       " </td>";
                         $categorypart2 = "";
                         if ($category_name2 != "")  $categorypart2 = "<br>($category_name2)";
 
-                        echo "
+                        $output_tmp .= "
                         <td id=\"col2\">
                         <span class='subscribe-column-1'><center>$category_name $categorypart2 </center></span>
                         </td>";
 
 
 
-                        echo "</tr>\n";
+                        $output_tmp .= "</tr>\n";
 
                         # check if laptop or mainboard was identified
                         if ( (strpos($category_name, 'Laptop') !== false) or
@@ -696,7 +804,34 @@ print                       " </td>";
                                 #error_log("Laptop/Mainboard was identified");
                                 $mainboard_found = 1;
         		}
-		}
+
+
+                        # allow sorting of results:
+	                if ( (strpos($category_name, 'Laptop') !== false) or
+                             (strpos($category_name, 'Mainboard') !== false) or
+                             (strpos($category_name2, 'Laptop') !== false) or
+                             (strpos($category_name, 'Mainboard') !== false) ) {
+                                $output_mb = $output_tmp;
+                        }elseif (strpos($category_name, 'CPU') !== false) {
+                                $output_cpu = $output_tmp;
+                        }elseif (strpos($category_name, 'Graphic') !== false) {
+                                $output_graphic .= $output_tmp;
+                        }elseif (strpos($category_name, 'Sound') !== false) {
+                                $output_sound .= $output_tmp;
+                        }else {
+                                $output_rest .= $output_tmp;
+                        }
+                        //echo $output_tmp;
+
+                }
+
+                # output results in correct order
+                echo $output_mb .
+                     $output_cpu .
+                     $output_graphic .
+                     $output_sound .
+                     $output_rest;
+
                 echo "</table>";
 }
 
