@@ -29,7 +29,61 @@ add_action('wp_ajax_nopriv_lhg_scan_update_mb_comment_ajax', 'lhg_scan_update_mb
 add_action('wp_ajax_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_created_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
 
+# HW scan results: append comment to hardware article
+add_action('wp_ajax_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_append_hardware_comment_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_append_hardware_comment_ajax');
+
 # AJAX funcitonalities
+
+# append a user comments to the hardware article
+function lhg_scan_append_hardware_comment_ajax() {
+        global $lhg_price_db;
+
+	$session   = $_REQUEST['session'] ;
+	$comment   = $_REQUEST['comment'] ;
+	$username  = $_REQUEST['username'] ;
+	$wpuid_de  = $_REQUEST['username'] ;
+	$wpuid_com = $_REQUEST['wpuid_com'] ;
+	$email     = $_REQUEST['email'] ;
+	$editor    = $_REQUEST['editor'] ;
+	$postid    = $_REQUEST['postid'] ;
+
+	$content_post = get_post($postid);
+	$content = $content_post->post_content;
+        $content = str_replace("<!--:-->","",$content);
+
+        #error_log("RET: $content - $session - $postid - WPUIDDE $wpuid_de - WPUIDCOM $wpuid_com - em: $email_comment - editor: $editor");
+        #print "RET: $comment - $session - $postid <br>";
+
+
+        #add comment to DB
+        if ($wpuid_de  != "") $userid = $wpuid_de;
+        if ($wpuid_com != "") $userid = $wpuid_com;
+        $time = current_time('mysql');
+
+	$newpost_content = array(
+		    'ID' => $postid,
+		    'post_content' => $content."
+
+".$comment.'<!--:-->',
+	);
+
+        wp_update_post ( $newpost_content );
+
+        # ajax: return data
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'text' => "Debug: $pid - $id - $asin - $comment - SID: $session -- END",
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
 
 # process user comments on existing posts / hw -> write to WPdB
 function lhg_scan_create_hardware_comment_ajax() {
@@ -60,7 +114,7 @@ function lhg_scan_create_hardware_comment_ajax() {
 	#$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET usercomment = %s WHERE sid = %s ", $comment, $session);
 	#$result = $lhg_price_db->query($myquery);
 
-        error_log("RET: $comment - $session - $postid - WPUIDDE $wpuid_de - WPUIDCOM $wpuid_com - em: $email_comment ");
+        #error_log("RET: $comment - $session - $postid - WPUIDDE $wpuid_de - WPUIDCOM $wpuid_com - em: $email_comment ");
         #print "RET: $comment - $session - $postid <br>";
 
         # what comment to show?
