@@ -213,8 +213,11 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
                         $commentlist = $lhg_price_db->get_results($myquery);
 		        foreach($commentlist as $usercomment){
                                 if ($usercomment->usercomment != "") {
-                                	if ($ucomment == "") $ucomment .= $usercomment->usercomment;
-                                	if ($ucomment != "") $ucomment .= ";".$usercomment->usercomment;
+                                	if ($ucomment == "") {
+                                        	$ucomment .= $usercomment->usercomment;
+                                        } else {
+                                		 $ucomment .= "; ".$usercomment->usercomment;
+					}
 				}
 			}
 
