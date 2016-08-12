@@ -1693,6 +1693,101 @@ print "<h2>".$txt_subscr_newhw."</h2>";
         				return false;
                                 });
 
+
+                                //
+                                // transform to comment
+                                //
+                                $(\'[id^="transform-to-comment-"]\').click(function(){
+
+                                        var indicator_html = \'<img class="scan-load-button" id="auto_search_ongoing" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+	                                var clickedlink = this;
+        	                        var id = $(clickedlink).attr(\'id\').substring(21);
+                	                var pid = $(clickedlink).attr(\'name\').substring(7);
+                                        $(clickedlink).append(indicator_html);
+
+
+	                                //prepare Ajax data:
+        	                        var session = "'.$sid.'";
+                	                var postid = pid;
+                        	        var wpuid_de = "'.$wpuid_de.'";
+	        			var wpuid_com = "'.$wpuid_com.'";
+        	                        var email = "";
+                	                var comment = $("#comment-"+id).val();
+
+                                	var data ={
+                                        	action: \'lhg_scan_create_hardware_comment_ajax\',
+	                                        session: session,
+        	                                comment: comment,
+                	                        wpuid_de: wpuid_de,
+                        	                wpuid_com: wpuid_com,
+                                	        email: email,
+	                                        postid: postid
+        	                        };
+
+
+                                	//load & show server output
+	                                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+        	                        	var return_comment     = $(response).find("supplemental return_comment").text();
+
+                                  	      	//Debug:
+                                                $(clickedlink).after("<b>&nbsp;done</b>");
+                                                $("#auto_search_ongoing").remove();
+                                        	//$(area).append(response);
+	                                });
+
+        				return false;
+                                });
+
+
+                                //
+                                // append comment to article
+                                //
+                                $(\'[id^="add-comment-"]\').click(function(){
+
+                                        var indicator_html = \'<img class="scan-load-button" id="auto_search_ongoing" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+	                                var clickedlink = this;
+        	                        var id = $(clickedlink).attr(\'id\').substring(12);
+                	                var pid = $(clickedlink).attr(\'name\').substring(7);
+                                        $(clickedlink).append(indicator_html);
+
+
+	                                //prepare Ajax data:
+        	                        var session = "'.$sid.'";
+                	                var postid = pid;
+                        	        var wpuid_de = "'.$wpuid_de.'";
+	        			var wpuid_com = "'.$wpuid_com.'";
+                                        var editor = "'.get_current_user_id(),'";
+        	                        var email = "";
+                	                var comment = $("#comment-"+id).val();
+
+                                	var data ={
+                                        	action: \'lhg_scan_append_hardware_comment_ajax\',
+	                                        session: session,
+        	                                comment: comment,
+                	                        wpuid_de: wpuid_de,
+                        	                wpuid_com: wpuid_com,
+                                	        email: email,
+                                	        editor: editor,
+	                                        postid: postid
+        	                        };
+
+
+                                	//load & show server output
+	                                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+        	                        	var return_comment     = $(response).find("supplemental return_comment").text();
+
+                                  	      	//Debug:
+                                                $(clickedlink).after("<b>&nbsp;done</b>");
+                                                $("#auto_search_ongoing").remove();
+                                        	//$(area).append(response);
+	                                });
+
+        				return false;
+                                });
+
+
                 });
 
 
@@ -1942,7 +2037,15 @@ if ($show_public_profile != 1){
 	print $txt_subscr_help;
 
 	print '<br>
-       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea><br>';
+       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea>';
+
+       if ($editmode == 1) {
+        #processingoptions for user comments
+       	 print '<div class="scan-commentoptions"><a href="#" id="transform-to-comment-'.$id.'" name="postid-'.$newPostID.'">transform to public comment</a><br>
+         	<a href="#" id="add-comment-'.$id.'" name="postid-'.$newPostID.'">add comment to article</a></div>';
+       }
+
+       print '<br>';
 
        # If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
 	print $txt_subscr_ifpossible;
@@ -1953,6 +2056,7 @@ if ($show_public_profile != 1){
        <br><input type="submit" name="scan-comments-'.$id.'" id="scan-comments-'.$id.'" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />
 	</form>';
  }
+
 
 print '
 </td><td>
