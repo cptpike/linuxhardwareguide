@@ -61,3 +61,20 @@ div#amz-info-reload-box {
 	width: 40px;
         height: 40px;
 }
+
+.table-pci-selector {
+	// border: 1px solid;
+}
+
+.pci-selector-1 {
+	width: 90px;
+}
+
+.table-pci-selector td {
+	border-top: 1px solid #e7e7e7;
+}
+
+.create-fingerprint {
+	width: 120px;
+}
+
