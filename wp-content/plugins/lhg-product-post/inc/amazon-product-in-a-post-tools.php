@@ -141,10 +141,232 @@ echo '
 	                      <br>&nbsp;&nbsp;<input type="text" name="product-library-usbid" id="product-library-usbid" value="'.$library_usbid.'"> <i>'.$txt_amz_usbid.'</i><br />';
 
         	        echo '<br /> <label for="product-pciid"><b>PCI ID</b></label>
-                	      <br>&nbsp;&nbsp;<input type="text" name="product-library-pciid" id="product-library-pciid" value="'.$library_pciid.'"> <i>'.$txt_amz_pciid.'</i><br />';
+                	      <br>&nbsp;&nbsp;<input type="text" name="product-library-pciid" id="product-library-pciid" value="'.$library_pciid.'">
+
+                              <a href="#TB_inline?width=700&height=550&inlineId=modal-window-id" class="thickbox ajax-pciid-update button"><i class="icon-refresh"></i>&nbsp;Select PCI IDs</a> <div id="amz-info-reload-box">Empty</div>
+                              <i>'.$txt_amz_pciid.'</i><br />';
 
 	                echo '<br /> <label for="product-string"><b>Identification String</b>
         	              <br>&nbsp;&nbsp;<input type="text" name="product-library-idstrg" id="product-library-idstrg" value="'.$library_idstrg.'"> <i>'.$txt_amz_idstrg.'</i><br />';
+
+                        //
+                        // ----  Content of PCI selector window
+                        //
+                        wp_enqueue_style('admin-styles', '/wp-content/plugins/lhg-pricedb/css/backend.css');
+                        echo ' <div id="modal-window-id" style="display:none;">';
+
+
+                        
+                        if (isset($_GET['scansid'] )) $sid = $_GET['scansid'];
+                        #error_log("SID: $sid");
+
+                        global $lhg_price_db;
+                        $myquery = $lhg_price_db->prepare("SELECT * FROM `lhghwscans` WHERE sid = %s", $sid);
+       			$results = $lhg_price_db->get_results($myquery);
+
+			echo '<p>SID: '.$sid.'<br>';
+                        echo '  <input href="#" id="create-fingerprint" class="button-primary create-fingerprint" value="Create fingerprint"></input>
+                              </p>';
+
+                        echo '
+                        
+                        <table class="table-pci-selector"><tr>
+                                <td class="pci-selector-1">select</td>
+                                <td class="pci-selector-2">Description</td>
+                        	</tr>';
+
+                        global $txt_yes;
+                        global $txt_no;
+
+
+		        foreach($results as $result){
+                                if ($result->pciid != "") {
+
+	                        $default_y = 'checked="checked"';
+        	        	$default_n = "";
+
+                                #check if pciid was lsited in text filed:
+                                if (strpos($library_pciid,$result->pciid) !== false) {
+                                        # pciid found, nothing to do
+				} else {
+		                        $default_y = "";
+        		        	$default_n = 'checked="checked"';
+                                }
+
+                                //error_log ("PCIID: ".$result->pciid);
+                                print '<tr class="pci-selector-row">
+                                        <td>
+
+                                        <form action="?" method="post" class="hwcomments">
+                                        <fieldset>
+		                             '.$txt_yes.' <input type="radio" id="radio-y-'.$result->id.'" name="on-board-'.$result->pciid.'" value="y" '.$default_y.' />
+                		             <input type="radio" id="radio-n-'.$result->id.'" name="on-board-'.$result->pciid.'" value="n" '.$default_n.' /> '.$txt_no.'
+		                        </fieldset>
+                                        </form>
+
+                                        </td>
+                                        <td>'.$result->idstring."<br>".
+                                        str_replace("\n","<br>",$result->idstring_subsystem)."
+                                        </td>";
+				}
+			}
+                        echo "</tr></table>";
+
+			echo '</div>';
+
+                        #
+                        # jquery code to exchange pciid string
+                        #
+                        # 1. get pciids of component (i.e. "yes" was checked)
+                        # 2. store pciids to DB (onboard)
+                        # (3. store pciids to WPDB post metadata - will be done by publis button)
+                        # 4. exchange string in text field
+
+                echo '
+                <script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+
+                                // radio button actions
+                                $("[id^=radio-n-]").click(function() {
+                                    var id = $(this).attr(\'id\').substring(8);
+                                    $("#pci-feedback-"+id).show("slow");
+                                    //$("#updatearea-"+id).show();
+				    //$("#scan-comments-"+id).show();
+
+                                    //prepare Ajax data:
+                                    var session = "'.$sid.'";
+	                            var data ={
+                                        action: \'lhg_scan_onboardn_ajax\',
+                                        id: id,
+                                        session: session
+                                    };
+
+                                    $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                       //currently no visual feedback
+
+                                    });
+
+
+                                });
+
+                                $("[id^=radio-y-]").click(function() {
+                                    var id = $(this).attr(\'id\').substring(8);
+                                    //$("#updatearea-"+id).hide("slow");
+	                            $("#pci-feedback-"+id).hide("slow");
+                                    //$("#scan-comments-"+id).hide("slow");
+
+                                    //prepare Ajax data:
+                                    var session = "'.$sid.'";
+	                            var data ={
+                                        action: \'lhg_scan_onboardy_ajax\',
+                                        id: id,
+                                        session: session
+                                    };
+
+                                    $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                        //currently no visual feedback
+
+                                    });
+
+                                });
+
+                                $("[id^=radio-y-]").each(function(){
+                                        var id = $(this).attr(\'id\').substring(8);
+
+                                	if ($(this).is(":checked")) {
+	                                    //$("#pci-feedback-"+id).hide();
+        	                            //$("#scan-comments-"+id).hide();
+                	                }
+
+
+                                });
+
+                                // create list of selected pciids
+                                //
+                                $("#create-fingerprint").click(function() {
+
+                                        var pcilist = "";
+	                                $("[id^=radio-y-]").each(function(){
+        	                                var id = $(this).attr(\'id\').substring(8);
+        	                                var pciid = $(this).attr(\'name\').substring(9);
+
+                	                	if ($(this).is(":checked")) {
+                                                        if (!pcilist) {
+                                                                pcilist = pciid;
+                                                        } else {
+        	                                                pcilist = pcilist + ","+ pciid;
+		                	                }
+	                	                }
+                                	});
+                                        // replace value in pcilist text input field
+                                        $("#product-library-pciid").val(pcilist);
+                                        //alert("PCI List:"+pcilist);
+
+                                        var origtext = $("#content").val();
+                                        var start_pos = origtext.indexOf("[lhg_mainboard_lspci]");
+                                        var end_pos   = origtext.indexOf("[/lhg_mainboard_lspci]");
+
+
+                                        // get new PCI list from PriceDB via AJAX
+                                        //
+                                        // send list of pci ids and get lspci extract as text
+                                    	var session = "'.$sid.'";
+	                            	var data ={
+                                        		action: \'lhg_pci_extract_ajax\',
+	                                        	pcilist: pcilist,
+	                                        	session: session
+        	                            	};
+
+                                    	$.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+	                                        var pcilist_txt = "";
+                                        	pcilist_txt = $(response).find("supplemental pcilist_txt").text();
+                                                var newtext = origtext.substr(0,start_pos+21) + "\n" + pcilist_txt + origtext.substr(end_pos);
+                                                //newtext = newtext.replace("<!--:us-->","");
+                                                //newtext = newtext.replace("<!--:-->","");
+                                                //newtext = newtext.replace("&lt;!--:us--&gt;","");
+                                                //newtext = newtext.replace("&lt;!--:--&gt;","");
+
+                                                //tinymce.activeEditor.execCommand("mceReplaceContent", false, newtext);
+
+                                                //$("#content").val(newtext);
+                                                //qtrans_save(newtext);
+
+                                                //tinyMCE.get2("content").remove();
+		                    		$("#qtrans_textarea_content").val(newtext);
+		                    		$("#content").val(newtext);
+                    				//window.clearInterval(waitForTinyMCE);
+
+                                                //$("#qtrans_textarea_content").val(newtext);
+	                                        //alert("Text: "+newtext);
+
+                                      	 	//currently no visual feedback
+	                                 });
+
+
+                                        //qtrans_editorInit();
+                                        //qtrans_editorInit3();
+                                        //qtrans_updateTinyMCE();
+                                        //tinyMCE.triggerSave();
+                                        tb_remove();
+
+
+                                });
+
+
+                                //prevent default behavior
+                                return false;
+
+
+                });
+
+                /*]]> */
+                </script>';
+
+
+
 		}
 
 	

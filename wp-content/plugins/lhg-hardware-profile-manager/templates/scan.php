@@ -1131,7 +1131,7 @@ if (count($unidentified_hw_pci) > 0) {
 		       <input type="submit" id="mb-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />';
 
 	       if (current_user_can('publish_posts') && ($show_public_profile != 1) && ($editmode == 1) ) {
-        	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit">finalize article</a>)';
+        	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit&scansid='.$sid.'">finalize article</a>)';
 	       }
 
 	       print '</form>';
