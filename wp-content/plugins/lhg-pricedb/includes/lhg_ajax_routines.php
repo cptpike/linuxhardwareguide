@@ -33,7 +33,49 @@ add_action('wp_ajax_nopriv_lhg_scan_created_hardware_comment_ajax', 'lhg_scan_cr
 add_action('wp_ajax_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_append_hardware_comment_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_append_hardware_comment_ajax');
 
+# return lspci output based on list of PCI IDs
+add_action('wp_ajax_lhg_pci_extract_ajax', 'lhg_pci_extract_ajax');
+add_action('wp_ajax_nopriv_lhg_pci_extract_ajax', 'lhg_pci_extract_ajax');
+
 # AJAX funcitonalities
+
+# append a user comments to the hardware article
+function lhg_pci_extract_ajax() {
+        global $lhg_price_db;
+
+	$session   = $_REQUEST['session'] ;
+	$pcilist   = $_REQUEST['pcilist'] ;
+
+        $pciarray = explode(",",$pcilist);
+
+        $pci_output = "";
+        foreach ($pciarray as $pciid) {
+                # store comment_id in PriceDB allow linking comment with scan
+		$myquery = $lhg_price_db->prepare("SELECT * FROM `lhghwscans` WHERE sid = %s AND pciid = %s ", $session, $pciid );
+		$result  = $lhg_price_db->get_results($myquery);
+
+                #error_log("PCIID: $session/$pciid ->".$result[0]->idstring);
+                $pci_output .= $result[0]->idstring;
+                if ($result[0]->idstring_subsystem != "") $pci_output .= $result[0]->idstring_subsystem;
+	}
+
+
+        #error_log("PCI list: $pci_output");
+
+        # ajax: return data
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'pcilist_txt' => $pci_output,
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
 
 # append a user comments to the hardware article
 function lhg_scan_append_hardware_comment_ajax() {
