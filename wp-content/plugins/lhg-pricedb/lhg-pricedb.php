@@ -33,6 +33,11 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_chat.php');
 #require_once(plugin_dir_path(__FILE__).'includes/lhg_wpadmin_mods.php');
 require_once('/var/www/wordpress/version.php');
 
+# store new tags in LHGDB
+add_action ('edit_post', 'lhg_update_tag_links' );
+add_action ('save_post', 'lhg_update_tag_links' );
+
+
 # Disable visual editor for all users - breaks too many things
 #add_filter('user_can_richedit' , create_function('' , 'return false;') , 50);
 # This breaks qtranslate tabs, because the link directly to the visual/html tabs
@@ -779,6 +784,39 @@ function lhg_get_properties_string ( $postid ) {
 	}
         $properties = join( ", " , $properties_array );
         return $properties;
+}
+
+function lhg_update_tag_links ( $postid ) {
+        global $lhg_price_db;
+        global $lang;
+
+        $posttags = get_the_tags( $postid );
+        $properties_array = array();
+        if ($posttags) {
+  		foreach($posttags as $tag) {
+		   array_push( $properties_array, $tag->name);
+                   #error_log("TAG2: ".$tag->name. " SLUG: ".$tag->slug);
+
+                   if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT id FROM `lhgtransverse_tags` WHERE `slug_com` = '%s'", $tag->slug);
+                   if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT id FROM  `lhgtransverse_tags` WHERE `slug_de` = '%s'", $tag->slug);
+                   $slugid  = $lhg_price_db->get_var($myquery);
+
+		   #error_log("SID: ($slugid)");
+
+                   if ($slugid > 0) {
+                   	// error_log("FOUND $tag->slug : $slugid");
+                   } else {
+                        # Tag not in LHGDB -> has to be added
+	                   if ($lang != "de") $sql = "INSERT INTO lhgtransverse_tags ( slug_com ) VALUES ( '".$tag->slug."' ) ";
+        	           if ($lang == "de") $sql = "INSERT INTO lhgtransverse_tags ( slug_de ) VALUES  ( '".$tag->slug."' ) ";
+                           #error_log("Inserting $sql");
+	                   $result  = $lhg_price_db->query($sql);
+
+			}
+		}
+	}
+        #$properties = join( ", " , $properties_array );
+        #return $properties;
 }
 
 
