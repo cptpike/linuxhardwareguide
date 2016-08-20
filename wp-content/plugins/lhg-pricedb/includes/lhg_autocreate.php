@@ -1250,10 +1250,17 @@ function lhg_show_translate_process($postid) {
         global $lang;
         global $lhg_price_db;
 
+	$urlprefix = "";
+	if ($lang == "de") $urlprefix = "http://www.linux-hardware-guide.com";
+
+        wp_enqueue_style('admin-styles', '/wp-content/plugins/lhg-pricedb/css/backend.css');
+
+
+
 
 	echo "<h3>Start Auto-translate:</h3> ";
 
-        print "PID com: $postid<br>";
+        #print "PID com: $postid<br>";
 
         #
         # get tags
@@ -1285,7 +1292,15 @@ function lhg_show_translate_process($postid) {
 	  array_push($tagarray_ids, $tmp->term_id );
 	  array_push($tagarray_names, $tmp->name );
 
-          if ($tmp->term_id == "") print "ERROR: tag ".$tmp->name."not found <br>";
+          if ($tmp->term_id == "") {
+          	# unknown tag. Ask for translation now
+                #print "ERROR: tag ".$de_tag." not found <br>";
+                print '<form id="translate-form-'.$de_tag.'">'."
+                        Translate &quot;$de_tag&quot; to German: ";
+                print ' <input id="tagtranslate-'.$de_tag.'" name="tagtranslate-'.$de_tag.'" type="text" value="" size="20" maxlenght="290">
+			<input type="submit" id="submit-tagtranslate-'.$de_tag.'" name="submit-tagtranslate" value="Submit translation" class="submit-tagtranslate-button" />
+                      </form>';
+	  }
 	}
 
         #
@@ -1401,6 +1416,71 @@ function lhg_show_translate_process($postid) {
 
         # add amazon id
 	update_post_meta($newPostID, 'amazon-product-single-asin', $amazon_id );
+
+
+        print '
+	<script src="https://cdn.rawgit.com/vast-engineering/jquery-popup-overlay/1.7.11/jquery.popupoverlay.js"></script>
+
+                <script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+                                $("[id^=submit-tagtranslate-]").click(function() {
+
+                                	var button = this;
+                                	var slug = $(this).attr(\'id\').substring(20);
+                                        var translated_tag = $("#tagtranslate-"+slug).val();
+
+                                        //alert("SLUG: "+slug);
+
+        	                        var indicator_html = \'<img class="small-ajax-indicator" id="ajax-indicator-tagtranslate-\'+slug+\'" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+                	                $(button).after(indicator_html);
+
+
+                        	        //prepare Ajax data:
+                                	var data ={
+                                        	action: \'lhg_translate_slug_ajax\',
+	                                        slug: slug,
+                                                translated_tag:  translated_tag,
+        	                                postid: "'.$newPostID.'"
+                	                };
+
+
+	                                //load & show server output
+        	                        $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+                	                        //$(button).append("Response");
+                        	                //$(button).after(response);
+                                	        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
+
+        	                                //return to normal state
+                                                $("#translate-form-"+slug).replaceWith(\'<div class="translated-tag-replaced">Translated: \'+translated_tag+\'</div>\');
+                                                $(button).remove();
+                                                //$(button).attr("class", "hwscan-comment-button-light");
+                                	        //var indicatorid = "#button-load-known-hardware-comment";
+                                        	$("#ajax-indicator-tagtranslate-"+slug).remove();
+
+	                                });
+
+
+                                //prevent default behavior
+        	                return false;
+
+                                });
+
+
+
+                });
+
+
+
+                /*]]> */
+
+                </script>';
+
+
+
 
 
         #
