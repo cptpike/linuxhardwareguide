@@ -37,7 +37,55 @@ add_action('wp_ajax_nopriv_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_app
 add_action('wp_ajax_lhg_pci_extract_ajax', 'lhg_pci_extract_ajax');
 add_action('wp_ajax_nopriv_lhg_pci_extract_ajax', 'lhg_pci_extract_ajax');
 
+# translate a slug
+add_action('wp_ajax_lhg_translate_slug_ajax', 'lhg_translate_slug_ajax');
+add_action('wp_ajax_nopriv_lhg_translate_slug_ajax', 'lhg_translate_slug_ajax');
+
 # AJAX funcitonalities
+
+# slug was translated. Add to DBs
+function lhg_translate_slug_ajax() {
+        global $lhg_price_db;
+
+	$slug   	 = $_REQUEST['slug'] ;
+	$translated_tag = $_REQUEST['translated_tag'] ;
+	$postid 	 = $_REQUEST['postid'] ;
+        $translated_slug = sanitize_title($translated_tag);
+
+        error_log("PID $postid - s: $slug - ts: $translated_slug");
+
+        # add slug and tag name to WPDB
+        wp_insert_term( $translated_tag , 'post_tag' , array( 'slug' => $translated_slug ) );
+
+        # Link slug in TransverseDB
+	$myquery = $lhg_price_db->prepare("SELECT slug_de, id FROM `lhgtransverse_tags` WHERE slug_com = %s ", $slug);
+	#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
+	$result = $lhg_price_db->get_results($myquery);
+
+
+        #error_log("ID: ".$result[0]->id." - Slug: ".$result[0]->slug_de);
+
+        if ( ( $result[0]->slug_de == "") && ( $result[0]->id > 0 ) ) {
+		$myquery = $lhg_price_db->prepare("UPDATE `lhgtransverse_tags` SET slug_de = %s WHERE id = %s ", $translated_slug, $result[0]->id);
+		#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
+		$result = $lhg_price_db->query($myquery);
+	}
+
+        /*
+        # ajax: return data
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'error_txt' => "",
+                ),
+                ) );
+
+        $response->send();
+        */
+        die();
+}
+
 
 # append a user comments to the hardware article
 function lhg_pci_extract_ajax() {
