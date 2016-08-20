@@ -29,7 +29,55 @@ global $appipBulidBox;
 	}else{
 		add_action('save_post', 'amazonProductInAPostSavePostdata', 1, 2); // save the custom fields
 	}
-	
+
+
+// Add buttons to html editor
+add_action('admin_print_footer_scripts','eg_quicktags');
+function eg_quicktags() {
+
+if (isset($_GET['scansid'] )) {
+        global $lhg_price_db;
+        global $dmesg_content_from_library;
+
+	$sid = $_GET['scansid'];
+
+        $myquery = $lhg_price_db->prepare("SELECT * FROM `lhgscansessions` WHERE sid = %s", $sid);
+       	$results = $lhg_price_db->get_results($myquery);
+
+        $kernel       = $results[0]->kversion;
+        $distribution = $results[0]->distribution;
+	$distribution = str_replace("\n","",$distribution);
+
+        if ( $dmesg_content_from_library == "" ) {
+		$url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+  		$dmesg_content_from_library = file_get_contents($url);
+	}
+
+	$dmesg_content_array = split("\n",$dmesg_content_from_library);
+	$dmi_array = preg_grep("/DMI: /",$dmesg_content_array);
+	$dmi_line = implode("\n",$dmi_array);
+	$dmi_line = str_replace("[    0.000000]","",$dmi_line);
+	$dmi_line = str_replace("#"," ",$dmi_line);
+	$dmi_line = str_replace("\n"," ",$dmi_line);
+
+
+}
+
+print '
+<script type="text/javascript" charset="utf-8">
+buttonA = edButtons.length;
+edButtons[edButtons.length] = new edButton(\'ed_mainboard\',\'Mainboard\',\'[lhg_mainboard_intro distribution="'.$distribution.'" version="'.$kernel.'" dmi_output="'.$dmi_line.'"]\n\n[lhg_mainboard_lspci] \n[/lhg_mainboard_lspci]\',\'\',\'Mainboard shortcode\');
+buttonB = edButtons.length;
+edButtons[edButtons.length] = new edButton(\'ed_hplip\',\'hplip\',\'[lhg_hplip version="" usb="" url=""]\',\'\',\'hplip shortcode\');
+
+jQuery(document).ready(function($){
+    jQuery("#ed_toolbar").append(\'<input type="button" value="Mainboard" id="ed_mainboard" class="ed_button" onclick="edInsertTag(edCanvas, buttonA);" title="Mainboard shortcode" />\');
+    jQuery("#ed_toolbar").append(\'<input type="button" value="hplip" id="ed_hplip" class="ed_button" onclick="edInsertTag(edCanvas, buttonB);" title="hplip" />\');
+}); 
+</script>
+';
+}
+        
 	/* Prints the inner fields for the custom post/page section */
 	function amazonProductInAPostBox1() {
 		global $post;
