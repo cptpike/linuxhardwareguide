@@ -82,3 +82,15 @@ div#amz-info-reload-box {
 	width: 15px;
 }
 
+.image-selector-az {
+	border: solid 1px;
+        float: left;
+	margin-left: 10px;
+        padding: 3px;
+}
+
+.selector-images {
+	max-width: 130px;
+        max-height: 130px;
+}
+

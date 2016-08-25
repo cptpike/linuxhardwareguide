@@ -125,6 +125,175 @@ jQuery(document).ready(function($){
 		#echo '<br />&nbsp;&nbsp;<input type="text" name="amazon-product-single-asin" id="amazon-product-single-asin" value="'.get_post_meta($post->ID, 'amazon-product-single-asin', true).'" /> <i>'.$txt_amz_getfrom.'</i><br /><br />';
 
 
+
+                        //
+                        // --- Image selector window
+                        //
+                	print ' <div id="more-image-options" style="display:none;">';
+                        print "<p>";
+                        print "Select image:<br>";
+                        #if ($image_url_com != "") print '1: <a href="#" id="altimg-1"><img id="imgsrc-1" src="'.$image_url_com.'"></a><br>';
+                        #if ($image_url_com2 != "") print '2: <a href="#" id="altimg-2"><img id="imgsrc-2" src="'.$image_url_com2.'"></a><br>';
+                        #if ($image_url_com3 != "") print '3: <a href="#" id="altimg-3"><img id="imgsrc-3" src="'.$image_url_com3.'"></a><br>';
+                        #if ($image_url_com4 != "") print '4: <a href="#" id="altimg-4"><img id="imgsrc-4" src="'.$image_url_com4.'"></a><br>';
+                        print '<div id="imgsel-1" class="image-selector-az">1: <a href="#" id="altimg-1"><img id="imgsrc-1" src="'.$image_url_com.'" class="selector-images"></a></div><br>';
+                        print '<div id="imgsel-2" class="image-selector-az">2: <a href="#" id="altimg-2"><img id="imgsrc-2" src="'.$image_url_com2.'" class="selector-images"></a></div><br>';
+                        print '<div id="imgsel-3" class="image-selector-az">3: <a href="#" id="altimg-3"><img id="imgsrc-3" src="'.$image_url_com3.'" class="selector-images"></a></div><br>';
+                        print '<div id="imgsel-4" class="image-selector-az">4: <a href="#" id="altimg-4"><img id="imgsrc-4" src="'.$image_url_com4.'" class="selector-images"></a></div><br>';
+
+                        print '<br clear="all"><hr>
+                                <div class="imageurl-box"><div class="imageurl-text">Image URL:</div>
+			';
+                        print '<form action="?" method="post">
+			         <input name="image-url" id="image-url" type="text" size="30" maxlength="500" value="">
+			         <input type="submit" id="image-url-submit" value="Submit image" class="button" />
+ 			       </form>
+                               </div>
+                               ';
+
+                        print "</p>";
+                        print '</div>';
+
+
+
+
+        // jQuery code for image selection
+
+			print'
+
+                <script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+                	$("#more-image-options-link").click(function() {
+
+                		 if ( $("#imgsrc-1").attr("src") === "" ) {
+	                        	$("#imgsel-1").hide();
+	                         }else{
+		                        $("#imgsel-1").show();
+                	         }
+                		 if ( $("#imgsrc-2").attr("src") === "" ) {
+		                        $("#imgsel-2").hide();
+        	                 }else{
+	        	                $("#imgsel-2").show();
+                        	 }
+	                	 if ( $("#imgsrc-3").attr("src") === "" ) {
+		                        $("#imgsel-3").hide();
+                	         }else{
+	                	        $("#imgsel-3").show();
+	                         }
+        	        	 if ( $("#imgsrc-4").attr("src") === "" ) {
+	        	                $("#imgsel-4").hide();
+                        	 }else{
+		                        $("#imgsel-4").show();
+        	                 }
+                        });
+
+
+
+                            $("[id^=altimg-]").click(function() {
+
+                                var id = $(this).attr(\'id\').substring(7);
+
+                                // "we are processing" indication
+                                //var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+                                //$(button).after(indicator_html);
+
+
+                                //prepare Ajax data:
+                                var url = $("#imgsrc-"+id).attr("src");
+                                var data ={
+                                        action: \'lhg_update_teaser_image_ajax\',
+                                        postid: '.$post->ID.',
+                                        id: id,
+                                        url: url
+                                };
+
+
+                                //load & show server output
+                                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+                                        //$(button).append("Response");
+                                        //$(button).after(response);
+                                        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
+
+                                        //return to normal state
+                                        //$(button).val("Update");
+                                        //$(button).attr("class", "hwscan-comment-button-light");
+                                        //var indicatorid = "#button-load-known-hardware-comment";
+                                        //$(indicatorid).remove();
+
+                                        var new_image     = $(response).find("supplemental file").text();
+                                        $("#amz-info-reload-box").append("<img src=\"/wp-uploads/"+new_image+"\">");
+
+                                        tb_remove();
+
+
+                                });
+
+	                    return false;
+
+                            });
+
+
+
+                            // Image URL button
+                            $("#image-url-submit").click(function() {
+
+                                        var button = this;
+	                                // "we are processing" indication
+        	                        var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+                	                $(button).after(indicator_html);
+
+
+                                //prepare Ajax data:
+                                var url = $("#image-url").val();
+                                var data ={
+                                        action: \'lhg_update_teaser_image_ajax\',
+                                        postid: '.$post->ID.',
+                                        url: url
+                                };
+
+
+                                //load & show server output
+                                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+                                        //$(button).append("Response");
+                                        //$(button).after(response);
+                                        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
+
+                                        //return to normal state
+                                        //$(button).val("Update");
+                                        //$(button).attr("class", "hwscan-comment-button-light");
+                                        //var indicatorid = "#button-load-known-hardware-comment";
+                                        //$(indicatorid).remove();
+
+                                        var new_image     = $(response).find("supplemental file").text();
+                                        $("#amz-info-reload-box").append("<img src=\"/wp-uploads/"+new_image+"\">");
+
+                                        tb_remove();
+                                });
+
+
+                                //prevent default behavior
+                                return false;
+
+                            });
+
+
+                });
+
+
+
+                /*]]> */
+
+                </script>';
+
+
+
+
+
 echo '
                  <script type="text/javascript">
                  /* <![CDATA[ */
@@ -175,6 +344,12 @@ echo '
 
                  <br />&nbsp;&nbsp;<input type="text" name="amazon-product-single-asin" id="amazon-product-single-asin" value="'.get_post_meta($post->ID, 'amazon-product-single-asin', true).'" /> <a href="" class="ajax-amazon-update button"><i class="icon-refresh"></i>&nbsp;Refresh</a> <div id="amz-info-reload-box">Empty</div> <i>'.$txt_amz_getfrom.'</i><br /><br />';
 
+                #if ($image_url_com2 != "") {
+                #always active due to jQuery event that are linked.
+                #however, his hidden if no images were loaded
+                #add_thickbox();
+                #}
+
 
                 if ( ($lang != "de") and (current_user_can("delete_posts") ) ){ //allow to update identification markers (only on com a.t.m.)
 
@@ -186,16 +361,46 @@ echo '
 	                $txt_amz_pciid = "separated by comma, if several PCI IDs";
 
                 	echo '<label for="product-usbid"><b>USB ID</b></label>
-	                      <br>&nbsp;&nbsp;<input type="text" name="product-library-usbid" id="product-library-usbid" value="'.$library_usbid.'"> <i>'.$txt_amz_usbid.'</i><br />';
+	                      <br>&nbsp;&nbsp;<input type="text" name="product-library-usbid" id="product-library-usbid" value="'.$library_usbid.'"> <i>'.$txt_amz_usbid.'</i>';
+
+                        // show USB Inof
+			global $lsusb_content_from_library;
+			$sid = $_GET['scansid'];
+                        if ($sid != "") {
+                                // initiated by scan results. show usb output
+			        if ( $lsusb_content_from_library == "" ) {
+					$url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsusb.txt";
+			  		$lsusb_content_from_library = file_get_contents($url);
+				}
+
+	                        print '<a href="#TB_inline?width=700&height=550&inlineId=lsusb-window" class="thickbox ajax-usb-update ">&nbsp;Show USB info</a>';
+                                print ' <div id="lsusb-window" style="display:none;">';
+	                        print "<p>";
+        	                print "lsusb output:<br>";
+                        	print '<pre>';
+                                print $lsusb_content_from_library;
+                                print '</pre>';
+                                print "</div>";
+                        }
+
+
+                        print '
+
+                              <br />';
 
         	        echo '<br /> <label for="product-pciid"><b>PCI ID</b></label>
                 	      <br>&nbsp;&nbsp;<input type="text" name="product-library-pciid" id="product-library-pciid" value="'.$library_pciid.'">
 
-                              <a href="#TB_inline?width=700&height=550&inlineId=modal-window-id" class="thickbox ajax-pciid-update button"><i class="icon-refresh"></i>&nbsp;Select PCI IDs</a> <div id="amz-info-reload-box">Empty</div>
+                              <a href="#TB_inline?width=700&height=550&inlineId=modal-window-id" class="thickbox ajax-pciid-update button"><i class="icon-refresh"></i>&nbsp;Select PCI IDs</a>
                               <i>'.$txt_amz_pciid.'</i><br />';
 
 	                echo '<br /> <label for="product-string"><b>Identification String</b>
         	              <br>&nbsp;&nbsp;<input type="text" name="product-library-idstrg" id="product-library-idstrg" value="'.$library_idstrg.'"> <i>'.$txt_amz_idstrg.'</i><br />';
+
+
+
+
+
 
                         //
                         // ----  Content of PCI selector window
@@ -435,12 +640,14 @@ echo '
                  if ( ($asin == "") or (substr($asin,0,5) == "00000") ) {
                         # No ASIN of no valid ASIN provided - spare us the hazzle
                         print "ASIN not valid";
+                        print '<a id="more-image-options-link" class="thickbox more-image-options button" href="#TB_inline?width=700&height=550&inlineId=more-image-options">Show more options</a>';
+
                         die();
 		 }
 
 
                $output = lhg_aws_get_price($asin,"com");
-                 list($image_url_com, $product_url_com, $price_com , $product_title) = split(";;",$output);
+                 list($image_url_com, $product_url_com, $price_com , $product_title, $label, $brand, $image_url_com2, $image_url_com3 , $image_url_com4, $image_url_com5 ) = split(";;",$output);
 
                  $product_title = str_replace("Title: ","", $product_title);
 
@@ -451,6 +658,8 @@ echo '
                  list($image_url_de, $product_url_de, $price_de) = split(";;",$output);
 
                  $image_url_com   = str_replace("Image: ","", $image_url_com);
+                 $image_url_com2   = str_replace("Image2: ","", $image_url_com2);
+                 $image_url_com3   = str_replace("Image3: ","", $image_url_com3);
                  $product_url_com = str_replace("URL: ","", $product_url_com);
                  $price_com = str_replace("Price: ","", $price_com);
 
@@ -502,7 +711,13 @@ echo '
                        }
 
                  }
-                echo '<div class="amz-ajax-image"><a href="'.$product_url_com.'"><img src="'.$scaled_image_url.'"/></a></div>';
+                echo '<div class="amz-ajax-image"><a href="'.$product_url_com.'"><img src="'.$scaled_image_url.'"/></a>';
+                print '<a id="more-image-options-link" class="thickbox more-image-options button" href="#TB_inline?width=700&height=550&inlineId=more-image-options">Show more options</a>';
+                echo '</div>';
+
+
+
+
 
                  echo '
                  <div class="ajax-amazon-table">
@@ -536,6 +751,52 @@ echo '
 
                  </table>
                  </div>';
+
+                // exchange images in Amazon image selector popup
+
+                print'
+
+                <script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+                ';
+
+                if ($image_url_com != "") {
+                	print ' $("#imgsrc-1").attr("src","'.$image_url_com.'");';
+                }else{
+                        print ' $("#imgsel-1").hide();';
+                }
+
+                if ($image_url_com2 != "") {
+                	print ' $("#imgsrc-2").attr("src","'.$image_url_com2.'");';
+                }else{
+                        print ' $("#imgsel-2").hide();';
+                }
+
+                if ($image_url_com3 != "") {
+                	print ' $("#imgsrc-3").attr("src","'.$image_url_com3.'");';
+                }else{
+                        print ' $("#imgsel-3").hide();';
+                }
+
+                if ($image_url_com4 != "") {
+                	print ' $("#imgsrc-4").attr("src","'.$image_url_com4.'");';
+                }else{
+                        print ' $("#imgsel-4").hide();';
+                }
+
+		#error_log(' $("#imgsrc-2").attr("src","'.$image_url_com2.'");');
+
+                print '
+                });
+
+
+
+                /*]]> */
+
+                </script>';
+
 
 
                  die();
