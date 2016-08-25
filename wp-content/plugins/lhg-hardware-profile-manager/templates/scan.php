@@ -2082,7 +2082,7 @@ print '
                             USB Device: $usbid";
 
                             if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
+                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                    }
                         echo "
@@ -2106,7 +2106,7 @@ print '
                             CPU";
 
                             if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
+                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                    }
@@ -2125,7 +2125,7 @@ print '
                               Drive";
 
                               if  ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit">finalize article</a>';
+                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
                                 print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
                                 print '<br>Rating: '.lhg_get_rating_value($newPostID);
 	                      }
