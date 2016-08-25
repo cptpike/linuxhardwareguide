@@ -145,6 +145,10 @@ $AssociateTag = $aws_partner_id;
       if ( ref($medium_image_tmp) eq 'ARRAY' ) {
           #print "IS AN ARRAY!";
           $medium_image = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[0]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image2 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[1]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image3 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[2]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image3 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[3]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image3 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[4]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
 
       } else {
           #print "IS NOT AN ARRAY!";      
@@ -167,9 +171,16 @@ $AssociateTag = $aws_partner_id;
       # print Dumper($medium_image->[0]);
       # print Dumper($medium_image->{MediumImage}->{URL});
       #print "\nOutput: \n";
-      print "Image: $medium_image;;URL: $url;;Price: $lowestNewPrice;;Title: $title;;Label: $label;;Brand: $brand";
+      print "Image: $medium_image;;URL: $url;;Price: $lowestNewPrice;;Title: $title;;Label: $label;;Brand: $brand;;";
       
-          
+      if ( $medium_image2 ne "") { print "Image2: $medium_image2;;"; }
+      if ( $medium_image3 ne "") { print "Image3: $medium_image3;;"; }
+      if ( $medium_image4 ne "") { print "Image4: $medium_image4;;"; }
+      
+      #    Image3: $medium_image3;;
+      #    Image4: $medium_image4;;
+      #    Image5: $medium_image5;;";
+      
           #print "Image: ".join(" - ", @medium_image);
           #}
 
