@@ -473,25 +473,32 @@ function lhg_save_id_widget_data( $postid ) {
     #write data (currently no check if updated)
     #
     # write USB ID
+    // warning -> this does not work if post update is initiated by hook-in
     $value_usb = $_POST['product-library-usbid'];
     $value_pci = $_POST['product-library-pciid'];
     $value_strg = $_POST['product-library-idstrg'];
     #echo "Val: $value \n";
-    $sql = "UPDATE lhgtransverse_posts SET `usbids` = \"%s\" WHERE postid_com = %s";
-    $safe_sql = $lhg_price_db->prepare($sql, $value_usb, $postid);
-    $result = $lhg_price_db->query($safe_sql);
+
+    if ($value_usb != "") {
+	    $sql = "UPDATE lhgtransverse_posts SET `usbids` = \"%s\" WHERE postid_com = %s";
+	    $safe_sql = $lhg_price_db->prepare($sql, $value_usb, $postid);
+	    $result = $lhg_price_db->query($safe_sql);
+    }
     #echo "SQL: $result";
 
     # write PCI ID
-    $sql = "UPDATE lhgtransverse_posts SET `pciids` = \"%s\" WHERE postid_com = %s";
-    $safe_sql = $lhg_price_db->prepare($sql, $value_pci, $postid);
-    $result = $lhg_price_db->query($safe_sql);
+    if ($value_pci != "") {
+	    $sql = "UPDATE lhgtransverse_posts SET `pciids` = \"%s\" WHERE postid_com = %s";
+	    $safe_sql = $lhg_price_db->prepare($sql, $value_pci, $postid);
+	    $result = $lhg_price_db->query($safe_sql);
+    }
 
-    # write PCI ID
-    $sql = "UPDATE lhgtransverse_posts SET `idstring` = \"%s\" WHERE postid_com = %s";
-    $safe_sql = $lhg_price_db->prepare($sql, $value_strg, $postid);
-    $result = $lhg_price_db->query($safe_sql);
-
+    # write ID String (but do not blindly overvwrite)
+    if ($value_strg != "") {
+	    $sql = "UPDATE lhgtransverse_posts SET `idstring` = \"%s\" WHERE postid_com = %s";
+	    $safe_sql = $lhg_price_db->prepare($sql, $value_strg, $postid);
+	    $result = $lhg_price_db->query($safe_sql);
+    }
 }
 
 function lhg_create_article_image( $image_url , $image_title ) {
