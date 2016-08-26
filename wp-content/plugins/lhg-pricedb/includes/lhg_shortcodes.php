@@ -9,6 +9,7 @@ add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
 add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
 add_shortcode( 'lhg_donation_testing', 'lhg_donation_testing');
 add_shortcode( 'lhg_scan_overview', 'lhg_scan_overview_shortcode');
+add_shortcode( 'lhg_graphicscard', 'lhg_graphicscard_shortcode');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -134,6 +135,47 @@ function lhg_mainboard_intro_shortcode($attr) {
 	$output .= 'under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'
 </p>
 ';
+        return $output;
+}
+
+function lhg_graphicscard_shortcode($attr) {
+
+        # possible attributes
+        # $attr['distribution'] - distribution name
+        # $attr['version'] - kernel version
+        # $attr['xserver'] - X.org server version
+        # $attr['nvidia_module'] - nvidia module version
+        global $lang;
+        global $region;
+
+	$title=translate_title(get_the_title());
+	$title_orig=get_the_title();
+	$s=explode("(",$title);
+	$graphicscard_name=trim($s[0]);
+	$graphicscard_properties=trim($s[1]);
+
+        $pid = get_the_ID();
+
+
+        $output = "<p>The ".$graphicscard_name.' was successfully tested
+        under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']);
+
+        if ( $attr['xserver'] != "")
+                $output .= ' and an X-Server of version '.trim($attr['xserver']);
+
+        $output .= ".";
+
+        if ( $attr['nvidia_module'] != "")
+        	$output .= 'The graphics card was used together with the propriatary NVidia Linux driver in version'. trim($attr['nvidia_module']).'.';
+
+        global $lhg_price_db;
+        if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransvers_posts` WHERE postid_de = %s", $pid);
+        if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransvers_posts` WHERE postid_com = %s", $pid);
+	$pciids = $lhg_price_db->get_var($myquery);
+
+        if ($pciids != "")
+                $output .= "The card can be identified by the following PCI IDs:";
+
         return $output;
 }
 
