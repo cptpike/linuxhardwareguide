@@ -1240,7 +1240,7 @@ if (count($unidentified_hw_pci) > 0) {
 
 
 	       if (current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-        	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_pci.'&action=edit">finalize article</a>)';
+        	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_pci.'&action=edit&scansid='.$sid.'">finalize article</a>)';
 	       }
 
                print '
