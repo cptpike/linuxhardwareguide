@@ -2695,6 +2695,7 @@ function lhg_pci_component_is_onboard ( $title, $sid, $id, $pciid  ) {
 
         if (is_int(strpos($title,"USB controller [") ) ) $onboardstatus = "no";
         if (is_int(strpos($title,"VGA compatible controller [") ) ) $onboardstatus = "no";
+        if (is_int(strpos($title,"Communication controller") ) ) $onboardstatus = "no";
         if (is_int(strpos($title,"Intel Corporation") ) && is_int(strpos($title,"Graphics Controller") ) ) $onboardstatus = "yes";
         if (is_int(strpos($title,"Intel Corporation") ) && is_int(strpos($title,"High Definition Audio") ) ) $onboardstatus = "yes";
         if (is_int(strpos($title,"Intel Corporation") ) && is_int(strpos($title,"SATA Controller") ) ) $onboardstatus = "yes";
