@@ -1148,6 +1148,8 @@ if (count($unidentified_hw_pci) > 0) {
 
         foreach($unidentified_hw_pci as $a_identified_hw){
 
+                #error_log("Num: ".count($unidentified_hw_pci));
+
         	$skip = 0;
                 #List UN-identified hw components
 		$title = ($a_identified_hw->idstring);
@@ -1179,6 +1181,10 @@ if (count($unidentified_hw_pci) > 0) {
 		if ( ($comment != "") or ($url != "") ) $buttontype = "light";
 		if ( ($comment != "") or ($url != "") ) $buttontext = "Update";
 		if ( ($comment != "") or ($url != "") ) $showme = true;
+
+                # if only some components left this obviously is no mainboard.
+                # Therefore, show everything
+                if (count($unidentified_hw_pci) < 5) { $showme = true; $allshown = true; }
 
                 $hidearray = array();
                 $tr_class="";
@@ -1267,7 +1273,11 @@ if (count($unidentified_hw_pci) > 0) {
 				$(\'.hwdetail\').hide();
 				$(\'.pciid-column\').hide();
 				$(\'.mb-default-hidden\').hide();
-                                $(\'<a href id="toggleButton">Show hidden components</a>\').prependTo(\'#mainboard-show-more\');
+                                ';
+                                // do not show this option if everything is already shown
+                                if ($allshown != true) print '$(\'<a href id="toggleButton">Show hidden components</a>\').prependTo(\'#mainboard-show-more\');';
+
+                                print '
                                 $(\'<a href id="show-more-mb">Show details</a>\').prependTo(\'#details-mb\');
                                 $(\'#hidden-details-mb\').hide();
 
