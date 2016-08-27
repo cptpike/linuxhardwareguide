@@ -1171,7 +1171,7 @@ if (count($unidentified_hw_pci) > 0) {
                 global $txt_no;
 
                 if ($is_onboard == "yes")  {  $default_y = 'checked'; $default_n = '';	}
-                if ($is_onboard == "no") {    $default_y = ''; $default_n = 'checked';  }
+                if ($is_onboard == "no") {    $default_y = ''; $default_n = 'checked'; $showme = true; }
 		#if ($is_onboard == "yes")  { array_push( $pci_obl , $pciid); }
                 #print "IO: $is_onboard - OBL: ".var_dump($pci_obl)." - PCIID: $pciid<br>";
 
