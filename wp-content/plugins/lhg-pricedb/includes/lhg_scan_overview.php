@@ -390,7 +390,7 @@ function lhg_db_update_scaninfo (  ) {
                 if ($key == "filter_show_feedback") update_user_meta( $userid, 'lhg_scan_show_feedback', true );
 
                 if ($rawkey == "hwscan_acomment") lhg_db_update_acomment($sid,$value);
-                if ($rawkey == "status") lhg_db_update_status($sid,$value);
+                if ($rawkey == "status") lhg_db_update_status($sid,$value,$userid);
 
 	}
 
@@ -410,25 +410,42 @@ function lhg_db_update_acomment ( $sid , $value  ) {
 
 }
 
-function lhg_db_update_status ( $sid , $value  ) {
+function lhg_db_update_status ( $sid , $value , $uid ) {
 
 	global $lhg_price_db;
+        error_log("change status: $sid $value $uid");
+
+        # retrieve old status
+        $sql = "SELECT status FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
+    	$old_status = $lhg_price_db->get_var($sql);
+        if ($old_status == "") $old_status = "new";
+
+        # write status changelog: status was change at ... from ... to ... by ...
+        $comment_text = $old_status." -> ".$value;
+        $sql = $lhg_price_db->prepare("INSERT INTO `lhgscan_comments` (comment_text, comment_date, scanid, user, commenttype)
+                       VALUES  (%s, %s, %s, %s, %s)", $comment_text, time(), $sid, $uid, "status_change");
+    	$id = $lhg_price_db->query($sql);
+
+        # store new status
         $sql = "SELECT id FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
     	$id = $lhg_price_db->get_var($sql);
-
-        #print "UPDATE id: $id -> $value <br>";
-
         $sql = "UPDATE `lhgscansessions` SET status = \"".$value."\" WHERE id = \"".$id."\"";
     	$result = $lhg_price_db->get_var($sql);
 
-        if ($value == "complete") {
+        if ( ($value == "complete") && ( $old_value != "complete") ) {
                 #get mail address
+
+                error_log("ToDo: get email from uid");
 
                 $myquery = $lhg_price_db->prepare("SELECT email FROM `lhgscansessions` WHERE sid = %s ", $sid);
 		$email = $lhg_price_db->get_var($myquery);
+
+                if ($email == "") $email = lhg_get_hwscanmail($sid);
+
                 #send mail notification to user
 		if ($email != "") {
 		        $subject = "LHG Hardware Scan - Finished";
+                        $headers[]   = 'Reply-To: Linux Hardware Guide <webmaster@linux-hardware-guide.com>';
         		$message = 'Hello,
 
 Thank you for uploading your hardware data to the Linux-Hardware-Guide.
@@ -438,13 +455,14 @@ http://www.linux-hardware-guide.com/hardware-profile/scan-'.$sid.'
 Please visit this page and rate the Linux compatibility of your hardware components and also leave
 comments (e.g., if additional steps are needed for the hardware or if everything works out of the box).
 
-In case of further questions do not hesitate to contact us.
+In case of further questions do not hesitate to contact us under webmaster@linux-hardware-guide.com.
 
 Best regards,
 Linux-Hardware-Guide Team
 ';
 
-        		wp_mail( $email, $subject, $message );
+                        error_log("Complete mail: $email");
+        		wp_mail( $email, $subject, $message, $headers );
 		}
 	}
 }
