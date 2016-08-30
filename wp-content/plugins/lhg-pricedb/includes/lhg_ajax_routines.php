@@ -45,7 +45,38 @@ add_action('wp_ajax_nopriv_lhg_translate_slug_ajax', 'lhg_translate_slug_ajax');
 add_action('wp_ajax_lhg_update_teaser_image_ajax', 'lhg_update_teaser_image_ajax');
 add_action('wp_ajax_nopriv_lhg_update_teaser_image_ajax', 'lhg_update_teaser_image_ajax');
 
+# change status of scan (new, complete, ongoing, ...)
+add_action('wp_ajax_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
+add_action('wp_ajax_nopriv_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
+
 # AJAX funcitonalities
+
+# update the scan status of a hardware scan
+function lhg_update_scan_status_ajax() {
+        global $lhg_price_db;
+
+	$sid   	 = $_REQUEST['session'] ;
+	$status	 = $_REQUEST['status'] ;
+	$uid	 = $_REQUEST['uid'] ;
+
+        #error_log("SID: $sid - Stat: $status");
+
+        # execute standard actions for status change:
+        lhg_db_update_status( $sid, $status, $uid );
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'status' => $status,
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
 
 # update a teaser image based on url and postid
 function lhg_update_teaser_image_ajax() {
@@ -448,6 +479,7 @@ function lhg_scan_update_ajax() {
         lhg_update_categories_by_string($pid, $product_title, $mode);
         lhg_update_title_by_string($pid, $product_title, $mode);
         if ($mode == "drive") lhg_correct_drive_name($pid, $session);
+
 
         # extract new Properties and new title coming from ASIN data
         $newtitle = get_the_title( $pid );
