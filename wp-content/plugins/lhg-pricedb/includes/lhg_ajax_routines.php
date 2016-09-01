@@ -49,7 +49,46 @@ add_action('wp_ajax_nopriv_lhg_update_teaser_image_ajax', 'lhg_update_teaser_ima
 add_action('wp_ajax_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
 add_action('wp_ajax_nopriv_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
 
+# create a new mainboard / laptop article
+add_action('wp_ajax_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
+add_action('wp_ajax_nopriv_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
+
 # AJAX funcitonalities
+
+# create a new mainboard article. Return the post id.
+# used by scan page to create article if MB was wrongly identified
+function lhg_create_mainboard_post_ajax() {
+        global $lhg_price_db;
+
+        require_once( WP_PLUGIN_DIR . '/lhg-hardware-profile-manager/templates/scan.php');
+
+	$sid   	 = $_REQUEST['session'] ;
+	$title   = $_REQUEST['title'] ;
+
+        #error_log("SID: $sid - Title: $title");
+
+        # execute standard actions for status change:
+        #lhg_db_update_status( $sid, $status, $uid );
+
+
+
+        $postid = lhg_create_mainboard_article($title, $sid, "");
+        $newurl = "/wp-admin/post.php?post=".$postid."&action=edit&scansid=".$sid;
+        #error_log("Created article: $postid");
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'postid' => $postid,
+                        'newurl' => $newurl
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
 
 # update the scan status of a hardware scan
 function lhg_update_scan_status_ajax() {
