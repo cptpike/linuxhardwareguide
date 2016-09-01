@@ -1646,7 +1646,7 @@ function lhg_create_new_DB_entry_post ( $postid, $mode , $mode_data ) {
 
   if ($mode == "drive") {
         $idstring = $mode_data;
-
+        #error_log("update idstring to $mode_data");
         $sql = "UPDATE lhgtransverse_posts SET `idstring` = \"%s\" WHERE postid_com = %s";
 	$safe_sql = $lhg_price_db->prepare($sql, $idstring, $postid);
 	$result = $lhg_price_db->query($safe_sql);
