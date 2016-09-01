@@ -1238,6 +1238,69 @@ if (count($unidentified_hw_pci) > 0) {
         }
 
 
+        # if we have identified the wrong mainboard we need a way to create a new MB article:
+        if ($mainboard_found == 1)
+        if ( ($editmode == 1) && (count($unidentified_hw_pci) > 0) ) {
+
+                $myquery = $lhg_price_db->prepare("SELECT dmi FROM `lhgscansessions` WHERE sid = %s", $sid);
+		#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
+		$dmi = $lhg_price_db->get_var($myquery);
+                list ( $null, $dmi) = explode(" DMI:",$dmi);
+                if ($dmi == "") $dmi = "(nothing found)";
+                print "DMI Info: ".$dmi;
+                print '<br><a href="" id="create-mainboard"> Create new mainboard article</a>';
+
+print           '<script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+                                $("#create-mainboard").click(function() {
+                                	var indicator_html = \'<img class="scan-load-button" id="button-load-new-mb" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+                                	$(this).after(indicator_html);
+
+                                    //var id = $(this).attr(\'id\').substring(8);
+                                    //$("#pci-feedback-"+id).show("slow");
+                                    //$("#updatearea-"+id).show();
+				    //$("#scan-comments-"+id).show();
+
+                                    //prepare Ajax data:
+                                    var session = "'.$sid.'";
+                                    var title = "'.trim($dmi).'";
+	                            var data ={
+                                        action: \'lhg_create_mainboard_post_ajax\',
+                                        session: session,
+                                        title: title
+                                    };
+
+                                    $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                       //currently no visual feedback
+                                        var postid     = $(response).find("supplemental postid").text();
+
+	                                $("#button-load-new-mb").hide();
+                	                //$("#create-mainboard").after(" DoneA"+postid);
+                                        var newurl = "/wp-admin/post.php?post=" + postid + "&action=edit&scansid=" + session;
+        	                        $("#create-mainboard").after("(<a id=\"created-mb-article\" href=\"" + newurl + "\">finalize article</a>)");
+                                        $("#create-mainboard").hide();
+                                    });
+                                    //$(this).replaceWith("Test");
+
+	                            //prevent default behavior
+        	                    return false;
+
+                                });
+
+
+	                        //prevent default behavior
+        	                return false;
+
+        	});
+
+                /*]]> */
+                </script>';
+	} // end create MB article
+
+
         print "<table id='mainboard-scan-table'>
                  <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>".$txt_subscr_foundhwid."</td><td class='pciid-column'>PCI ID</td></tr>";
 
@@ -1357,9 +1420,10 @@ if (count($unidentified_hw_pci) > 0) {
         print "</table>";
         print '<div id="mainboard-show-more"></div>';
 
-	if (current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-        	   print '&nbsp;&nbsp;&nbsp;(<a href id="update-pcilist">Update PCI lists</a>)';
-        }
+	# not needed any longer due to pci backend selector
+        #if (current_user_can('publish_posts') && ($show_public_profile != 1) ) {
+        #	   print '&nbsp;&nbsp;&nbsp;(<a href id="update-pcilist">Update PCI lists</a>)';
+        #}
 
         if ($show_public_profile != 1)
 	echo '
