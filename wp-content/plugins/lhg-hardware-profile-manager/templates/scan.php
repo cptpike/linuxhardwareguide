@@ -1388,7 +1388,7 @@ print           '<script type="text/javascript">
 			       <div id="updatearea-'.$id.'">
                                 Please rate hardware: '.$article_created.'
        				Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:<br>
-       				<textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea><br>
+       				<textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.lhg_clean_scan_comment($comment).'</textarea><br>
        				If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
        				<input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
        				<input id="postid-'.$id.'" name="postid-'.$id.'" type="hidden" value="'.$newPostID.'">
@@ -2209,7 +2209,7 @@ if ($show_public_profile != 1){
 	print $txt_subscr_help;
 
 	print '<br>
-       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.$comment.'</textarea>';
+       <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.lhg_clean_scan_comment($comment).'</textarea>';
 
        if ($editmode == 1) {
         #processingoptions for user comments
@@ -2835,6 +2835,7 @@ function lhg_feedback_area ( $sid  ) {
                         if ($uname == "") $uname = "Anonymous";
                         if ($uname == "admin") $uname = "LHG-Team";
                         $comment = $result->comment_text;
+                        $comment = lhg_clean_scan_comment($comment);
                         $date = date("jS \of F Y h:i:s A",$result->comment_date);
 
 
@@ -2871,7 +2872,7 @@ function lhg_feedback_area ( $sid  ) {
                         	print '  <div class="scan-bubble-left">';
 
 			        print '<div class="bubbletext">';
-        		        print '   <span class="scancomment-intro-text">'."<b>".$uname."</b> wrote at ".$date.' the following comment:</span><br> '.$result->comment_text;
+        		        print '   <span class="scancomment-intro-text">'."<b>".$uname."</b> wrote at ".$date.' the following comment:</span><br> '.$comment;
 	                        print "</div>"; // scancomment-outer
 
                                 print "  </div>"; //bubbletext
@@ -2884,7 +2885,7 @@ function lhg_feedback_area ( $sid  ) {
                                 print '<div class="scancomment-bubblecontainer">';
         	        	print '<div class="scan-bubble-right">';
 				print '  <div class="bubbletext">';
-        		        print '   <span class="scancomment-intro-text">'."<b>".$uname."</b> wrote at ".$date.' the following comment:</span><br> '.$result->comment_text;
+        		        print '   <span class="scancomment-intro-text">'."<b>".$uname."</b> wrote at ".$date.' the following comment:</span><br> '.$comment;
 	        	        print "  </div>"; // scancomment-outer
 	                        print "</div>"; //bubbletext
         	                print "</div>"; //bubble (left/right)
@@ -3459,5 +3460,21 @@ print '
         # no need to let the visitor wait
         return;
 }
+
+
+# The scan comments stored in the LHG DB are formatted for safety reasons. Therefore, some reverse formatting
+# is needed before insterting them in the web page
+function lhg_clean_scan_comment ( $comment ) {
+
+#        $modified_comment = str_replace('\"',"&quot;",$comment);
+#        $modified_comment = str_replace("\'","&#39;",$modified_comment);
+
+        $modified_comment = str_replace('\"','"',$comment);
+        $modified_comment = str_replace("\'","'",$modified_comment);
+
+        return $modified_comment;
+
+}
+
 
 ?>
