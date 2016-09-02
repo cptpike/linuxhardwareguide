@@ -59,6 +59,13 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_it = "un flash drive USB";
 		$genus_de = "male";
 
+	}elseif ( (strpos($title_orig,"Flash Drive") > 0 )  ) {
+	        $drive_type = "flash drive";
+        	$drive_type_de = "ein Memorystick";
+        	$drive_type_fr = "un lecteur flash";
+        	$drive_type_es = "una unidad flash";
+        	$drive_type_it = "un flash drive";
+		$genus_de = "male";
 	}
 
         if (strpos($title_orig,"SSD,") > 0 ) {
