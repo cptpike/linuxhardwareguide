@@ -412,8 +412,10 @@ function lhg_db_update_acomment ( $sid , $value  ) {
 
 function lhg_db_update_status ( $sid , $value , $uid ) {
 
+        //if initiated by ajax, we need some functions from scan.php
+        require_once( WP_PLUGIN_DIR . '/lhg-hardware-profile-manager/templates/scan.php' );
+
 	global $lhg_price_db;
-        error_log("change status: $sid $value $uid");
 
         # retrieve old status
         $sql = "SELECT status FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
@@ -434,8 +436,6 @@ function lhg_db_update_status ( $sid , $value , $uid ) {
 
         if ( ($value == "complete") && ( $old_value != "complete") ) {
                 #get mail address
-
-                error_log("ToDo: get email from uid");
 
                 $myquery = $lhg_price_db->prepare("SELECT email FROM `lhgscansessions` WHERE sid = %s ", $sid);
 		$email = $lhg_price_db->get_var($myquery);
