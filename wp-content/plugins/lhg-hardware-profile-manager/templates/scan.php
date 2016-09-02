@@ -3038,6 +3038,8 @@ function lhg_status_text( $status ) {
 		$status_text = '<span class="scanstatus-text-ongoing">ongoing</span>';
 	}elseif ( $status == "new") {
 		$status_text = '<span class="scanstatus-text-new">new</span>';
+	}elseif ( $status == "feedback") {
+		$status_text = '<span class="scanstatus-text-feedback">feedback needed</span>';
 	}else {
                 $status_text = $status;
         }
