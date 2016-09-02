@@ -331,6 +331,7 @@ Original Version: 2.0.2
 
 	//Single Product API Call - Returns One Product Data
 	function getSingleAmazonProduct($asin='',$extratext='',$extrabutton=0){
+
 		global $public_key, $private_key, $aws_partner_id,$aws_partner_locale,$amazonhiddenmsg,$amazonerrormsg,$apippopennewwindow,$apippnewwindowhtml;
 		global $appip_text_lgimage;
 		global $appip_text_listprice; 
@@ -406,6 +407,7 @@ Original Version: 2.0.2
 
                 //print "<br>Data0: $data[0] <br>";
                 //print "Data1: $data[1] <br>";
+
 
                 #print "Af: $asin<br>";
 		if ($asin!=''){
@@ -487,6 +489,7 @@ Original Version: 2.0.2
 			//	if($extratext!=''){return $hiddenerrors.$extratext;}
 			//	return $hiddenerrors;
 			}else{
+
 
                                 //global $run;
                                 //$run += 1;
@@ -1393,6 +1396,7 @@ function awsImageGrabber($imgurl, $class=""){
 
 
   function aws_prodinpost_filter_content($text){
+
                 //echo "Hier3";
 	  	global $post,$apipphookcontent;
 	  	$ActiveProdPostAWS = get_post_meta($post->ID,'amazon-product-isactive',true);
@@ -1400,6 +1404,12 @@ function awsImageGrabber($imgurl, $class=""){
 	  	$AWSPostLoc = get_post_meta($post->ID,'amazon-product-content-location',true);
 	  	$apippContentHookOverride = get_post_meta($post->ID,'amazon-product-content-hook-override',true);
 	  	$apippShowSingularonly = get_post_meta($post->ID,'amazon-product-singular-only',true);
+
+                // If no AWS ID is available replace by empty one
+                // Otherwise, rating etc. are not shown and page design is broken
+                if ($singleProdPostAWS == "") $singleProdPostAWS = "0000000x";
+
+
 		//replace short tag here
 		   if ( stristr( $text, '[AMAZONPRODUCT' )) {
 				//$search = "@(?:<p>)*\s*\[AMAZONPRODUCT\s*=\s*(\w+|^\+|,)\]\s*(?:</p>)*@i"; //need to change to allow commas in regex
@@ -2027,6 +2037,7 @@ function lhg_aws_get_price($awsid,$region) {
 
 
         $price = file_get_contents('http://'.$lhg_price_db_ip.'/lhgupdatedb.php?mode=getprice&aid='.$awsid.'&region='.$region);
+        #print ('<pre>http://'.$lhg_price_db_ip.'/lhgupdatedb.php?mode=getprice&aid='.$awsid.'&region='.$region."</pre>");
 
         return $price;
 }
