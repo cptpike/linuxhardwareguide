@@ -1407,7 +1407,7 @@ function awsImageGrabber($imgurl, $class=""){
 
                 // If no AWS ID is available replace by empty one
                 // Otherwise, rating etc. are not shown and page design is broken
-                if ($singleProdPostAWS == "") $singleProdPostAWS = "0000000x";
+                if ( ($singleProdPostAWS == "") && is_single() ) $singleProdPostAWS = "0000000x";
 
 
 		//replace short tag here
