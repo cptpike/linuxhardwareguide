@@ -2873,6 +2873,11 @@ tr#quarterly-points-header-row {
 	color: red;
 }
 
+.scanstatus-text-feedback {
+	font-weight: bold;
+	color: blue;
+}
+
 .scanstatus-text-ongoing {
 	font-weight: bold;
 	color: orange;
