@@ -436,11 +436,12 @@ echo '
        			$results = $lhg_price_db->get_results($myquery);
 
 			echo '<p>SID: '.$sid.'<br>';
-                        echo '  <input href="#" id="create-fingerprint" class="button-primary create-fingerprint" value="Create fingerprint"></input>
+                        echo '  <input href="#" id="create-fingerprint" class="button-primary create-fingerprint" value="Create fingerprint" />
                               </p>';
 
                         echo '
-                        
+
+                        <a href="?" id="select_all_pci_yes">all yes</a><br><a href="?" id="select_all_pci_no">all no</a>
                         <table class="table-pci-selector"><tr>
                                 <td class="pci-selector-1">select</td>
                                 <td class="pci-selector-2">Description</td>
@@ -639,6 +640,24 @@ echo '
                                         //tinyMCE.triggerSave();
                                         tb_remove();
 
+
+                                });
+
+                                // all PCI components to onboard (i.e. yes)
+                                $("#select_all_pci_yes").click(function() {
+	                                $("[id^=radio-y-]").prop("checked",true);
+	                                $("[id^=radio-n-]").prop("checked",false);
+                                        //prevent default behavior
+                                	return false;
+
+                                });
+
+                                // all PCI components to not onboard (i.e. no)
+                                $("#select_all_pci_no").click(function() {
+	                                $("[id^=radio-y-]").prop("checked",false);
+	                                $("[id^=radio-n-]").prop("checked",true);
+                                        //prevent default behavior
+                                	return false;
 
                                 });
 
