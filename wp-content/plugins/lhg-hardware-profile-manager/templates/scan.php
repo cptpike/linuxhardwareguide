@@ -153,12 +153,12 @@ $myquery = $lhg_price_db->prepare("SELECT id, postid FROM `lhghwscans` WHERE sid
 $identified_hw = $lhg_price_db->get_results($myquery);
 #var_dump( $identified_hw );
 
-$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype FROM `lhghwscans` WHERE sid = %s AND postid = 0 AND pciid = ''", $sid);
+$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype , product_name FROM `lhghwscans` WHERE sid = %s AND postid = 0 AND pciid = ''", $sid);
 #$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 $unidentified_hw = $lhg_price_db->get_results($myquery);
 #var_dump( $unidentified_hw );
 
-$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype FROM `lhghwscans` WHERE sid = %s AND postid = 0 AND pciid <> ''", $sid);
+$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype , product_name FROM `lhghwscans` WHERE sid = %s AND postid = 0 AND pciid <> ''", $sid);
 #$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 $unidentified_hw_pci = $lhg_price_db->get_results($myquery);
 #var_dump( $unidentified_hw_pci );
@@ -166,7 +166,7 @@ $unidentified_hw_pci = $lhg_price_db->get_results($myquery);
 
 
 $scantype = "multiple_results";
-$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype FROM `lhghwscans` WHERE sid = %s AND scantype  = %s GROUP BY postid", $sid, $scantype);
+$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype , product_name FROM `lhghwscans` WHERE sid = %s AND scantype  = %s GROUP BY postid", $sid, $scantype);
 #$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 $multi_identified_hw = $lhg_price_db->get_results($myquery);
 #var_dump( $multi_identified_hw );
@@ -2026,6 +2026,7 @@ print '
                         $skip = 0;
                         #List UN-identified hw components
 			$title = ($a_identified_hw->idstring);
+			$full_title = ($a_identified_hw->product_name);
 			$usbid = ($a_identified_hw->usbid);
 			$pciid = ($a_identified_hw->pciid);
                         $art_image=get_the_post_thumbnail( $a_identified_hw->postid, array(55,55) );
@@ -2188,6 +2189,9 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
 
 		#$title = "Scantype: $scantype".$title;
                 print '<div class="subscribe-hwtext">';
+
+                # use full product name if available
+                if ($full_title != "") $title=$full_title;
                 print '   <div class="subscribe-hwtext-span"><b>'.$title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
 
                 if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
