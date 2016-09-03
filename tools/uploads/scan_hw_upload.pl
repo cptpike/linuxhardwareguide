@@ -108,6 +108,7 @@ check_unifying_receivers();
 check_drives();
 check_cpu();
 check_pci_devices();
+store_pci_subsystem_information();
 
 
 #print "Found devices: $found_devices";
@@ -292,9 +293,9 @@ sub check_mainboard {
                 $pciid   = grab_pciid($_);
                 $pciname = grab_pciname($_);
                 
+                
                 if  ($pciid != "")    {
                     storescan_mainboard_found($sid, $mindex, $pciid, $pciname);
-
                 }
                 
             }
@@ -1087,6 +1088,8 @@ sub check_pci_devices {
             $pciid   = grab_pciid($_);
             $pciname = grab_pciname($_);
             
+
+            
             if ($pciid ne "") {
                 #print "ID: $pciid - name: $pciname \n";
                 # also ignore empty ids and duplicates
@@ -1098,7 +1101,6 @@ sub check_pci_devices {
         
         return;
     }
-        
     
     # We have no laptop
     $i=0;
@@ -1109,6 +1111,7 @@ sub check_pci_devices {
         
         $pciid   = grab_pciid($_);
         $pciname = grab_pciname($_);
+        
         
         undef @postids;
         
@@ -1168,6 +1171,51 @@ sub check_pci_devices {
     }
 }
 
+
+#
+#
+### Store PCI Subsystem information 
+#
+#
+
+sub store_pci_subsystem_information {
+    
+    print "-----> Store PCI subsystem information \n";
+    
+    $i=0;
+    open(FILE2, "<", "/var/www/uploads/".$sid."/lspci.txt");
+    while ( <FILE2> ) {
+        #print "Line: $_";
+        
+        $found_pciid   = grab_pciid($_);
+        if ($found_pciid ne "") {
+            if ($i == 0) {
+                # running the first time. We can not have subsystem information right now.
+                $found_pciid_old = $found_pciid;
+            }else{
+                #print "Subsystem $subsystem_pciid \nSubsystem text: $subsystem_text ----------- \n";
+                # store data in DB
+                storescan_subsystem_data($sid, $found_pciid_old, $subsystem_pciid, $subsystem_text);
+                $found_pciid_old = $found_pciid;
+            }
+                
+            # new segment with pciid
+            $found_pciname = grab_pciname($_);
+            $subsystem_text = "";
+            $subsystem_pciid = "";
+            #print "PCIID: $found_pciid \n";
+            #print "PCI text: $found_pciname";
+            $i++;
+        }else{ 
+            #no pciid line. Add to subsystem text
+            $pciid_sub_tmp = grab_pciid_sub($_);
+            if ($pciid_sub_tmp ne "")  { $subsystem_pciid = $pciid_sub_tmp; }
+            #subsystem_text .= substr($_,1); # remove leading tab
+            $subsystem_text .= $_; # do not cut, used for later processing
+        }
+    }
+}
+
 sub grab_pciid {
     $line = shift;
     
@@ -1183,14 +1231,47 @@ sub grab_pciid {
     
 }
 
+# grab the subsystem ID from lspci output. Return ID
+sub grab_pciid_sub {
+    $line = shift;
+    
+    #print "-------\nLine: $line ";
+
+    if ( ($line =~ m/\w\w\w\w:\w\w\w\w/) and ($line =~ m/Subsystem/) )  {
+        $line =~ m/\w\w\w\w:\w\w\w\w/;
+        $pciid = substr($line,$-[0],9);
+        #print "Subsystem PCIID: $pciid \n";
+        return $pciid;
+    } else {
+        #print "   no match $line \n";
+    }
+    
+}
+
 sub grab_pciname {
     $line = shift;
     
     #print "-------\nLine: $line ";
 
     if ( ($line =~ m/\w\w\w\w:\w\w\w\w/) and !($line =~ m/Subsystem/) ) {
-        $pciname = substr($line,8);
+        #$pciname = substr($line,8);
+        $pciname = substr($line,0);
         #print "PCIname: $pciname \n";
+        return $pciname;
+    } else {
+        #print "   no match \n";
+    }
+}
+
+# grab all text of "lspci -nnk" corresponding to pciid but not in the pciid line
+sub grab_pciname_sub {
+    $line = shift;
+    
+    #print "-------\nLine: $line ";
+
+    if ( ($line =~ m/\w\w\w\w:\w\w\w\w/) and ($line =~ m/Subsystem/) ) {
+        $pciname = substr($line,8);
+        #print "Subsystem PCIname: $pciname \n";
         return $pciname;
     } else {
         #print "   no match \n";
@@ -1386,6 +1467,34 @@ sub storescan_pci_notfound {
     }else{
         # nothing
     }
+}
+
+sub storescan_subsystem_data {
+    my $sid   = shift;
+    my $pciid   = shift;
+    my $subsystem_id = shift;
+    my $subsystem_text = shift;
+    
+    #ToDo: Sanity checks necessary!!
+    
+    #if ($rescan == 0) {
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    
+    # store subsystem pciid
+    $myquery = "UPDATE `lhghwscans` SET pciid_subsystem = ? WHERE sid = ? AND pciid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $subsystem_id, $sid, $pciid);
+    
+    # store subsystem text + driver
+    $myquery = "UPDATE `lhghwscans` SET idstring_subsystem = ? WHERE sid = ? AND pciid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $subsystem_text, $sid, $pciid);
+
+    
+    #}else{
+        ## nothing
+        #}   
 }
 
 sub storescan_pci_found {
@@ -1604,13 +1713,80 @@ sub check_drives {
             }
             
             #print "All: ".join(", ", @known_drivenames);
-
+            
+            check_drive_fullname($sid, $drivename);
             
             $i++;
         #print "\n";
         }
     }
 }
+
+
+# check if the drive's name is a short version of its full name
+# (ANSI line name is shortened, if too long)
+sub check_drive_fullname {
+    my $sid = shift;
+    my $drivename = shift;
+    
+    ($null, $drivename_tmp) = split(/ATA  /, $drivename);
+    #($manuf, $driveID, $rest) = split(/ /, chop($drivename_tmp));
+    #$sdrivename = $manuf." ".$driveID;
+    $sdrivename = $drivename_tmp;
+    # trim the name
+    $sdrivename =~ s/^\s+|\s+$//g;
+    
+    
+    print "       Full name for";
+    #print "Line: $drivename";
+    print " $sdrivename";
+    
+    open(FILE, "<", "/var/www/uploads/".$sid."/dmesg.txt");
+    $i=0;
+    
+    $fullname="";
+    $name_rest="";
+    while ( ( $_ = <FILE> ) ) {
+        if ($_ =~ m/$sdrivename/) {
+            $start = index($_,$sdrivename);
+            $name_to_end = substr($_, $start);
+            #print "Name: $name_to_end\n";
+            $end = substr($name_to_end, length($sdrivename));
+            ($name_rest, $other_rest) = split(/ /, $end);
+            
+            #check if "," at the end
+            if ( substr($name_rest,-1) eq ",") {
+                $name_rest = substr($name_rest,0,-1);
+            }
+            $name_rest =~ s/\n//g;
+            
+            if ($name_rest ne "") {
+                #print "AA- $name_rest -AA";
+                $fullname = $sdrivename . $name_rest;
+            }
+            
+        }
+    }
+    
+    # if full name > standard name -> store in DB
+    if ( length($fullname) > length($sdrivename) ) {
+        # get id of DB entry
+        $myquery = "SELECT id FROM lhghwscans WHERE idstring like ? AND sid = ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute("%".$drivename."%", $sid);
+        ($id) = $sth_glob->fetchrow_array();
+        
+        if ($id ne "") {
+            $myquery = "UPDATE `lhghwscans` SET product_name = ? WHERE id = ?";
+            $sth_glob = $lhg_db->prepare($myquery);
+            $sth_glob->execute($fullname, $id);
+            print " -> $fullname\n";
+        }else{
+            print "ERROR: Could not find corresponding drive entry in DB\n";
+        }
+    }
+}
+
 
 sub checkdb_drive {
     my $drivename = shift;
@@ -2024,10 +2200,15 @@ sub get_mainboard_name {
     }
     
     #print "DMI: $dmiline\n";
+    
+    # store DMI line in DB
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "UPDATE `lhgscansessions` SET dmi = ? WHERE sid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($dmiline, $sid);
 
     
     if ($dmiline eq "") { $dmiline = "unkown name"; }
-    
     return $dmiline;
 
 }
