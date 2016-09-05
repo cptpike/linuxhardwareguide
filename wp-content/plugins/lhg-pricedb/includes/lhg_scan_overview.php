@@ -421,6 +421,7 @@ function lhg_db_update_status ( $sid , $value , $uid ) {
         $sql = "SELECT status FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
     	$old_status = $lhg_price_db->get_var($sql);
         if ($old_status == "") $old_status = "new";
+        if ($old_status == $value) return; # nothing to do! Do not waste time with id transformations
 
         # write status changelog: status was change at ... from ... to ... by ...
         $comment_text = $old_status." -> ".$value;
