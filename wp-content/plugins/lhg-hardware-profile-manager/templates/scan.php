@@ -2854,14 +2854,17 @@ function lhg_feedback_area ( $sid  ) {
                                 $status_new = lhg_status_text($status_change[1]);
 
 
-	                        print '<div class="scancomment-userinfo-left">&nbsp;</div>';
+                                if ($status_old != $status_new) {
+                                # needed for some old DB entries
+                                # show output otherwise
+                                	print '<div class="scancomment-userinfo-left">&nbsp;</div>';
 
-                                print '<div class="scancomment-bubblecontainer">';
-        		        print '<div class="scancomment-statuschange">'."Scan status was changed at ".$date." by <b>".$uname."</b> from ".$status_old.' to '.$status_new."</div>";
-	                        print "</div>"; // scancomment-outer
+	                                print '<div class="scancomment-bubblecontainer">';
+        			        print '<div class="scancomment-statuschange">'."Scan status was changed at ".$date." by <b>".$uname."</b> from ".$status_old.' to '.$status_new."</div>";
+	        	                print "</div>"; // scancomment-outer
 
-                                print '<div class="scancomment-userinfo-right">&nbsp;<!-- placeholder --></div>';
-
+                        	        print '<div class="scancomment-userinfo-right">&nbsp;<!-- placeholder --></div>';
+                      		}
 
                       } else {
 
