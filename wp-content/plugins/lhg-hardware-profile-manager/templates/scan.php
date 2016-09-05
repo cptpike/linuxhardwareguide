@@ -2830,6 +2830,15 @@ function lhg_feedback_area ( $sid  ) {
 
                 foreach ( $results as $result ) {
 
+                        # do not show anything if this is a identical status change, i.e. change from x to x
+                        if ( $result->commenttype == "status_change") {
+                              # this is not a real comment but a status change
+                                $status_change = explode(" -> ",$result->comment_text);
+                                $status_old = lhg_status_text($status_change[0]);
+                                $status_new = lhg_status_text($status_change[1]);
+                                if ($status_new == $status_old) break;
+			}
+
                         # get user infos
                         $uid = $result->user;
                         $userinfo = get_userdata($uid);
