@@ -2836,8 +2836,12 @@ function lhg_feedback_area ( $sid  ) {
                                 $status_change = explode(" -> ",$result->comment_text);
                                 $status_old = lhg_status_text($status_change[0]);
                                 $status_new = lhg_status_text($status_change[1]);
-                                if ($status_new == $status_old) break;
+                                // if ($status_new == $status_old) break;
 			}
+
+                    if ( ( $result->commenttype == "status_change") && ($status_new == $status_old) ) {
+                        #do not show anything
+                    }else{
 
                         # get user infos
                         $uid = $result->user;
@@ -2919,6 +2923,7 @@ function lhg_feedback_area ( $sid  ) {
                         print '</div>';
                         print '<br clear="all">';
 		}
+	      }
 	}
 
 
