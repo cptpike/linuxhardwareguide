@@ -1804,6 +1804,7 @@ function lhg_clean_drive_title ( $title ) {
   $title = str_replace("ASUS ","Asus ",$title);
   $title = str_replace("SAMSUNG ","Samsung ",$title);
   $title = str_replace("TSSTcorp ","Toshiba / Samsung ",$title);
+  $title = str_replace("INTENSO ","Intenso ",$title);
 
   # HTS Hitachi Drive but no Hitachi name
   if ( preg_match('/HTS[0-9][0-9]/',$title) && (!preg_match('/Hitachi/i',$title)) ) $title = "Hitachi ".$title;

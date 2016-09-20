@@ -125,13 +125,29 @@ function lhg_mainboard_intro_shortcode($attr) {
 	$mainboard_name=trim($s[0]);
 	$mainboard_properties=trim($s[1]);
 
-        # Mainboard type
-        if ( strpos($mainboard_properties,"Laptop") > 0 ) $type = "laptop";
-        if ( strpos($mainboard_properties,"Desktop") > 0 ) $type = "desktop PC";
-        if ( $type != "" ) $typetext = "is a $type and ";
+        # Mainboard /Laptop type
+        if ( strpos(" ".$mainboard_properties,"Laptop") > 0 ) $type = "Laptop";
+        if ( strpos(" ".$mainboard_properties,"Notebook") > 0 ) $type = "Laptop";
+        if ( strpos(" ".$mainboard_properties,"Netbook") > 0 ) $type = "Netbook";
+        if ( strpos(" ".$mainboard_properties,"Ultrabook") > 0 ) $type = "Ultrabook";
+
+        # Laptop screen size
+        if (preg_match("/([0-9][0-9].[0-9] Inch|[0-9][0-9].[0-9]Inch|[0-9][0-9] Inch|[0-9][0-9]Inch)/i",$mainboard_properties,$match) == 1 ) {
+                $inch = strtolower($match[0]);
+	}
+
+        if ( strpos(" ".$mainboard_properties," ATX") > 0 ) $mb_type = "ATX";
+        if ( strpos(" ".$mainboard_properties,"Mini ATX") > 0 ) $mb_type = "mini ATX";
+        if ( strpos(" ".$mainboard_properties,"Mini-ATX") > 0 ) $mb_type = "mini ATX";
+        if ($mb_type != "") $type = $my_type." ".$type;
+
+
+        if ( strpos($mainboard_properties,"Desktop") > 0 ) $type = "Desktop PC";
+        if ( ($type != "") ) $typetext = "is a $type and ";
+        if ( ($type != "") && ($inch != "") ) $typetext = "is a $inch $type and ";
+
 
         $output = "<p>The ".$mainboard_name.' '. $typetext.' was successfully tested ';
-
         if ( $attr['dmi_output'] != "")
         	$output .= 'in configuration</p>
 <pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
@@ -139,9 +155,60 @@ function lhg_mainboard_intro_shortcode($attr) {
 </pre>
 <p>';
 
-	$output .= 'under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'
+	$output .= 'under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'.
 </p>
 ';
+
+
+        # German text version
+        if ( ($type != "") && ($inch != "") ) $typetext_de = "ist ein $inch $type ";
+        $typetext_de = str_replace("inch","Zoll",$typetext_de);
+        $output_de = "<p>Das ".$mainboard_name.' '. $typetext_de.' welches erfolgreich ';
+        if ( $attr['dmi_output'] != "")
+        	$output_de .= 'in der Konfiguration</p>
+<pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
+'.$attr['dmi_output'].'
+</pre>
+<p>';
+
+	$output_de .= 'unter '.trim($attr['distribution']).' mit einem Linux-Kernel der Version '.trim($attr['version']).' getestet wurde.
+</p>
+';
+
+
+        # French text version
+
+        if ( ($type == "Laptop") or ($type == "Netbook") or ($type == "Ultrabook") ) {
+                $type_fr = $type;
+                $type_fr = str_replace("Laptop","L'ordinateur portable",$type_fr);
+                $type_fr = str_replace("Netbook","Le Netbook",$type_fr);
+                $type_fr = str_replace("Ultrabook","L'Ultrabook",$type_fr);
+	        $output_fr = "<p>".$type_fr.' '.$mainboard_name.' a &eacute;t&eacute; test&egrave; avec succ&egrave;s ';
+	}elseif( $type == "Mainboard") {
+
+        }else{
+                error_log("lhg_mainboard_intro: Product type unknown");
+	}
+
+        if ( $attr['dmi_output'] != "")
+        	$output_fr .= 'dans la configuration</p>
+<pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
+'.$attr['dmi_output'].'
+</pre>
+<p>';
+
+	$output_fr .= 'avec un noyau Linux de version '.trim($attr['version']).' sous la distribution '.trim($attr['distribution']).'.
+</p>
+';
+
+
+
+
+	if ($lang == "de") $output = $output_de;
+	if ($region == "fr") $output = $output_fr;
+	#if ($region == "es") $output = $output_es;
+	#if ($region == "it") $output = $output_it;
+
         return $output;
 }
 
@@ -207,12 +274,36 @@ The following hardware components are part of the '.$mainboard_name.' and are su
 </p>
 <pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
 
+
+
+	if ($region == "fr") {
+        $output =
+
+'<h3>Présentation du matériel</h3>
+<p>
+Les composants matériels suivants font partie de la '.$mainboard_name.' et sont pris en charge par les pilotes du noyau énumérés:
+</p>
+<pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
+	} elseif ($lang == "de") {
+        $output =
+
+'<h3>Hardware-&Uuml;bersicht</h3>
+<p>
+Die folgenden Hardware-Komponenten sind beim '.$mainboard_name.' verbaut. Diese werden durch die aufgef&uuml;hrten Kernel-Treiber unter Linux unterst&uuml;tzt:
+</p>
+<pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
+	}
+
+
+
 #Strange things happen with out lspci output. Somehow, newlines are replaced by <br> if text is transferred as $content
 foreach ($lspci_lines as $line) {
         $output .= str_replace("<br />","\n",$line);
 }
 
 $output .= '</pre>';
+
+
         return $output;
 }
 
