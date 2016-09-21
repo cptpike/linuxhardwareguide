@@ -573,7 +573,10 @@ echo '
 
                 echo "</table>";
 
+
+if ($editmode == 1)
 if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
+        error_log("UID: $uid, $num_uid");
 	if ($show_public_profile != 1) print "<br>&nbsp;<br>See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
 }
 
