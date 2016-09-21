@@ -27,7 +27,7 @@ add_action('wp_ajax_nopriv_lhg_scan_update_mb_comment_ajax', 'lhg_scan_update_mb
 
 # HW scan results: comment on existing hardware
 add_action('wp_ajax_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
-add_action('wp_ajax_nopriv_lhg_scan_created_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
 
 # HW scan results: append comment to hardware article
 add_action('wp_ajax_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_append_hardware_comment_ajax');
@@ -314,6 +314,8 @@ function lhg_scan_append_hardware_comment_ajax() {
 function lhg_scan_create_hardware_comment_ajax() {
         global $lhg_price_db;
 
+        #error_log("Create comment!");
+
 	$session   = $_REQUEST['session'] ;
 	$comment   = $_REQUEST['comment'] ;
 	$username  = $_REQUEST['username'] ;
@@ -385,8 +387,8 @@ function lhg_scan_create_hardware_comment_ajax() {
                 'data' => 'success',
                 'supplemental' => array(
 	        	'text' => "Debug: $pid - $id - $asin - $comment - SID: $session -- END",
-        	         'return_comment' => "$return_comment",
-        	         'comment_id' => "$comment_id",
+        	         'return_comment' => $return_comment,
+        	         'comment_id' => $comment_id,
                 ),
                 ) );
 
