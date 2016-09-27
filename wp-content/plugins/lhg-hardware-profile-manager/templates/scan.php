@@ -797,6 +797,10 @@ if (count($identified_hw) == 0) {
                         #$category_name2 = "";
                         $category_name2 = $category_ids[1]->cat_name;
 
+                        #get posts tags
+                        $tags = wp_get_post_tags( $PID );
+                        $tag_slugs = wp_get_post_tags( $PID, array('fields' => 'slugs' ));
+
                         # --- Registered users
 		        global $wpdb;
 			$usernum = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->postmeta WHERE meta_key LIKE '\_stcr@\_%' AND post_id = ".$PID);
@@ -897,7 +901,8 @@ if (count($identified_hw) == 0) {
 
                         $output_tmp .= "</tr>\n";
 
-                        # check if laptop or mainboard was identified
+                        # check if laptop or mainboard was identified (but not docking station)
+                        if ( ! in_array( "docking-station", $tag_slugs ) )
                         if ( (strpos($category_name, 'Laptop') !== false) or
                              (strpos($category_name, 'Mainboard') !== false) or
                              (strpos($category_name2, 'Laptop') !== false) or
@@ -912,9 +917,16 @@ if (count($identified_hw) == 0) {
                              (strpos($category_name, 'Mainboard') !== false) or
                              (strpos($category_name2, 'Laptop') !== false) or
                              (strpos($category_name, 'Mainboard') !== false) ) {
-                                $output_mb = $output_tmp;
+
+                             	# check if this is a docking station! (could also be in category "Laptop")
+                                if ( in_array( "docking-station", $tag_slugs ) ) {
+                                        #error_log("Docking Station + Laptop category");
+	                                $output_rest .= $output_tmp;
+	        		}else {
+	                                $output_mb .= $output_tmp;
+				}
                         }elseif (strpos($category_name, 'CPU') !== false) {
-                                $output_cpu = $output_tmp;
+                                $output_cpu .= $output_tmp;
                         }elseif (strpos($category_name, 'Graphic') !== false) {
                                 $output_graphic .= $output_tmp;
                         }elseif (strpos($category_name, 'Sound') !== false) {
