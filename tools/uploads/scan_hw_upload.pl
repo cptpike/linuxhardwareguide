@@ -6,12 +6,14 @@
 # 0.2d - Possibility for user linking by LHG.de user ID added
 # 0.2e - Mainboard recognition improved (using fingerprint of unique PCIIDs)
 #      - Ignore mainboards in PCI device recognition  
+# 0.2f - recognition of long HDD names added
+# 0.2g - Cleaning of USBID orphans due to duplicate IDs
 
 no warnings experimental::smartmatch; 
 
 $sid = $ARGV[0];
 
-print "Version: 0.2e  \n";
+print "Version: 0.2g  \n";
 
 # MYSQL CONFIG VARIABLES
 use DBI;
@@ -254,7 +256,7 @@ sub check_mainboard {
         if ( ($mainboard_found_in_db == 1) && ($laptop_probability > 0.85) ) {
             $mb_recognition = 0;
             $mbfound = 0;
-            print ("Rule 2: Mainboard found but laptop expected\n");
+            print ("       Rule 2: Mainboard found but laptop expected\n");
             return;
         }
         
@@ -507,11 +509,11 @@ sub check_usb_devices {
         
         $usbid   = grab_usbid($_);
         $usbname = grab_usbname($_);
-        #print "\n ----\nUSBID: $usbid \n";
+        #print "\n ----\n       USBID: $usbid \n";
         
         if (!($usbid ~~ @usbid_blacklist)) {
             # not mainboard component
-            #print "USBID-after: $usbid \n";
+            #print "USBID to check: $usbid \n";
             
             #print "New: $usbid - All: ".join(", ", @usb_known)."\n";
 
@@ -537,12 +539,13 @@ sub check_usb_devices {
                     #print "PIDSS: $postid \n";
                 }else{
                     $postid = $postids[0];
+                    #print "       USBID $usbid found in $postid \n";
                 }
 
                 #print "PID: $postid \n";
 
                 if ($postid eq "") {
-                    #print "PID: empty \n";
+                    #print "       PID: empty - $usbid \n";
                     storescan_usb_notfound($sid, $usbid, $usbname);
                 } elsif ($postid == -1) {
                     #print "PID: ignoring \n";
@@ -552,15 +555,25 @@ sub check_usb_devices {
                     storescan_usb_found($sid, $postid, $usbid, $usbname);
                 }
             }else{
-                print "USBID is empty or known ($usbid)! \n";
-                # or usb id already added
+                if ($usbid ne "") { 
+                    print "       USBID duplicate ($usbid) - already in usb_known table ! \n"; 
+                }else {
+                    print "       USBID empty \n"; 
+                }
+                # check if this duplicate has an orphaned ID and clean it
+                clean_usb_duplicates($sid, $mindex, $usbid, $usbname);
+            
             }
 
         }else{
-            print "Mainboard USB component found ($usbid) \n";
+            print "       Mainboard USB component found ($usbid) -> PID: $mindex\n";
             
             # add to Mainboard DB
             storescan_mainboard_found_usb($sid, $mindex, $usbid, $usbname);
+            
+            # could be a duplicate with orphaned postid enty
+            clean_usb_duplicates($sid, $mindex, $usbid, $usbname);
+
         }    
         $i++;
         #print "\n";
@@ -683,6 +696,36 @@ sub storescan_mainboard_found_usb {
     }
 
 
+}
+
+sub clean_usb_duplicates {
+    my $sid = shift;
+    my $mindex = shift;
+    my $usbid = shift;
+    my $usbname = shift;
+    
+    #print "       Clean USBID duplicates / orhpans ($usbid)\n";
+
+        #print "RESCANNING";
+        #find id to update
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($sid, $usbid);
+        $i=0;
+        while (($id) = $sth_glob->fetchrow_array()) {
+            #print "Finding $i: $id \n";
+            
+            if ($i > 0) {
+                # cleaning duplicate entries
+                $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
+                $sth_glob2 = $lhg_db->prepare($myquery);
+                $sth_glob2->execute($mindex, $id);
+            }
+
+            $i++;
+            #push (@categories, $row);
+        }
 }
 
 sub storescan_usb_found {
@@ -1079,7 +1122,7 @@ sub check_pci_devices {
     #$laptop_probability = calculate_laptop_probability ( $sid );
     #print "LP: $laptop_probability";
     if ( ($laptop_probability > 0.9) && ($laptop_identified != 1 ) )  {
-        print "Rule 4: Unknwon Laptop found - no separate PCI devices possible \n";
+        print "       Rule 4: Unknwon Laptop found - no separate PCI devices possible \n";
         open(FILE1, "<", "/var/www/uploads/".$sid."/lspci.txt");
         $i=0;
         while ( <FILE1> ) {
@@ -1214,6 +1257,9 @@ sub store_pci_subsystem_information {
             $subsystem_text .= $_; # do not cut, used for later processing
         }
     }
+    #store the last subsystem info
+    storescan_subsystem_data($sid, $found_pciid_old, $subsystem_pciid, $subsystem_text);
+
 }
 
 sub grab_pciid {
@@ -1714,7 +1760,11 @@ sub check_drives {
             
             #print "All: ".join(", ", @known_drivenames);
             
-            check_drive_fullname($sid, $drivename);
+            
+            #search for long drive names in case of hard drives (ATA)
+            if ($_ =~ m/ATA /) {
+                check_drive_fullname($sid, $drivename);
+            }
             
             $i++;
         #print "\n";
@@ -1741,12 +1791,12 @@ sub check_drive_fullname {
     #print "Line: $drivename";
     print " $sdrivename";
     
-    open(FILE, "<", "/var/www/uploads/".$sid."/dmesg.txt");
+    open(FILE_LONGNAME, "<", "/var/www/uploads/".$sid."/dmesg.txt");
     $i=0;
     
     $fullname="";
     $name_rest="";
-    while ( ( $_ = <FILE> ) ) {
+    while ( ( $_ = <FILE_LONGNAME> ) ) {
         if ($_ =~ m/$sdrivename/) {
             $start = index($_,$sdrivename);
             $name_to_end = substr($_, $start);
@@ -1784,7 +1834,12 @@ sub check_drive_fullname {
         }else{
             print "ERROR: Could not find corresponding drive entry in DB\n";
         }
+    }else{
+        #nothing new found
+        print " ... nothing found\n";
     }
+    close FILE_LONGNAME;
+    return;
 }
 
 
@@ -2132,7 +2187,9 @@ sub calculate_laptop_probability {
     if ( index($title,"SAMSUNG")  != -1 ) {$probability = 1;}
     if ( index($title,"Samsung")  != -1 ) {$probability = 1;}
     if ( index($title,"Compaq Presario")  != -1 ) {$probability = 1;}
-
+    if ( index($title,"Notebook") != -1 )  {$probability = 1;}
+    if ( index($title,"Sleekbook") != -1 )  {$probability = 1;}
+    
     if ( ( $title =~ /ASUSTeK/ ) && ( $title =~ / K[0-9][0-9]/ ) ) {$probability = 1;}
     if ( ( $title =~ /Acer/ ) && ( $title =~ / Aspire [0-9][0-9]/ ) ) {$probability = 1;}
     
@@ -2180,7 +2237,7 @@ sub get_mainboard_name {
     open(FILE2, "<", "/var/www/uploads/".$sid."/dmesg.txt");
     
     while ( <FILE> ) {
-        if ($_ =~ m/DMI: /) {
+        if ($_ =~ m/ DMI: /) {
             $dmiline = $_;
             break;
         }
