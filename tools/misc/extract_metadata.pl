@@ -65,7 +65,7 @@ while ($row = $sth_glob->fetchrow_hashref) {  # retrieve one row
     
     # Debug counter
     $i++;
-    if ($i>100) { exit 0; }
+    #if ($i>100) { exit 0; }
 
 }
 
