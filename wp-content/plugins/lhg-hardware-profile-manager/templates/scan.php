@@ -1440,7 +1440,7 @@ print           '<script type="text/javascript">
         #	   print '&nbsp;&nbsp;&nbsp;(<a href id="update-pcilist">Update PCI lists</a>)';
         #}
 
-        if ($show_public_profile != 1)
+        if ($show_public_profile != 1)  {
 	echo '
                 <script type="text/javascript">
                 /* <![CDATA[ */
@@ -1592,6 +1592,7 @@ print           '<script type="text/javascript">
 
                 /*]]> */
                 </script>';
+	}
 
 
         # update list of components -> on board or not?
