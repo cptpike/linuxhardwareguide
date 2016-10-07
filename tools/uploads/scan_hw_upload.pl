@@ -109,6 +109,7 @@ $laptop_probability = calculate_laptop_probability();
 #extract PCI components from files and created database entries
 store_pci_information();
 store_pci_subsystem_information();
+update_article_metadata();
 
 #start hardware recognition
 check_mainboard();
@@ -3077,4 +3078,11 @@ sub debug_print {
     }
 
     
+}
+
+sub update_article_metadata {
+    
+    print "-----> Updating latest posts metadata\n";
+    # suppress output and warnings
+    system("/var/www/uploads/extract_metadata.pl > /dev/null 2> /dev/null");
 }
