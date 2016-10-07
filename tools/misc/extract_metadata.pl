@@ -6,6 +6,9 @@
 
 no warnings experimental::smartmatch; 
 
+$option = $ARGV[0];
+
+
 use DBI;
 
 our    $host = "192.168.56.14";
@@ -25,7 +28,7 @@ require ("/var/www/uploads/lhg.conf");
 
 # get list of all published posts
 $lhg_db = DBI->connect($database, $user, $pw);
-$myquery = "SELECT * FROM `lhgtransverse_posts` WHERE status_com = 'published'";
+$myquery = "SELECT * FROM `lhgtransverse_posts` WHERE status_com = 'published' ORDER BY postid_com DESC";
 $sth_glob = $lhg_db->prepare($myquery);
 $sth_glob->execute();
 #($num) = $sth_glob->fetchrow();
@@ -65,8 +68,13 @@ while ($row = $sth_glob->fetchrow_hashref) {  # retrieve one row
     
     # Debug counter
     $i++;
-    #if ($i>100) { exit 0; }
-
+    
+    if ($option ne "-a") {
+        # check only 20 latest articles
+        if ($i > 20) {
+            exit 0;
+        }
+    }
 }
 
 exit 0;
