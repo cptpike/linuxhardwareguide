@@ -28,7 +28,7 @@ require ("/var/www/uploads/lhg.conf");
 
 # get list of all published posts
 $lhg_db = DBI->connect($database, $user, $pw);
-$myquery = "SELECT * FROM `lhgtransverse_posts` WHERE status_com = 'published' ORDER BY postid_com DESC";
+$myquery = "SELECT * FROM `lhgtransverse_posts` WHERE ( (status_com = 'published') OR (status_com = '') ) ORDER BY postid_com DESC";
 $sth_glob = $lhg_db->prepare($myquery);
 $sth_glob->execute();
 #($num) = $sth_glob->fetchrow();
