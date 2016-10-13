@@ -590,6 +590,10 @@ function lhg_scan_overview_shortcode($attr) {
 	require_once(plugin_dir_path(__FILE__)."../../lhg-hardware-profile-manager/templates/uid.php");
 	require_once(plugin_dir_path(__FILE__)."lhg.conf");
 
+        global $region;
+        $langurl = lhg_get_lang_url_from_region( $region );
+        if ($langurl == "de") $langurl = "";
+
 	$myquery = $lhg_price_db->prepare("SELECT id, sid, pub_id, scandate, kversion, distribution, status FROM `lhgscansessions` GROUP BY scandate ORDER BY scandate DESC LIMIT 10;");
 	#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 	$identified_scans = $lhg_price_db->get_results($myquery);
@@ -661,7 +665,7 @@ function lhg_scan_overview_shortcode($attr) {
                         $output .= "
                         <td id=\"col-hw\">
 
-                        ".'<div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">&nbsp;<a href="/hardware-profile/system-'.$pub_id.'" target="_blank">'.$scandate_txt.' (see details ...)</a></div></div>';
+                        ".'<div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">&nbsp;<a href="/'.$langurl.'/hardware-profile/system-'.$pub_id.'" target="_blank">'.$scandate_txt.' (see details ...)</a></div></div>';
 			$output .= " </td>";
 
                         # Status ---
