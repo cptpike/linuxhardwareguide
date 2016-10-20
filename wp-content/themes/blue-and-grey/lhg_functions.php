@@ -81,6 +81,12 @@ function get_distri_logo( $distribution )  {
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/elementary-os-logo.png";
         if ( strpos($distribution,"Netrunner") > -1 )
                 $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/netrunner-logo.png";
+        if ( strpos($distribution,"ALDOS") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/aldos-logo.png";
+        if ( strpos($distribution,"CentOS") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/centos-logo.png";
+        if ( strpos($distribution,"PCLinuxOS") > -1 )
+                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/pclinuxos-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;

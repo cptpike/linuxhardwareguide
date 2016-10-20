@@ -27,7 +27,7 @@ add_action('wp_ajax_nopriv_lhg_scan_update_mb_comment_ajax', 'lhg_scan_update_mb
 
 # HW scan results: comment on existing hardware
 add_action('wp_ajax_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
-add_action('wp_ajax_nopriv_lhg_scan_created_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
 
 # HW scan results: append comment to hardware article
 add_action('wp_ajax_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_append_hardware_comment_ajax');
@@ -41,7 +41,141 @@ add_action('wp_ajax_nopriv_lhg_pci_extract_ajax', 'lhg_pci_extract_ajax');
 add_action('wp_ajax_lhg_translate_slug_ajax', 'lhg_translate_slug_ajax');
 add_action('wp_ajax_nopriv_lhg_translate_slug_ajax', 'lhg_translate_slug_ajax');
 
+# change teaser image of post
+add_action('wp_ajax_lhg_update_teaser_image_ajax', 'lhg_update_teaser_image_ajax');
+add_action('wp_ajax_nopriv_lhg_update_teaser_image_ajax', 'lhg_update_teaser_image_ajax');
+
+# change status of scan (new, complete, ongoing, ...)
+add_action('wp_ajax_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
+add_action('wp_ajax_nopriv_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
+
+# create a new mainboard / laptop article
+add_action('wp_ajax_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
+add_action('wp_ajax_nopriv_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
+
 # AJAX funcitonalities
+
+# create a new mainboard article. Return the post id.
+# used by scan page to create article if MB was wrongly identified
+function lhg_create_mainboard_post_ajax() {
+        global $lhg_price_db;
+
+        require_once( WP_PLUGIN_DIR . '/lhg-hardware-profile-manager/templates/scan.php');
+
+	$sid   	 = $_REQUEST['session'] ;
+	$title   = $_REQUEST['title'] ;
+
+        #error_log("SID: $sid - Title: $title");
+
+        # execute standard actions for status change:
+        #lhg_db_update_status( $sid, $status, $uid );
+
+
+
+        $postid = lhg_create_mainboard_article($title, $sid, "");
+        $newurl = "/wp-admin/post.php?post=".$postid."&action=edit&scansid=".$sid;
+        #error_log("Created article: $postid");
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'postid' => $postid,
+                        'newurl' => $newurl
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
+# update the scan status of a hardware scan
+function lhg_update_scan_status_ajax() {
+        global $lhg_price_db;
+
+	$sid   	 = $_REQUEST['session'] ;
+	$status	 = $_REQUEST['status'] ;
+	$uid	 = $_REQUEST['uid'] ;
+
+        #error_log("SID: $sid - Stat: $status");
+
+        # execute standard actions for status change:
+        lhg_db_update_status( $sid, $status, $uid );
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'status' => $status,
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
+
+# update a teaser image based on url and postid
+function lhg_update_teaser_image_ajax() {
+        global $lhg_price_db;
+
+	$url   	 = $_REQUEST['url'] ;
+	$id   	 = $_REQUEST['id'] ;
+	$postid  = $_REQUEST['postid'] ;
+        $title   = get_the_title( $postid );
+        $product_title = sanitize_title( $title );
+
+        #error_log("PID $postid - url: $url - id: $id - title: $product_title");
+
+        if ($url == "") {
+        	$scaled_image_url = "/wp-uploads/2013/03/noimage130.jpg";
+        }else{
+
+        	$scaled_image_url = lhg_create_article_image( $url, $product_title );
+                $si_filename = str_replace("/wp-uploads/","",$scaled_image_url);
+
+                //if ( !has_post_thumbnail( $postid ) ) {
+                // always replace teaser image with selected one
+
+                	$file = "/var/www/wordpress".$scaled_image_url;
+                        #print "PID: $pid";
+                        #print "<br>Store Thumbnail!";
+                        #print "<br>SIURL: $scaled_image_url";
+
+                        $wp_filetype = wp_check_filetype($file, null );
+
+                        $attachment = array(
+                        	'post_mime_type' => $wp_filetype['type'],
+                                'post_title' => sanitize_title($product_title),
+                                'post_content' => '',
+                                'post_status' => 'inherit'
+                        );
+
+                        #  var_dump($attachment);
+
+                        $attach_id = wp_insert_attachment( $attachment, $si_filename, $pid );
+                        #print "AID: ".$attach_id;
+                        require_once(ABSPATH . 'wp-admin/includes/image.php');
+                        $attach_data = wp_generate_attachment_metadata( $attach_id, $si_filename );
+                        wp_update_attachment_metadata( $attach_id, $attach_data );
+                        set_post_thumbnail( $postid, $attach_id );
+                //}
+        }
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'file' => $si_filename,
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
 
 # slug was translated. Add to DBs
 function lhg_translate_slug_ajax() {
@@ -70,6 +204,7 @@ function lhg_translate_slug_ajax() {
 		#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 		$result = $lhg_price_db->query($myquery);
 	}
+
 
         /*
         # ajax: return data
@@ -179,6 +314,8 @@ function lhg_scan_append_hardware_comment_ajax() {
 function lhg_scan_create_hardware_comment_ajax() {
         global $lhg_price_db;
 
+        #error_log("Create comment!");
+
 	$session   = $_REQUEST['session'] ;
 	$comment   = $_REQUEST['comment'] ;
 	$username  = $_REQUEST['username'] ;
@@ -250,8 +387,8 @@ function lhg_scan_create_hardware_comment_ajax() {
                 'data' => 'success',
                 'supplemental' => array(
 	        	'text' => "Debug: $pid - $id - $asin - $comment - SID: $session -- END",
-        	         'return_comment' => "$return_comment",
-        	         'comment_id' => "$comment_id",
+        	         'return_comment' => $return_comment,
+        	         'comment_id' => $comment_id,
                 ),
                 ) );
 
@@ -383,6 +520,7 @@ function lhg_scan_update_ajax() {
         lhg_update_categories_by_string($pid, $product_title, $mode);
         lhg_update_title_by_string($pid, $product_title, $mode);
         if ($mode == "drive") lhg_correct_drive_name($pid, $session);
+
 
         # extract new Properties and new title coming from ASIN data
         $newtitle = get_the_title( $pid );

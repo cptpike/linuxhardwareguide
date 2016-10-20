@@ -1646,7 +1646,7 @@ function lhg_create_new_DB_entry_post ( $postid, $mode , $mode_data ) {
 
   if ($mode == "drive") {
         $idstring = $mode_data;
-
+        #error_log("update idstring to $mode_data");
         $sql = "UPDATE lhgtransverse_posts SET `idstring` = \"%s\" WHERE postid_com = %s";
 	$safe_sql = $lhg_price_db->prepare($sql, $idstring, $postid);
 	$result = $lhg_price_db->query($safe_sql);
@@ -1804,6 +1804,7 @@ function lhg_clean_drive_title ( $title ) {
   $title = str_replace("ASUS ","Asus ",$title);
   $title = str_replace("SAMSUNG ","Samsung ",$title);
   $title = str_replace("TSSTcorp ","Toshiba / Samsung ",$title);
+  $title = str_replace("INTENSO ","Intenso ",$title);
 
   # HTS Hitachi Drive but no Hitachi name
   if ( preg_match('/HTS[0-9][0-9]/',$title) && (!preg_match('/Hitachi/i',$title)) ) $title = "Hitachi ".$title;

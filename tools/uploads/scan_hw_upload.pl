@@ -6,12 +6,16 @@
 # 0.2d - Possibility for user linking by LHG.de user ID added
 # 0.2e - Mainboard recognition improved (using fingerprint of unique PCIIDs)
 #      - Ignore mainboards in PCI device recognition  
+# 0.2f - recognition of long HDD names added
+# 0.2g - Cleaning of USBID orphans due to duplicate IDs
+# 0.3  - Improved matching algorithm using subsystem IDs
 
 no warnings experimental::smartmatch; 
 
 $sid = $ARGV[0];
 
-print "Version: 0.2e  \n";
+print "Version: 0.3  \n";
+$debug_level=1;
 
 # MYSQL CONFIG VARIABLES
 use DBI;
@@ -102,6 +106,12 @@ check_duplicates();
 #send_mail_with_scaninputs();
 $laptop_probability = calculate_laptop_probability();
 
+#extract PCI components from files and created database entries
+store_pci_information();
+store_pci_subsystem_information();
+update_article_metadata();
+
+#start hardware recognition
 check_mainboard();
 check_usb_devices();
 check_unifying_receivers();
@@ -129,9 +139,119 @@ sub check_mainboard {
     
     print "-----> Checking Mainboard / Laptop \n";
     
+    # use PCI fingerprint for identification
+    ($points_1, $maxpoints_1, $post_1) =  check_mainboard_pci_fingerprint();
+    ($points_2, $maxpoints_2, $post_2) =  check_mainboard_full_fingerprint();
+    
+    #print "P1: $points_1 P2: $points_2\n";
+    #print "M1: $maxpoints_1 M2: $maxpoints_2\n";
+    
+    # combine all search methods
+    ( $postid_result, $prob) = check_mainboard_search_result( 
+                                                   $points_1, $maxpoints_1, $post_1 ,
+                                                   $points_2, $maxpoints_2, $post_2 
+                                                  );
+    
+    # store result in DB and create blacklist if probability high enough
+    if ($prob > 0.75) {
+        check_mainboard_store_result( $postid_result );
+    }
+    
+
+}
+
+sub check_mainboard_full_fingerprint(){
+    # make comparins of PCI and subsystem ids as fingerprint check
+    # provides multiple search results
+    # returns:
+    #          Reference to array of match probablility (0 ... 100)
+    #          Reference to array of max points (array of 100 for this module)
+    #          Reference to array of found matchs
+    
+    print "       MOD::full_fingerprint start...\n";
+    
+    (my $plist, my $slist) = get_fingerprint_from_sid( $sid );
+    my @parray = split(",",$plist);
+    my @sarray = split(",",$slist);
+    
+    #print "P: $plist\n";
+    #print "S: $slist\n";
+    
+    #cycle through PCIIDs
+    $identifiedmb[0] = 0;
+    $pcounter[0] = 0;
+    $scounter[0] = 0;
+    my $i = 0;
+    my $p = 0;
+    my $postid = 0;
+    foreach $p (@parray){
+        # search postids matching to this pciid. Get list as array
+        my @postids = checkdb_mainboard_pci($p);
+        #print "       Posts for $p: ".scalar(@postids)."\n";
+        
+        
+        # cycle through all possible post IDs
+        # increase counter and also check, if subsystem ID matches (also increases counter)
+        foreach $postid (@postids) {
+            if ($postid != 0) {
+                # Postid 0 is invalid
+                #if ( ($postid == 54993) or ($postid == 154431) ){ print "Post candidate: $postid - PCIID: $p \n";}
+
+                $sresult = check_postid_for_ids( $postid, $p, $sarray[$i] );
+                $identifiedmb[int($postid)] +=1;
+
+                # increase probability, if Subsystem ID matches (+2 points)
+                $identifiedmb[int($postid)] += 2*$sresult;
+
+                # counters for matching probability
+                $pcounter[int($postid)] +=1;
+                $scounter[int($postid)] +=$sresult;
+            
+            }
+        }
+        $i++;
+    }
+    
+    $i = 0;
+    foreach $j (@identifiedmb) {
+        if ($j > 3) { 
+            #print "post $i: $j points\n";
+        }
+        $i++;
+    }
+    
+    $mindex=findMaxValueIndex(@identifiedmb);
+    
+    # calculate matching probability
+    
+    # Fingerprint elements (also counting empty elements, because matching also is relevant there)
+    $max = scalar(@parray) + scalar(@sarray);
+    $prob = ($scounter[$mindex]+$pcounter[$mindex])/$max;
+    
+    print "       -> Found PID: $mindex\n";
+    print "       -> Scounter: $scounter[$mindex]/".scalar(@sarray)." Pcounter: $pcounter[$mindex]/".scalar(@parray)."\n";
+    print "       ==> MOD::full_fingerprint result ".int( $prob *100)."/100, $mindex \n";    
+    
+    return ($prob*100, 100, $mindex);
+
+}
+
+sub check_mainboard_pci_fingerprint(){
+    # make comparins of PCI ids as fingerprint check
+    # provides multiple search results
+    # returns:
+    #          Reference to array of match probablility (0 ... 100)
+    #          Reference to array of max points (array of 100 for this module)
+    #          Reference to array of found matchs
+    
+    print "       MOD::pci_fingerprint start...\n";
+    
+    
+    
     open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
     open(FILEN, "<", "/var/www/uploads/".$sid."/lspci.txt");
     $nextline=<FILEN>;
+
     my $i=0;
     my @identifiedmb=qw();
     my @pciids_tmp=qw(); # array of unique PCI IDs of lspci output
@@ -222,7 +342,7 @@ sub check_mainboard {
     
     # we found pciid $mindex2 with matching probability $prob
     if ($mindex2 != $mindex) { 
-        print "       Warning: new matching algorithm found different postid: $mindex -> $mindex2 (prob: $prob_max)\n";
+        printf("       -> Warning: new matching algorithm found different postid: $mindex -> $mindex2 (prob: %.2f)\n",$prob_max);
         $mindex = $mindex2;
     }
         
@@ -234,8 +354,8 @@ sub check_mainboard {
     # therefore, get number of PCI IDs
     
     $Npciid = get_number_pciids($mindex);
-    print "       lspci fingerprint has $n_fingerprint_total elements (unique: $n_fingerprint)\n";
-    print "       Found Postid $mindex -> fingerprint has $unique_npciids elements\n";
+    print "       -> lspci fingerprint has $n_fingerprint_total elements (unique: $n_fingerprint)\n";
+    print "       -> Found Postid $mindex -> fingerprint has $unique_npciids elements\n";
     $mb_recognition = $prob_max;
     #if ( $Npciid > 0 ) {
     #    $mb_recognition = $identifiedmb[$mindex]/$Npciid;
@@ -253,13 +373,13 @@ sub check_mainboard {
         if ( ($mainboard_found_in_db == 1) && ($laptop_probability > 0.85) ) {
             $mb_recognition = 0;
             $mbfound = 0;
-            print ("Rule 2: Mainboard found but laptop expected\n");
+            print ("       -> Rule 2: Mainboard found but laptop expected\n");
             return;
         }
         
         # Laptop found - check if it is the right one
         if ( ($mainboard_found_in_db == 0) && ($laptop_probability > 0.85) ) {
-            print "       Laptop identified ... ";
+            print "         Laptop identified ... ";
             
             # check if additional PCI ids exist
             open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
@@ -292,10 +412,10 @@ sub check_mainboard {
                 $pciid   = grab_pciid($_);
                 $pciname = grab_pciname($_);
                 
-                if  ($pciid != "")    {
-                    storescan_mainboard_found($sid, $mindex, $pciid, $pciname);
-
-                }
+                
+                #if  ($pciid != "")    {
+                #    storescan_mainboard_found($sid, $mindex, $pciid, $pciname);
+                #}
                 
             }
             return;
@@ -303,17 +423,29 @@ sub check_mainboard {
         
     } else {
         $mbfound = 0;
-        printf("       No MB fingerprint found (%d PCI ID(s), %.1f%% match) \n",$Npciid, $mb_recognition*100);
+        printf("       -> No MB fingerprint found (%d PCI ID(s), %.1f%% match) \n", $Npciid , $mb_recognition*100 );
         return;
     }
     
     
+    printf ("       ==> MOD::pci_fingerprint result %d/100, $mindex \n",$mb_recognition*100);    
+
+    
+    return ( $mb_recognition*100, 100 , $mindex );
     
     
+    
+}
+
+sub check_mainboard_store_result( ) {
+    my $mindex = shift; 
+    
+    if ($mindex eq "") {
+        #nothing to be done. Let's get outta here
+        return;
+    }
+
     # We have an identified MB. Store to DB
-    
-    
-    
     
     #
     # blacklist PCI and USB IDs (if mainboard found)
@@ -322,9 +454,6 @@ sub check_mainboard {
     @pciid_blacklist = get_pciid_blacklist($mindex);
     @usbid_blacklist = get_usbid_blacklist($mindex);
     
-    #print "USBBL:".join(", ", @usbid_blacklist);
-    #print "PCIBL:".join(", ", @pciid_blacklist);
-    printf("       MB fingerprint found (postid: %d, %.1f%% match) \n",$mindex,$mb_recognition*100);#    @pciid_blacklist";
     #
     # We have the motherboard's postid
     # now do the real scan&storage
@@ -336,7 +465,6 @@ sub check_mainboard {
     #print "Blacklist:".join(", ", @pciid_blacklist)."\n";
 
     while ( <FILE> ) {
-        #print "Line: $_";
         
         $pciid   = grab_pciid($_);
         $pciname = grab_pciname($_);
@@ -352,20 +480,94 @@ sub check_mainboard {
             #print "PCI: $pciid - #Postids: ".scalar(@postid)."\n";
             
             if ( ( $pciid ~~ @pciid_blacklist  ) ) {
+                
                 # MB component
                 #print "found $pciid  \n";
                 storescan_mainboard_found($sid, $mindex, $pciid, $pciname);
-        #    } elsif ($postid == -1) {
-        #        #print "ignored; $postid; $usbid; $usbname \n";
-        #    } else {
-        #        storescan_pci_found($sid, $postid, $pciid, $pciname);
+            
             }
             $i++;
         }
     }
-    
-    
 }
+
+sub check_mainboard_search_result( ) {
+    my $_1_points = shift;
+    my $_1_maxpoints = shift;
+    my $_1_post = shift;
+    
+    my $_2_points = shift;
+    my $_2_maxpoints = shift;
+    my $_2_post = shift;
+
+    # currently only single return value to be handled
+    # will become more complicated if multiple search approachs are implemented
+    
+    my @points = qw();
+    my @maxpoints = qw();
+    
+    #    print "Mod1: Post($_1_post) Points($_1_points) \n";
+    #    print "Mod2: Post($_2_post) Points($_2_points) \n";
+    
+    # module 1 results 
+    my $_1_scaling = 0.5; # algorithm reliability 
+    $points[int($_1_post)] += $_1_points*$_1_scaling;
+    $maxpoints[int($_1_post)] += $_1_maxpoints*$_1_scaling;
+    # module 2 results
+    my $_2_scaling = 1;
+    $points[int($_2_post)] += $_2_points*$_2_scaling;
+    $maxpoints[int($_2_post)] += $_2_maxpoints*$_2_scaling;
+    
+    
+    # extract which post has collected the most points
+    my $p = 0;
+    my $i = 0;
+    my $highest_points = 0;
+    my $postfound = 0;
+    foreach $p (@points) {
+        if ($p > $highest_points) {
+            $highest_points = $p;
+            $postfound = $i;
+        }
+        $i++;
+    }
+    
+    #print "       Post found: $postfound, points ".$points[int($postfound)]."\n";
+    
+    # compare with maximum possible points for this article
+    $prob = $points[$postfound] / $maxpoints[$postfound];
+    
+    #my @prob = map { 
+    #    
+    #    if ($maxpoints[$_] > 0) {
+    #        $points[$_] / $maxpoints[$_] 
+    #    }
+    #} 0..$#points;
+    
+    my $_result = $postfound;
+
+    
+    if ($_result eq "") {
+        print "       No Mainboard/Laptop found\n";
+        return;
+    }
+    
+    # get title of result
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT product FROM `lhgtransverse_posts` WHERE postid_com = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($_result);
+    ($_pid_title) = $sth_glob->fetchrow_array();
+    
+    # beautify title
+    $_pid_title =~ s/&lt;!&#8211;:us&#8211;&gt;//g;
+    $_pid_title =~ s/&lt;!&#8211;:&#8211;&gt;//g;
+    
+    printf("       Search Result: $_result ($_pid_title), prob: %.2f \n",$prob);
+    
+    return ( $_result , $prob);
+}
+
 
 sub storescan_mainboard_found {
     my $sid      = shift;
@@ -374,12 +576,12 @@ sub storescan_mainboard_found {
     my $pciname  = shift;
     
     
-    if ($rescan == 0) {
-            $lhg_db = DBI->connect($database, $user, $pw);
-            $myquery = "INSERT INTO `lhghwscans` (sid, postid, pciid, idstring, scantype) VALUES (? ,? , ?, ?, ?)";
-            $sth_glob = $lhg_db->prepare($myquery);
-            $sth_glob->execute($sid, $postid, $pciid, $pciname, "mainboard");
-    }else{
+    #if ($rescan == 0) {
+    #        $lhg_db = DBI->connect($database, $user, $pw);
+    #        $myquery = "INSERT INTO `lhghwscans` (sid, postid, pciid, idstring, scantype) VALUES (? ,? , ?, ?, ?)";
+    #        $sth_glob = $lhg_db->prepare($myquery);
+    #        $sth_glob->execute($sid, $postid, $pciid, $pciname, "mainboard");
+    #}else{
             #print "RESCANNING";
             #find id to update
             $lhg_db = DBI->connect($database, $user, $pw);
@@ -404,7 +606,7 @@ sub storescan_mainboard_found {
                 $sth_glob->execute($sid, $postid, $pciid, $pciname, "mainboard");
             
             }
-    }
+            #}
     
 }
 
@@ -415,12 +617,14 @@ sub storescan_mainboard_found_usb {
     my $pciname  = shift;
     
     
-    if ($rescan == 0) {
-            $lhg_db = DBI->connect($database, $user, $pw);
-            $myquery = "INSERT INTO `lhghwscans` (sid, postid, usbid, idstring, scantype) VALUES (? ,? , ?, ?, ?)";
-            $sth_glob = $lhg_db->prepare($myquery);
-            $sth_glob->execute($sid, $postid, $pciid, $pciname, "mainboard");
-    }else{
+    #check if exists
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($sid, $pciid);
+    ($id) = $sth_glob->fetchrow_array();
+
+    if ($id > 0 ) {
             #print "RESCANNING";
             #find id to update
             $lhg_db = DBI->connect($database, $user, $pw);
@@ -435,7 +639,13 @@ sub storescan_mainboard_found_usb {
 
             # do not add entries again
             #print "ID: $id   -   ";
+    }else{                                           
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "INSERT INTO `lhghwscans` (sid, postid, usbid, idstring, scantype) VALUES (? ,? , ?, ?, ?)";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($sid, $postid, $pciid, $pciname, "mainboard");
     }
+
     
 }
 
@@ -506,11 +716,11 @@ sub check_usb_devices {
         
         $usbid   = grab_usbid($_);
         $usbname = grab_usbname($_);
-        #print "\n ----\nUSBID: $usbid \n";
+        #print "\n ----\n       USBID: $usbid \n";
         
         if (!($usbid ~~ @usbid_blacklist)) {
             # not mainboard component
-            #print "USBID-after: $usbid \n";
+            #print "USBID to check: $usbid \n";
             
             #print "New: $usbid - All: ".join(", ", @usb_known)."\n";
 
@@ -536,12 +746,13 @@ sub check_usb_devices {
                     #print "PIDSS: $postid \n";
                 }else{
                     $postid = $postids[0];
+                    #print "       USBID $usbid found in $postid \n";
                 }
 
                 #print "PID: $postid \n";
 
                 if ($postid eq "") {
-                    #print "PID: empty \n";
+                    #print "       PID: empty - $usbid \n";
                     storescan_usb_notfound($sid, $usbid, $usbname);
                 } elsif ($postid == -1) {
                     #print "PID: ignoring \n";
@@ -551,15 +762,25 @@ sub check_usb_devices {
                     storescan_usb_found($sid, $postid, $usbid, $usbname);
                 }
             }else{
-                print "USBID is empty or known ($usbid)! \n";
-                # or usb id already added
+                if ($usbid ne "") { 
+                    print "       USBID duplicate ($usbid) - already in usb_known table ! \n"; 
+                }else {
+                    print "       USBID empty \n"; 
+                }
+                # check if this duplicate has an orphaned ID and clean it
+                clean_usb_duplicates($sid, $mindex, $usbid, $usbname);
+            
             }
 
         }else{
-            print "Mainboard USB component found ($usbid) \n";
+            print "       Mainboard USB component found ($usbid) -> PID: $mindex\n";
             
             # add to Mainboard DB
             storescan_mainboard_found_usb($sid, $mindex, $usbid, $usbname);
+            
+            # could be a duplicate with orphaned postid enty
+            clean_usb_duplicates($sid, $mindex, $usbid, $usbname);
+
         }    
         $i++;
         #print "\n";
@@ -641,14 +862,21 @@ sub storescan_usb_notfound {
     my $usbid   = shift;
     my $usbname = shift;
     
-    #ToDo: Sanity checks necessary!!
-    if ($rescan == 0) {
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($sid, $usbid);
+    ($id) = $sth_glob->fetchrow_array();
+
+        #ToDo: Sanity checks necessary!!
+    if ($id > 0) {
+        # do not add entries again
+        # 
+    }else{
         $lhg_db = DBI->connect($database, $user, $pw);
         $myquery = "INSERT INTO `lhghwscans` (sid, usbid, idstring) VALUES (? , ?, ?)";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute( $sid, $usbid, $usbname);
-    }else{
-        # do not add entries again
     }
 }
 
@@ -658,20 +886,14 @@ sub storescan_mainboard_found_usb {
     my $usbid = shift;
     my $usbname = shift;
     
-    if ($rescan == 0) {
-        # is this ever relevant?
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "INSERT INTO `lhghwscans` (sid, postid, usbid, idstring) VALUES (? ,? , ?, ?)";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $mindex, $usbid, $usbname);
-    }else{
-        #print "RESCANNING";
-        #find id to update
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $usbid);
-        ($id) = $sth_glob->fetchrow_array();
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($sid, $usbid);
+    ($id) = $sth_glob->fetchrow_array();
+
+    
+    if ($id > 0) {
         
         $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
         $sth_glob = $lhg_db->prepare($myquery);
@@ -679,9 +901,47 @@ sub storescan_mainboard_found_usb {
 
         # do not add entries again
         #print "ID: $id   -   ";
+    }else{
+        # is this ever relevant?
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "INSERT INTO `lhghwscans` (sid, postid, usbid, idstring) VALUES (? ,? , ?, ?)";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($sid, $mindex, $usbid, $usbname);
+
+    
     }
 
 
+}
+
+sub clean_usb_duplicates {
+    my $sid = shift;
+    my $mindex = shift;
+    my $usbid = shift;
+    my $usbname = shift;
+    
+    #print "       Clean USBID duplicates / orhpans ($usbid)\n";
+
+        #print "RESCANNING";
+        #find id to update
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($sid, $usbid);
+        $i=0;
+        while (($id) = $sth_glob->fetchrow_array()) {
+            #print "Finding $i: $id \n";
+            
+            if ($i > 0) {
+                # cleaning duplicate entries
+                $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
+                $sth_glob2 = $lhg_db->prepare($myquery);
+                $sth_glob2->execute($mindex, $id);
+            }
+
+            $i++;
+            #push (@categories, $row);
+        }
 }
 
 sub storescan_usb_found {
@@ -690,29 +950,29 @@ sub storescan_usb_found {
     my $usbid   = shift;
     my $usbname = shift;
     
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($sid, $usbid);
+    ($id) = $sth_glob->fetchrow_array();
+
     #print "PID Write: $postid \n";
     #ToDo: Sanity checks necessary!!
     #print "RESCAN: $rescan";
-    if ($rescan == 0) {
+    if ($id > 0) {
+        $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($postid, $id);
+    }else{
+        #print "RESCANNING";
+        #find id to update
+        # do not add entries again
+        #print "ID: $id   -   ";
+        
         $lhg_db = DBI->connect($database, $user, $pw);
         $myquery = "INSERT INTO `lhghwscans` (sid, postid, usbid, idstring) VALUES (? ,? , ?, ?)";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute($sid, $postid, $usbid, $usbname);
-    }else{
-        #print "RESCANNING";
-        #find id to update
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $usbid);
-        ($id) = $sth_glob->fetchrow_array();
-        
-        $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($postid, $id);
-
-        # do not add entries again
-        #print "ID: $id   -   ";
     }
     
     #multiple findings! (comma separated postids)
@@ -1078,7 +1338,7 @@ sub check_pci_devices {
     #$laptop_probability = calculate_laptop_probability ( $sid );
     #print "LP: $laptop_probability";
     if ( ($laptop_probability > 0.9) && ($laptop_identified != 1 ) )  {
-        print "Rule 4: Unknwon Laptop found - no separate PCI devices possible \n";
+        print "       Rule 4: Unknwon Laptop found - no separate PCI devices possible \n";
         open(FILE1, "<", "/var/www/uploads/".$sid."/lspci.txt");
         $i=0;
         while ( <FILE1> ) {
@@ -1098,28 +1358,35 @@ sub check_pci_devices {
         
         return;
     }
-        
     
     # We have no laptop
     $i=0;
     @knownpciids = qw();
     open(FILE2, "<", "/var/www/uploads/".$sid."/lspci.txt");
+    
+    my $pciid;
+    my $pciname;
+    
     while ( <FILE2> ) {
         #print "Line: $_";
         
         $pciid   = grab_pciid($_);
         $pciname = grab_pciname($_);
         
+        
         undef @postids;
+        #print "PCIID0: $pciid -  \n";
         
         if (!( $pciid ~~ @pciid_blacklist )) {
+            
             # PCI ID not allowed to be on blacklist (e.g. mainboard component)
+            #print "PCIID1: $pciid -  \n";
             
             # also ignore empty ids and duplicates
-            if ( ($pciid ne "") && (! ($pciid ~~ @knownpciids)) ){
+            if ( ($pciid != 0) && ($pciid ne "") && (! ($pciid ~~ @knownpciids)) ){
                 
                 push(@knownpciids, $pciid);
-                #print "PCIID: $pciid -  \n";
+                #print "PCIID2: $pciid -  \n";
                 @postids = checkdb_pci($pciid);
                 #print "options: ".scalar(@postids);
                 
@@ -1128,6 +1395,9 @@ sub check_pci_devices {
 
                 # check if this is a mainboard -> try next option
                 for (my $i; $i < scalar(@postids); $i++){
+                    if ( $postids[$i] == 0) { }
+                    #print "POST: $postids[$i] - ";
+                    #return;
                     if ( postid_is_mainboard( $postids[$i] ) ) {
                         print "-> skip! \n";
 
@@ -1141,21 +1411,57 @@ sub check_pci_devices {
                         }
                     }else{
                         $postid = $postids[$i];
+                        $is_graphicscard = postid_is_graphicscard( $postid );
+                        $is_networkcard  = postid_is_networkcard( $postid );
+                        # ToDo: should not be limited to graphics card, but most urgent there!
+                        if ( ( $is_graphicscard == 1) or ($is_networkcard == 1) ){
+                            if ( $is_graphicscard == 1) { print "       Graphics card -> candidate $postid "; }
+                            if ( $is_networkcard  == 1) { print "       Network card -> candidate $postid "; }
+                            # PostID is a graphics card, but does it match with all properties?
+                            $pciids = get_pciids_from_postid( $postid );
+                            $sids   = get_subsystemids_from_postid( $postid );
+                            
+                            #$subids = get_subsystem_ids_by_pciids( $pciids );
+                            
+                            #print "       ---> PCIIDS: $pciids\n";
+                            # check if all pci and subsystem ids are part of this scan data
+                            $check_match  = check_if_all_ids_found( $pciids, $sids );
+                            #$returnval2 = check_if_all_subsystem_ids_found( $subids , $postid );
+                            
+                            if ($check_match == 1){
+                                
+                                # we found the correct postid, clear the other ones
+                                @postids = ( $postid );
+                                #print "store PCIID: $pciid\n";
+                                storescan_pci_found($sid, $postid, $pciid, $pciname);
+                            }
+                            
+                            #print "       Match? $check_match \n";
+                        }
+                        #print "PCIID: $pciid PID: $postid -> graphics card?\n";
                     }
 
                 }
                 
                 
                 if ( scalar(@postids) > 1 ) {
-                    print "too many results - not smart enough... please program me \n";
+                    print "       too many results (".scalar(@postids).") for $pciid - ... skipped \n";
+                    my $p;
+                    foreach $p (@postids) {
+                        print "         ".$p." - ".get_product_from_postid($p)."\n";
+                    }
+                    # do not save
+                    $postid = "";
                 }
             
                 #print "PID: $postid - $postids[0] - $postids[1] \n";
                 if ($postid == "") {
+                    #print "Notfound: $pciid\n";
                     storescan_pci_notfound($sid, $pciid, $pciname);
                 } elsif ($postid == -1) {
                     #print "ignored; $postid; $usbid; $usbname \n";
                 } else {
+                    #print "Found: $pciid\n";
                     storescan_pci_found($sid, $postid, $pciid, $pciname);
                 }
                 $i++;
@@ -1166,6 +1472,96 @@ sub check_pci_devices {
         
         #print "\n";
     }
+}
+
+
+#
+#
+### Extract PCI information from files
+#
+#
+
+sub store_pci_information {
+    
+    # Create database entries for each PCI component
+    print "-----> Store PCI information \n";
+    #my @knownpciids = qw();
+    
+    my $pcinumbers = 0;
+    my $newpcinumbers = 0;
+    
+    open(FILE2, "<", "/var/www/uploads/".$sid."/lspci.txt");
+    while ( <FILE2> ) {
+        #print "Line: $_";
+        
+        $pciid   = grab_pciid($_);
+        $pciname = grab_pciname($_);
+        
+        # ignore empty ids 
+        # duplicate PCI IDs are also handled but will not create additional DB entries
+        if ($pciid ne "") {
+            $pcinumbers ++;
+            #update or create entry in DB
+            my $returnval = create_pci_entry($sid, $pciid, $pciname);
+            $newpcinumbers += $returnval;
+        
+        }
+    }
+    
+    print "       Created $newpcinumbers out of $pcinumbers PCI entries\n";
+    
+    return;
+
+}
+
+
+#
+#
+### Store PCI Subsystem information 
+#
+#
+
+sub store_pci_subsystem_information {
+    
+    # data is stored by external script ?!
+    
+    print "-----> Store PCI subsystem information \n";
+    
+    $i=0;
+    open(FILE2, "<", "/var/www/uploads/".$sid."/lspci.txt");
+    while ( <FILE2> ) {
+        #print "Line: $_";
+        
+        $found_pciid   = grab_pciid($_);
+        if ($found_pciid ne "") {
+            if ($i == 0) {
+                # running the first time. We can not have subsystem information right now.
+                $found_pciid_old = $found_pciid;
+            }else{
+                #print "Subsystem $subsystem_pciid \nSubsystem text: $subsystem_text ----------- \n";
+                # store data in DB
+                storescan_subsystem_data($sid, $found_pciid_old, $subsystem_pciid, $subsystem_text);
+                $found_pciid_old = $found_pciid;
+            }
+                
+            # new segment with pciid
+            $found_pciname = grab_pciname($_);
+            $subsystem_text = "";
+            $subsystem_pciid = "";
+            #print "PCIID: $found_pciid \n";
+            #print "PCI text: $found_pciname";
+            $i++;
+        }else{ 
+            #no pciid line. Add to subsystem text
+            $pciid_sub_tmp = grab_pciid_sub($_);
+            if ($pciid_sub_tmp ne "")  { $subsystem_pciid = $pciid_sub_tmp; }
+            #subsystem_text .= substr($_,1); # remove leading tab
+            $subsystem_text .= $_; # do not cut, used for later processing
+        }
+    }
+    #store the last subsystem info
+    storescan_subsystem_data($sid, $found_pciid_old, $subsystem_pciid, $subsystem_text);
+
 }
 
 sub grab_pciid {
@@ -1183,14 +1579,47 @@ sub grab_pciid {
     
 }
 
+# grab the subsystem ID from lspci output. Return ID
+sub grab_pciid_sub {
+    $line = shift;
+    
+    #print "-------\nLine: $line ";
+
+    if ( ($line =~ m/\w\w\w\w:\w\w\w\w/) and ($line =~ m/Subsystem/) )  {
+        $line =~ m/\w\w\w\w:\w\w\w\w/;
+        $pciid = substr($line,$-[0],9);
+        #print "Subsystem PCIID: $pciid \n";
+        return $pciid;
+    } else {
+        #print "   no match $line \n";
+    }
+    
+}
+
 sub grab_pciname {
     $line = shift;
     
     #print "-------\nLine: $line ";
 
     if ( ($line =~ m/\w\w\w\w:\w\w\w\w/) and !($line =~ m/Subsystem/) ) {
-        $pciname = substr($line,8);
+        #$pciname = substr($line,8);
+        $pciname = substr($line,0);
         #print "PCIname: $pciname \n";
+        return $pciname;
+    } else {
+        #print "   no match \n";
+    }
+}
+
+# grab all text of "lspci -nnk" corresponding to pciid but not in the pciid line
+sub grab_pciname_sub {
+    $line = shift;
+    
+    #print "-------\nLine: $line ";
+
+    if ( ($line =~ m/\w\w\w\w:\w\w\w\w/) and ($line =~ m/Subsystem/) ) {
+        $pciname = substr($line,8);
+        #print "Subsystem PCIname: $pciname \n";
         return $pciname;
     } else {
         #print "   no match \n";
@@ -1210,7 +1639,7 @@ sub checkdb_pci {
     #print "Search for: $pciid";
     
     $lhg_db = DBI->connect($database, $user, $pw);
-    $myquery = "SELECT postid_com FROM lhgtransverse_posts WHERE pciids like ? AND (status_com = \"published\" OR status_com = \"\") ";   
+    $myquery = "SELECT postid_com FROM lhgtransverse_posts WHERE pciids like ? AND (status_com = \"published\" OR status_com = \"\") AND postid_com <> 0 ";   
     $sth_glob = $lhg_db->prepare($myquery);
     $search = "%".$pciid."%";
     $sth_glob->execute($search);
@@ -1251,13 +1680,13 @@ sub checkdb_mainboard_pci {
     #print "Search for: $pciid";
     
     $lhg_db = DBI->connect($database, $user, $pw);
-    $myquery = "SELECT postid_com FROM lhgtransverse_posts WHERE pciids like ? AND (status_com = \"published\" OR status_com = \"\") ";   
+    $myquery = "SELECT postid_com FROM lhgtransverse_posts WHERE pciids like ? AND (status_com = \"published\" OR status_com = \"\") AND ( (categories_com LIKE \"%low-power-pcs%\") OR (categories_com LIKE \"%pc-systeme%\") OR (categories_com LIKE \"%mainboards%\") OR (categories_com LIKE \"%notebook%\") )";   
     $sth_glob = $lhg_db->prepare($myquery);
     $search = "%".$pciid."%";
     $sth_glob->execute($search);
     my @postids = @{$lhg_db->selectcol_arrayref($sth_glob)};
     
-    #print "Postids-found: ".scalar(@postids)." ";
+    #print "Postids-found for $pciid: ".scalar(@postids)."\n ";
     return @postids;
 
 }
@@ -1378,14 +1807,93 @@ sub storescan_pci_notfound {
     
     #ToDo: Sanity checks necessary!!
     
-    if ($rescan == 0) {
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND pciid = ?";
+    $sth_glob1 = $lhg_db->prepare($myquery);
+    $sth_glob1->execute( $sid, $pciid);
+    my $id = $sth_glob1->fetchrow_array();
+
+    
+    if ($id >  0) {
+        #nothing to be done
+        
+        #$lhg_db = DBI->connect($database, $user, $pw);
+        #$myquery = "UPDATE `lhghwscans` SET idstring = ? WHERE id = ?";
+        #$sth_glob = $lhg_db->prepare($myquery);
+        #$sth_glob->execute( $pciname, $id);
+        return 0;
+    }else{
+        print "Inserting $pciid\n";
         $lhg_db = DBI->connect($database, $user, $pw);
         $myquery = "INSERT INTO `lhghwscans` (sid, pciid, idstring) VALUES (? , ?, ?)";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute( $sid, $pciid, $pciname);
-    }else{
-        # nothing
+        return 1;
     }
+}
+
+sub create_pci_entry {
+    # create entries for each PCI ID that was found in the scan
+    # returns 1 if entry was created, 0 if not (e.g. already existing)
+    my $sid   = shift;
+    my $pciid   = shift;
+    my $pciname = shift;
+    
+    # check if entry exists
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND pciid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $sid, $pciid);
+    my $id = $sth_glob->fetchrow_array();
+    
+    if ($id > 0) {
+        # entry exists - just update 
+        #print "FOUND $pciid \n";
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "UPDATE `lhghwscans` SET idstring = ? WHERE id = ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute( $pciname, $id);
+        return 0;
+        
+    }else{
+        # create new entry
+        #print "NOT FOUND $pciid \n";
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "INSERT INTO `lhghwscans` (sid, pciid, idstring) VALUES (? , ?, ?)";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute( $sid, $pciid, $pciname);
+        return 1;
+    }
+
+
+}
+
+sub storescan_subsystem_data {
+    my $sid   = shift;
+    my $pciid   = shift;
+    my $subsystem_id = shift;
+    my $subsystem_text = shift;
+    
+    #ToDo: Sanity checks necessary!!
+    
+    #if ($rescan == 0) {
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    
+    # store subsystem pciid
+    $myquery = "UPDATE `lhghwscans` SET pciid_subsystem = ? WHERE sid = ? AND pciid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $subsystem_id, $sid, $pciid);
+    
+    # store subsystem text + driver
+    $myquery = "UPDATE `lhghwscans` SET idstring_subsystem = ? WHERE sid = ? AND pciid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $subsystem_text, $sid, $pciid);
+
+    
+    #}else{
+        ## nothing
+        #}   
 }
 
 sub storescan_pci_found {
@@ -1395,25 +1903,31 @@ sub storescan_pci_found {
     my $pciname = shift;
     
     #ToDo: Sanity checks necessary!!
+    if ($pciid eq "") {
+        print "       ERROR: pciid empty\n";
+        return;
+    }
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND pciid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($sid, $pciid);
+    ($id) = $sth_glob->fetchrow_array();
 
-    if ($rescan == 0) {
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "INSERT INTO `lhghwscans` (sid, postid, pciid, idstring) VALUES (? ,? , ?, ?)";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $postid, $pciid, $pciname);
-    }else{
-        #print "RESCANNING";
-        #find id to update
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND pciid = ?";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $pciid);
-        ($id) = $sth_glob->fetchrow_array();
-        
+    
+    if ($id >  0) {
         $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute($postid, $id);
 
+    }else{
+        #print "RESCANNING";
+        #find id to update
+                
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "INSERT INTO `lhghwscans` (sid, postid, pciid, idstring) VALUES (? ,? , ?, ?)";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($sid, $postid, $pciid, $pciname);
     }
 }
 
@@ -1481,13 +1995,20 @@ sub storescan_cpu_notfound {
     
     #ToDo: Sanity checks necessary!!
     
-    if ($rescan == 0) {
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE scantype = ? AND sid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $scantype , $sid);
+    my $id = $sth_glob->fetchrow_array();
+
+    
+    if ($id > 0) {
+        #nothing
+    }else{
         $lhg_db = DBI->connect($database, $user, $pw);
         $myquery = "INSERT INTO `lhghwscans` (sid, idstring, scantype) VALUES (? , ?, ?)";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute( $sid, $cpuname, $scantype);
-    }else{
-        #nothing
     }
 }
 
@@ -1498,28 +2019,26 @@ sub storescan_cpu_found {
     my $scantype = "cpu";
     
     #ToDo: Sanity checks necessary!!
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND idstring = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($sid, $cpuname);
+    ($id) = $sth_glob->fetchrow_array();
 
-    if ($rescan == 0) {
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "INSERT INTO `lhghwscans` (sid, postid, idstring, scantype) VALUES (? ,? , ?, ?)";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $postid, $cpuname, $scantype);
-    }else{
+    
+    if ($id > 0) {
         #print "RESCANNING";
         #find id to update
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND idstring = ?";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $cpuname);
-        ($id) = $sth_glob->fetchrow_array();
         
         $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute($postid, $id);
-
+    }else{
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "INSERT INTO `lhghwscans` (sid, postid, idstring, scantype) VALUES (? ,? , ?, ?)";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($sid, $postid, $cpuname, $scantype);
     }
-
-    
 }
 
 
@@ -1604,13 +2123,89 @@ sub check_drives {
             }
             
             #print "All: ".join(", ", @known_drivenames);
-
+            
+            
+            #search for long drive names in case of hard drives (ATA)
+            if ($_ =~ m/ATA /) {
+                check_drive_fullname($sid, $drivename);
+            }
             
             $i++;
         #print "\n";
         }
     }
 }
+
+
+# check if the drive's name is a short version of its full name
+# (ANSI line name is shortened, if too long)
+sub check_drive_fullname {
+    my $sid = shift;
+    my $drivename = shift;
+    
+    ($null, $drivename_tmp) = split(/ATA  /, $drivename);
+    #($manuf, $driveID, $rest) = split(/ /, chop($drivename_tmp));
+    #$sdrivename = $manuf." ".$driveID;
+    $sdrivename = $drivename_tmp;
+    # trim the name
+    $sdrivename =~ s/^\s+|\s+$//g;
+    
+    
+    print "       Full name for";
+    #print "Line: $drivename";
+    print " $sdrivename";
+    
+    open(FILE_LONGNAME, "<", "/var/www/uploads/".$sid."/dmesg.txt");
+    $i=0;
+    
+    $fullname="";
+    $name_rest="";
+    while ( ( $_ = <FILE_LONGNAME> ) ) {
+        if ($_ =~ m/$sdrivename/) {
+            $start = index($_,$sdrivename);
+            $name_to_end = substr($_, $start);
+            #print "Name: $name_to_end\n";
+            $end = substr($name_to_end, length($sdrivename));
+            ($name_rest, $other_rest) = split(/ /, $end);
+            
+            #check if "," at the end
+            if ( substr($name_rest,-1) eq ",") {
+                $name_rest = substr($name_rest,0,-1);
+            }
+            $name_rest =~ s/\n//g;
+            
+            if ($name_rest ne "") {
+                #print "AA- $name_rest -AA";
+                $fullname = $sdrivename . $name_rest;
+            }
+            
+        }
+    }
+    
+    # if full name > standard name -> store in DB
+    if ( length($fullname) > length($sdrivename) ) {
+        # get id of DB entry
+        $myquery = "SELECT id FROM lhghwscans WHERE idstring like ? AND sid = ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute("%".$drivename."%", $sid);
+        ($id) = $sth_glob->fetchrow_array();
+        
+        if ($id ne "") {
+            $myquery = "UPDATE `lhghwscans` SET product_name = ? WHERE id = ?";
+            $sth_glob = $lhg_db->prepare($myquery);
+            $sth_glob->execute($fullname, $id);
+            print " -> $fullname\n";
+        }else{
+            print "ERROR: Could not find corresponding drive entry in DB\n";
+        }
+    }else{
+        #nothing new found
+        print " ... nothing found\n";
+    }
+    close FILE_LONGNAME;
+    return;
+}
+
 
 sub checkdb_drive {
     my $drivename = shift;
@@ -1641,14 +2236,18 @@ sub storescan_drive_notfound {
     my $scantype = "drive";
     
     #ToDo: Sanity checks necessary!!
+    $myquery = "SELECT id FROM lhghwscans WHERE idstring like ? AND sid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute("%".$drivename."%", $sid);
+    ($id) = $sth_glob->fetchrow_array();
     
-    if ($rescan == 0) {
+    if ($id > 0) {
+        #nothing
+    }else{
         $lhg_db = DBI->connect($database, $user, $pw);
         $myquery = "INSERT INTO `lhghwscans` (sid, idstring, scantype) VALUES (? , ?, ?)";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute( $sid, $drivename, $scantype);
-    }else{
-        #nothing
     }
 }
 
@@ -1659,26 +2258,26 @@ sub storescan_drive_found {
     my $scantype = "drive";
     
     #ToDo: Sanity checks necessary!!
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND idstring = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($sid, $drivename);
+    ($id) = $sth_glob->fetchrow_array();
 
-    if ($rescan == 0) {
+    if ($id > 0) {
+        $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute($postid, $id);
+    }else{
+        #print "RESCANNING \n";
+        #find id to update
+        
+        #print "ID: $id \n";
+        
         $lhg_db = DBI->connect($database, $user, $pw);
         $myquery = "INSERT INTO `lhghwscans` (sid, postid, idstring, scantype) VALUES (? ,? , ?, ?)";
         $sth_glob = $lhg_db->prepare($myquery);
         $sth_glob->execute($sid, $postid, $drivename, $scantype);
-    }else{
-        #print "RESCANNING \n";
-        #find id to update
-        $lhg_db = DBI->connect($database, $user, $pw);
-        $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND idstring = ?";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($sid, $drivename);
-        ($id) = $sth_glob->fetchrow_array();
-        
-        #print "ID: $id \n";
-        
-        $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
-        $sth_glob = $lhg_db->prepare($myquery);
-        $sth_glob->execute($postid, $id);
 
     }
 }
@@ -1956,7 +2555,9 @@ sub calculate_laptop_probability {
     if ( index($title,"SAMSUNG")  != -1 ) {$probability = 1;}
     if ( index($title,"Samsung")  != -1 ) {$probability = 1;}
     if ( index($title,"Compaq Presario")  != -1 ) {$probability = 1;}
-
+    if ( index($title,"Notebook") != -1 )  {$probability = 1;}
+    if ( index($title,"Sleekbook") != -1 )  {$probability = 1;}
+    
     if ( ( $title =~ /ASUSTeK/ ) && ( $title =~ / K[0-9][0-9]/ ) ) {$probability = 1;}
     if ( ( $title =~ /Acer/ ) && ( $title =~ / Aspire [0-9][0-9]/ ) ) {$probability = 1;}
     
@@ -2004,7 +2605,7 @@ sub get_mainboard_name {
     open(FILE2, "<", "/var/www/uploads/".$sid."/dmesg.txt");
     
     while ( <FILE> ) {
-        if ($_ =~ m/DMI: /) {
+        if ($_ =~ m/ DMI: /) {
             $dmiline = $_;
             break;
         }
@@ -2024,10 +2625,15 @@ sub get_mainboard_name {
     }
     
     #print "DMI: $dmiline\n";
+    
+    # store DMI line in DB
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "UPDATE `lhgscansessions` SET dmi = ? WHERE sid = ?";
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute($dmiline, $sid);
 
     
     if ($dmiline eq "") { $dmiline = "unkown name"; }
-    
     return $dmiline;
 
 }
@@ -2196,3 +2802,363 @@ sub  postid_is_mainboard {
     }
 }
 
+sub  postid_is_graphicscard { 
+    #check if this postid is a graphics card
+    my $postid = shift;
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT categories_com FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($categories) = $sth_glob->fetchrow_array();
+    
+    #print "CAT: $categories \n";
+    
+    if (index($categories, "graphiccards") != -1) {
+        #print "This ($postid) is a graphics card";
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+sub  postid_is_networkcard { 
+    #check if this postid is a graphics card
+    my $postid = shift;
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT categories_com FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($categories) = $sth_glob->fetchrow_array();
+    
+    #print "CAT: $categories \n";
+    
+    if (index($categories, "network") != -1) {
+        #print "This ($postid) is a graphics card";
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+sub  get_pciids_from_postid { 
+    #check if this postid is a graphics card
+    my $postid = shift;
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT pciids FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($pciids) = $sth_glob->fetchrow_array();
+    
+    #print "CAT: $categories \n";
+    
+    return $pciids;
+}
+
+sub  check_postid_for_ids { 
+    # check if subsystem ID matches to found PCI ID in certain Post (postid)
+    # input: 
+    #       PostID to check
+    #       PCI ID that was found
+    #       Subsystem ID that has to match
+    my $postid = shift;
+    my $p = shift;
+    my $s = shift;
+    
+    if ($postid == 0) { return 0; }
+
+    # get array of pciids and subsystem IDs from DB
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT pciids FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($pciids_found) = $sth_glob->fetchrow_array();
+    
+    $myquery = "SELECT subids FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($sids_found) = $sth_glob->fetchrow_array();
+    
+    #    print "
+    #    Searching for: $p :: $s in $postid";
+    #    PF: $pciids_found
+    #    \n";
+    
+    #arrays of IDs
+    @pa = split(",",$pciids_found);
+    @sa = split(",",$sids_found);
+    
+    #print "P($postid)F: $pciids_found\n";
+    #print "SF($postid): $sids_found\n";
+    
+    $i = 0;
+    foreach $pp (@pa){
+        if ($pp eq $p) {
+            #if ($postid == 54869) { print "       PID $postid - found: $p ->"; }
+            #does Subsystem ID also match?
+            if ($sa[$i] eq $s){
+                #if ($postid == 54869) { print "SID($i) $s matches\n"; }
+                return 1;
+            }else{
+                #if ($postid == 54869) { print "found $sa[$i] instead "; }
+            }
+        }
+        $i++;
+    }
+    
+    #nothing found
+    #if ($postid == 54869) {print "nothing found for SID $s\n";}
+    return 0;
+}
+
+sub  get_subsystemids_from_postid { 
+    #check if this postid is a graphics card
+    my $postid = shift;
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT subids FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($subids) = $sth_glob->fetchrow_array();
+    
+    #print "CAT: $categories \n";
+    
+    return $subids;
+}
+
+sub  get_product_from_postid { 
+    #check if this postid is a graphics card
+    my $postid = shift;
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT product FROM `lhgtransverse_posts` WHERE postid_com = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $postid );
+    ($product) = $sth_glob->fetchrow_array();
+    
+    #print "CAT: $categories \n";
+    
+    return $product;
+}
+
+sub  get_fingerprint_from_sid { 
+    # return comma separated string of all pciids belonging to this scan
+    # extract data from DB and not from file (would also be possible)
+    
+    my $sid = shift;
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT DISTINCT pciid FROM `lhghwscans` WHERE sid = ? AND pciid <> ''";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $sid );
+    
+    my @parray = qw();
+    my @sarray = qw();
+    
+    while ($pciid = $sth_glob->fetchrow_array) {  # retrieve one row
+        #print "PCIID: $pciid ";
+        # get corresponding subsystem ID
+        $myquery = "SELECT DISTINCT pciid_subsystem FROM `lhghwscans` WHERE sid = ? AND pciid = ? AND pciid <> ''";   
+        $sth_glob2 = $lhg_db->prepare($myquery);
+        $sth_glob2->execute( $sid, $pciid );
+        ($subsystem_id) = $sth_glob2->fetchrow_array();
+        #print "SID: $subsystem_id\n";
+        
+        push ( @parray, $pciid );
+        push ( @sarray, $subsystem_id );
+    
+    }
+    #print "CAT: $categories \n";
+    
+    $slist = join(",",@sarray);
+    $plist = join(",",@parray);
+    
+    return ($plist, $slist);
+}
+
+sub  check_if_all_pciids_found { 
+    #check if all the pciids (separated by ",") are part of the lspci output
+    #if not, this is not the correct component (e.g. graphics card with 2 PCI IDs)
+    my $pciids = shift;
+    my @pciarray = split(/,/,$pciids);
+    my $num = scalar @pciarray;
+    #print "Searching for $num PCIIDS\n";
+    
+    for (my $i = 0; $i < $num; $i++) {
+        print " $pciarray[$i] ";
+        $isin = pciid_in_lspci( $pciarray[$i] );
+        if ($isin == 0) {
+            print "not match \n";
+        }
+    }
+
+    
+    return 1;
+}
+
+sub  check_if_all_ids_found { 
+    # check if all the pciids and subsystem ids (separated by ",") are part of the lspci output
+    # if not, this is not the correct component (e.g. graphics card with 2 PCI IDs)
+    # input: reference to array of subsystem IDs
+    # returns: 1 if found, 0 if not found
+    my $_pciids = shift;
+    my $_sids = shift;
+    my $_postid = shift;
+    
+    my @_sidarray = split(/,/,$_sids);
+    my @_pciarray = split(/,/,$_pciids);
+    my $num = scalar @_sidarray;
+    #print "Searching for $num PCIIDS\n";
+    my $i = 0;
+    
+    for ( $i = 0; $i < $num; $i++) {
+        debug_print( "\n                     -> $_pciarray[$i]::$_sidarray[$i] ");
+        my $isin_pci = check_scan_for_pciid( $_pciarray[$i] );
+        my $isin_sub = check_scan_for_sid( $_sidarray[$i] );
+        if ( ($isin_pci == 1) && ($isin_sub == 1) ) {
+            #print "match \n";
+        }else{
+            #print "no match \n";
+            $i = $num+10;
+        }
+        
+    }
+    
+    #print "Match result: $i <> $num?\n";
+    
+    if ($i == $num) { 
+        print "match\n";
+        return 1;
+    }else{
+        print "no match \n";
+        return 0;
+    }
+}
+
+
+sub  check_scan_for_pciid { 
+    # check if the provided PCI ID is part of the lspci.txt file
+    # input: PCI ID to search for
+    # output: 1 if found, 0 else
+    
+    my $search_pciid = shift;
+    
+    open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
+    while ( <FILE> ) {
+        
+        # read PCI IDs 
+        #
+        $pciid   = grab_pciid($_);
+        if ($pciid eq $search_pciid)  { 
+            return 1;
+        }
+    }
+    return 0;
+}
+
+sub  check_scan_for_sid { 
+    # check if the provided Subsystem ID is part of the lspci.txt file
+    # input: Subsystem ID to search for
+    # output: 1 if found, 0 else
+    
+    my $search_sid = shift;
+    
+    open(FILE, "<", "/var/www/uploads/".$sid."/lspci.txt");
+    while ( <FILE> ) {
+        
+        # read PCI IDs and Subsystem IDs
+        #
+        my $_sid   = grab_subsystemid($_);
+        #print "SID: $_sid - SSID: $search_sid \n";
+        if ($_sid eq $search_sid)  { 
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+
+
+sub pciid_in_lspci  {
+
+    my $search_pciid = shift;
+    
+        open(FILE2, "<", "/var/www/uploads/".$sid."/lspci.txt");
+        while ( <FILE2> ) {
+            #print "Line: $_";
+        
+            $pciid   = grab_pciid($_);
+            $pciname = grab_pciname($_);
+            
+            if ($pciid eq $search_pciid){
+                return 1;
+            }
+        }
+        # looked into whole file. no match found
+        return 0;
+}
+
+sub get_subsystem_ids_by_pciids {
+    my $pciids = shift;
+    my @pciarray = split(/,/,$pciids);
+    my $num = scalar @pciarray;
+    
+    my @subsystem_ids=qw();
+
+    for (my $i = 0; $i < $num; $i++) {
+        print "       ---> Searching for subsystem ID $pciarray[$i]\n";
+        $subid = get_subsystem_id_by_pciid( $pciarray[$i] );
+        
+        if ($subid ne "") {
+            #accumulate SubIDs in aray 
+            push @subsystem_ids, $subid;
+
+        }
+    }
+    return @subsystem_ids;
+
+}
+
+sub get_subsystem_id_by_pciid {
+    my $pciid_search = shift;
+
+    open(FILE2, "<", "/var/www/uploads/".$sid."/lspci.txt");
+    
+    while ( <FILE2> ) {
+        $pciid_found   = grab_pciid($_);
+            
+        if ($pciid_found eq $pciid_search){
+            print "found $pciid_search";
+            $nextline = <FILE2>;
+            print "NL: $nextline\n";
+        }
+    }
+    # looked into whole file. no match found
+    return 0;
+}
+
+sub debug_print {
+    my $message = shift;
+    my $level = shift;
+    
+    if ($level eq "") {
+        $level = 1;
+    }
+    
+    if ($level <= $debug_level) {
+        print $message;
+    }
+
+    
+}
+
+sub update_article_metadata {
+    
+    print "-----> Updating latest posts metadata\n";
+    # suppress output and warnings
+    system("/var/www/uploads/extract_metadata.pl > /dev/null 2> /dev/null");
+}

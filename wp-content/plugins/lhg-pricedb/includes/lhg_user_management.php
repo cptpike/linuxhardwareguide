@@ -13,6 +13,13 @@ define ('LHG_KARMA_edit_others_posts', 500); # e.g. needed for translators
 
 define ('LHG_KARMA_POINTS_hwscan', 50); # How many points for an uploaded hardware scan
 
+#
+# include further sub-components of the user_management
+#
+# manage authorship of articles
+require_once(plugin_dir_path(__FILE__).'/lhg_user_management_authorship.php');
+
+
 # show comment menu for all users
 #add_menu_page('edit-comments.php');
 
@@ -379,7 +386,7 @@ function lhg_add_scan_points() {
                                 $user = get_user_by( 'email', $result->email );
                                 if ($user->ID != ""){
                                         lhg_link_hwscan( $user->ID, $result->sid);
-                                        lhg_update_userdb( 'email' , $user->ID , $result->email );
+                                        lhg_update_userdb_by_uid( 'email' , $user->ID , $result->email );
 				}
                                 # maybe username was entered instead of email
                                 $user = get_user_by( 'user_login', $result->email );
