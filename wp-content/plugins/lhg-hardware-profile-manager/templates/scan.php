@@ -2070,6 +2070,8 @@ print '
                         #        if ($is_mainboard_component == 1) $mainboard_array = array_merge($mainboard_array, $a_identified_hw);
 			#}
 
+                        # set logo to default if no match is found
+                        $logo ="";
                 	if ($usbid != "") $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/USB_logo.jpg' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown USB device'>";
                 	if ($pciid != "") $logo = "<div class='hwscan-pcilogo'>&nbsp;&nbsp;PCI</div>";
                 	if ($scantype == "cpu") $logo = "<img src='".$urlprefix."/wp-uploads/2014/12/cpu-image.png' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Unknown CPU'>";
