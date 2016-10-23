@@ -237,14 +237,14 @@ function lhg_graphicscard_shortcode($attr) {
         if ( $attr['xserver'] != "")
                 $output .= ' and an X-Server of version '.trim($attr['xserver']);
 
-        $output .= ".";
+        $output .= ". ";
 
         if ( $attr['nvidia_module'] != "")
-        	$output .= 'The graphics card was used together with the propriatary NVidia Linux driver in version'. trim($attr['nvidia_module']).'.';
+        	$output .= 'The graphics card was used together with the propriatary NVidia Linux driver in version '. trim($attr['nvidia_module']).'.';
 
         global $lhg_price_db;
-        if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransvers_posts` WHERE postid_de = %s", $pid);
-        if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransvers_posts` WHERE postid_com = %s", $pid);
+        if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransverse_posts` WHERE postid_de = %s", $pid);
+        if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransverse_posts` WHERE postid_com = %s", $pid);
 	$pciids = $lhg_price_db->get_var($myquery);
 
         if ($pciids != "")
