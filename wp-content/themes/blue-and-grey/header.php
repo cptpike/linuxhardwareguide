@@ -299,16 +299,11 @@ function country_list($metalist) {
         $posturlcom = str_replace("?lang=nl","",$posturlcom);
         $posturlcom = str_replace("?lang=br","",$posturlcom);
 
-        #error_log("PURLC: $posturlcom");
-
 
         if ($posturlcom == "hardware-profile") {
         	$url     = getCurrentUrl();
                 $pieces  = parse_url($url);
                 $urlpath = $pieces['path'];
-
-
-	        #error_log("UP: $urlpath");
 
 		$hwprofpos=strpos($urlpath,"hardware-profile/user");
 		$hwprofposg=strpos($urlpath,"hardware-profile/guser");
@@ -316,7 +311,6 @@ function country_list($metalist) {
                 $hwprofposs=strpos($urlpath,"hardware-profile/system");
 
                 #print "$urlpath - $hwprofpos - $hwprofposs<br>";
-                #error_log("HWP: $hwprofpos - HWPG: $hwprofposg");
 
                 if ($hwprofposs != "") $rurl = substr($urlpath,$hwprofposs);
 
@@ -339,13 +333,14 @@ function country_list($metalist) {
 	                if ($lang == "de") $posturlcom  = "/hardware-profile/guser".$guid;
 	                if ($lang == "de") $posturlde  = "/hardware-profile/user".$uid;
 
-		}elseif ($hwprofposg != "") {
+		}
+
+                if ($hwprofposg != "") {
                         # translate public user profile links to guid links to make them available on other servers
                 	$rurl = substr($urlpath,$hwprofpos);
                         $hwprofpos   = strpos($urlpath,"/hardware-profile/guser");
 			$guid = (int)substr($urlpath,$hwprofposg+22);
 			#$guid = lhg_get_guid_from_uid( $uid );
-                        #error_log("guid: $guid");
 
                         #locally linking to standard user profile, transversally linking to guid
 	        	$rurl = "/hardware-profile/guser".$guid;
@@ -357,14 +352,13 @@ function country_list($metalist) {
         	        $posturlde  = "$rurl";
 
 
-		}else{
-
-                	# private profile page remains
-
-	                $posturlcom = "/hardware-profile";
-        		$posturlde  = "/hardware-profile";
-
 		}
+
+                # private profile page remains
+
+                $posturlcom = "/hardware-profile";
+        	$posturlde  = "/hardware-profile";
+
 	}
 
 
@@ -425,6 +419,8 @@ function country_list($metalist) {
                 	$comURL = lhg_URL_chomp( lhg_get_com_post_URL($postID) );
 			$deURL  = lhg_URL_chomp( lhg_get_de_post_URL($postID) );
 
+                        #error_log("DE URL: $deURL");
+
 			//$comURL = get_post_meta($postID,'COM_URL',true);
 			//$deURL  = get_post_meta($postID,'DE_URL',true);
 
@@ -449,7 +445,7 @@ function country_list($metalist) {
 
                 // set default
                 if ($comURL == "") $comURL = $posturlcom;
-                if ($deURL == "") $deURL = $posturlde;
+                #if ($deURL == "") $deURL = $posturlde;
 
                 if (substr($comURL,0,1)=="/") $comURL = substr($comURL,1);
                 if (substr($deURL,0,1)=="/") $deURL = substr($deURL,1);
@@ -515,6 +511,7 @@ $posturlde_glob = $posturlde;
 <link hreflang="EN"      href="'.$URLC.'/'.$posturlcom.'"    rel="alternate" />
 ';
 
+if ($posturlde != "")
 if ($region != "de") echo '<link hreflang="DE"      href="'.$URLD.'/'.$posturlde.'"     rel="alternate" />';
 
 // <link hreflang="PT-BR"   href="'.$URLC.'/br/'.$posturlcom.'" rel="alternate" />
