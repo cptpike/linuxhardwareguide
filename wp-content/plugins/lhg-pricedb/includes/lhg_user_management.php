@@ -25,6 +25,7 @@ require_once(plugin_dir_path(__FILE__).'/lhg_user_management_authorship.php');
 
 #apply_filters ( 'map_meta_cap', $caps, $cap, $user_id, $args );
 add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
+add_filter ( 'map_meta_cap', 'lhg_check_permissions_manufacturers', 10, 4 );
 function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
 
@@ -940,6 +941,77 @@ function lhg_get_scan_uploader_guid( $sid ) {
         return $guid;
 }
 
+
+function lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args) {
+
+        if ( lhg_uid_is_manufacturer($user_id) ) {
+                #error_log("Manufactruer");
+
+                #check if current page is an article
+                if (!is_single() ) return false;
+                #error_log ("this is a single page");
+
+                # check if article tags belong to manufacturer
+                if ( !lhg_check_if_manufacturer_can_edit( $user_id, get_the_ID() ) ) return false;
+
+
+                # all checks passed - manufacturer can edit this article
+                if ( ( ( 'edit_post' == $cap )  && in_array( 'edit_others_posts', $caps) ) or
+	             ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) or   # needed for comment activation
+        	     ( ( 'edit_post' == $cap )  && in_array( 'edit_published_posts', $caps) ) or   # edit translated posts
+	             ( ( 'edit_others_posts' == $cap )  && in_array( 'edit_others_posts', $caps) ) ){
+			$caps = array();
+	                return $caps;
+		}
+
+        } else {
+                #error_log("No manufactruer");
+                return false;
+        }
+
+        return false;
+
+}
+
+function lhg_check_if_manufacturer_can_edit( $user_id, $post_id ) {
+
+        global $lhg_price_db;
+        global $lang;
+
+	if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_tags_com FROM `lhgtransverse_users` WHERE wpuid = %s", $user_id);
+	if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_tags_de FROM `lhgtransverse_users` WHERE wpuid_de = %s", $user_id);
+	$taglist = $lhg_price_db->get_var($myquery);
+
+        # check if article tags
+        $tagarray = explode(",",$taglist);
+
+
+        $posttags = wp_get_post_tags($post_id, array('fields' => 'ids') );
+
+        foreach ($tagarray as $usertag){
+	        foreach ($posttags as $posttag){
+                	#error_log ("UTag: $usertag = $posttag ?");
+                        if ($usertag == $posttag) return true; #corresponding manufacturer found
+		}
+	}
+        return false; # article does not belong to manufacturer
+}
+
+function lhg_uid_is_manufacturer( $user_id ) {
+
+        global $lhg_price_db;
+        global $lang;
+
+	if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT validated_user FROM `lhgtransverse_users` WHERE wpuid = %s", $user_id);
+	if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT validated_user FROM `lhgtransverse_users` WHERE wpuid_de = %s", $user_id);
+	$validation_type = $lhg_price_db->get_var($myquery);
+
+        #error_log("Type: $validation_type");
+
+        if ($validation_type == "manufacturer") return true;
+        return false;
+
+}
 
 
 ?>
