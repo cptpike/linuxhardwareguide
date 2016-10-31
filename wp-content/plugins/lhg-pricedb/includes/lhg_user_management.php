@@ -25,8 +25,15 @@ require_once(plugin_dir_path(__FILE__).'/lhg_user_management_authorship.php');
 
 #apply_filters ( 'map_meta_cap', $caps, $cap, $user_id, $args );
 add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
-add_filter ( 'map_meta_cap', 'lhg_check_permissions_manufacturers', 10, 4 );
+#add_filter ( 'map_meta_cap', 'lhg_check_permissions_manufacturers', 10, 4 );
 function lhg_check_permissions( $caps, $cap, $user_id, $args) {
+
+        $caps_old = $caps;
+        # first check if this is a manufacturer
+        $caps = lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args );
+        #error_log("CAPS: $caps v $caps_old");
+        if ($caps !== false ) return $caps;
+        $caps = $caps_old;
 
 
 	#$karma = cp_getPoints( $user_id ); //get karma points
