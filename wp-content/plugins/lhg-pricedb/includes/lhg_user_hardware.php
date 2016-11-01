@@ -37,7 +37,7 @@ function lhg_check_sid_contains_article( $sid, $post_id ) {
         global $lhg_price_db;
         global $lang;
 
-	$myquery = $lhg_price_db->prepare("SELECT postid FROM `lhghwscans` WHERE sid = %s AND postid = %s", $sid, $post_id);
+	$myquery = $lhg_price_db->prepare("SELECT id FROM `lhghwscans` WHERE sid = %s AND postid = %s", $sid, $post_id);
 	$results = $lhg_price_db->get_results($myquery);
 
         if ( !empty($results) ) return true;
