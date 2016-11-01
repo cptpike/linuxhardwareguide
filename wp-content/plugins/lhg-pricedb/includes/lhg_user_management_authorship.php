@@ -4,6 +4,10 @@
 #error_log("Test");
 
 
+# still in beta / testing phase
+return;
+
+
 /**
  * Register meta box(es).
  */
@@ -19,6 +23,7 @@ add_action( 'add_meta_boxes', 'lhg_authorship_meta_box' );
  */
 function lhg_authorship_display_callback( $post ) {
     // Display code/markup goes here. Don't forget to include nonces!
+
 
 print '
 	<form method="post" name="cp_add_points_form" id="cp_add_points_form">
