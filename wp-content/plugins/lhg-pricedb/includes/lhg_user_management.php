@@ -29,11 +29,18 @@ add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
 function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
         $caps_old = $caps;
-        # first check if this is a manufacturer
+
+        # check if this is a manufacturer
         $caps = lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args );
         #error_log("CAPS: $caps v $caps_old");
         if ($caps !== false ) return $caps;
         $caps = $caps_old;
+
+
+        # check if users own this hardware (i.e. uploaded corresponding scan)
+        $user_owns_hardware = lhg_check_user_owns_hardware( $user_id, get_the_ID() );
+        #error_log("HW associated? $user_owns_hardware");
+        #if ($return === true ) return array();  # article belongs to user
 
 
 	#$karma = cp_getPoints( $user_id ); //get karma points
@@ -45,9 +52,12 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
              ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) or   # needed for comment activation
              ( ( 'edit_post' == $cap )  && in_array( 'edit_published_posts', $caps) ) or   # edit translated posts
              ( ( 'edit_others_posts' == $cap )  && in_array( 'edit_others_posts', $caps) ) ){
-                if ( $karma < LHG_KARMA_edit_others_posts ) {
+
+        	if ( $user_owns_hardware ) {
+			$caps = array();
+                } elseif ( $karma < LHG_KARMA_edit_others_posts ) {
                 	$caps[] = 'activate_plugins';
-                }else{
+                } else {
 			$caps = array();
         	}
                 return $caps;
@@ -55,7 +65,9 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
         if ( 'edit_posts' == $cap ) {
                 #error_log("User wants to edit post - caps:".join(",",$caps) );
-                if ( $karma < LHG_KARMA_edit_posts ) {
+                if ( $user_owns_hardware ) {
+			$caps = array();
+                } elseif ( $karma < LHG_KARMA_edit_posts ) {
                         #error_log("Not enough points!");
                 	$caps[] = 'activate_plugins';
                 }else{
@@ -93,13 +105,14 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 	$caps[] = 'activate_plugins';
                 }else{
         		$caps = array();
-
         	}
                 return $caps;
 	}
 
         if ( 'edit_published_posts' == $cap ) {
-                if ( $karma < LHG_KARMA_edit_published_posts ) {
+                if ( $user_owns_hardware ) {
+			$caps = array();
+                }elseif ( $karma < LHG_KARMA_edit_published_posts ) {
                 	$caps[] = 'activate_plugins';
                 }else{
 			$caps = array();
@@ -122,7 +135,6 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 	#}
 
         #error_log("Unknown cap: $cap - caps:".join(",",$caps) );
-
 
 	return $caps;
 }
@@ -951,12 +963,17 @@ function lhg_get_scan_uploader_guid( $sid ) {
 
 function lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args) {
 
+        global $post;
+
         if ( lhg_uid_is_manufacturer($user_id) ) {
                 #error_log("Manufactruer");
+                #error_log (" PID: ".get_the_ID() );
+                #error_log (" post: ".$post->ID );
 
                 #check if current page is an article
-                if (!is_single() ) return false;
-                #error_log ("this is a single page");
+                if ( $post->ID == "" ) return false;
+
+                #error_log ("this is a single page. PID: ".get_the_ID() );
 
                 # check if article tags belong to manufacturer
                 if ( !lhg_check_if_manufacturer_can_edit( $user_id, get_the_ID() ) ) return false;
