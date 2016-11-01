@@ -29,7 +29,7 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_shortcodes.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_auto_finder.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_donations.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_user_management.php');
-require_once(plugin_dir_path(__FILE__).'includes/lhg_chat.php');
+#require_once(plugin_dir_path(__FILE__).'includes/lhg_chat.php');
 #require_once(plugin_dir_path(__FILE__).'includes/lhg_wpadmin_mods.php');
 require_once('/var/www/wordpress/version.php');
 
