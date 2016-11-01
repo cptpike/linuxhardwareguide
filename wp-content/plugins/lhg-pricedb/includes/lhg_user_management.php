@@ -38,6 +38,7 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
 
         # check if users own this hardware (i.e. uploaded corresponding scan)
+        if ($user_id > 0)
         $user_owns_hardware = lhg_check_user_owns_hardware( $user_id, get_the_ID() );
         #error_log("HW associated? $user_owns_hardware");
         #if ($return === true ) return array();  # article belongs to user
