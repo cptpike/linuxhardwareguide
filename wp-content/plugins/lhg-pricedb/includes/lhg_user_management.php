@@ -28,6 +28,9 @@ add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
 #add_filter ( 'map_meta_cap', 'lhg_check_permissions_manufacturers', 10, 4 );
 function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
+        # all of this makes only sense if user is logged in
+        if ( ($user_id == 0) or ($user_id == "") ) return $caps;
+
         $caps_old = $caps;
 
         # check if this is a manufacturer
