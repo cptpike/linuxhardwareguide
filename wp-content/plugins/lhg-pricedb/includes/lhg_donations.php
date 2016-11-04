@@ -163,7 +163,9 @@ function lhg_return_donation_results($startdate, $enddate) {
         # ToDo: Currently, provided time frame is ignored
         # ongoing quarter is always used
 
-	list($list_guid, $list_points) = cp_getAllQuarterlyPoints_transverse();
+	list($list_guid, $list_points) = cp_getAllQuarterlyPoints_transverse( $startdate, $enddate );
+
+        #error_log("Start: $startdate End: $enddate");
 
         #print "Userpoints: ";
         #var_dump($list_points);
@@ -210,6 +212,51 @@ function lhg_return_donation_results($startdate, $enddate) {
 
 	return array($donation_target_sum, $donation_target_users);
 	#return array($donation_target_sum, $dnoation_targets);
+}
+
+function lhg_update_points_db(){
+
+        global $wpdb;
+        global $lang;
+
+        # get latest timestamp from PriceDB
+        global $lhg_price_db;
+	if ($lang != "de") $sql = "SELECT MAX(timestamp) FROM lhgtransverse_points WHERE wpuid_com > 0";
+	if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM lhgtransverse_points WHERE wpuid_de > 0";
+        $timestamp = $lhg_price_db->get_var($sql);
+
+        # find new entries
+	$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` WHERE timestamp > `'.$timestamp.'` ORDER BY timestamp DESC ') . $limitq);
+
+        # Sum up achieved points of the accumulation time span
+	foreach($results as $result){
+		$user = get_userdata($result->uid);
+		$username = $user->user_login;
+		$user_nicename = $user->display_name;
+		$points = $result->points;
+                #$cp_inQuarter = cp_TimeInQuarter($result->timestamp);
+		error_log( "($lang) $user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data ");
+
+                lhg_add_points_to_db( $result->uid, $result->points, $result->timestamp, $result->type, $result->data );
+
+        }
+}
+
+function lhg_add_points_to_db( $uid, $points, $timestamp, $type, $comment){
+
+        	global $lhg_price_db;
+                global $lang;
+		$sql = "SELECT id FROM lhgtransverse_points WHERE wpuid_com = \"".$uid."\" AND timestamp = \"".$timestamp."\" ";
+                $results = $lhg_price_db->get_var($sql);
+
+                if ( !empty($results) ) return; #data already in DB, do not overwrite
+
+		if ($lang != "de" ) $sql = "INSERT INTO lhgtransverse_points (wpuid_com, points, timestamp, type, comment) VALUES (%s, %s, %s, %s, %s) ";
+		if ($lang == "de" ) $sql = "INSERT INTO lhgtransverse_points (wpuid_de , points, timestamp, type, comment) VALUES ('%s', '%s', '%s', '%s', '%s') ";
+                $safe_sql = $lhg_price_db->prepare( $sql, $uid, $points, $timestamp, $type, $comment);
+                #error_log("SQL: $safe_sql");
+                $result = $lhg_price_db->query($safe_sql);
+
 }
 
 ?>
