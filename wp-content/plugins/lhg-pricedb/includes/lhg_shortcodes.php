@@ -6,6 +6,7 @@ add_shortcode( 'lhg_mainboard_intro', 'lhg_mainboard_intro_shortcode');
 add_shortcode( 'lhg_mainboard_lspci', 'lhg_mainboard_lspci_shortcode');
 add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
+add_shortcode( 'lhg_donation_history', 'lhg_donation_history');
 add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
 add_shortcode( 'lhg_donation_testing', 'lhg_donation_testing');
 add_shortcode( 'lhg_scan_overview', 'lhg_scan_overview_shortcode');
@@ -661,11 +662,14 @@ function lhg_scan_overview_shortcode($attr) {
 
 			$output .= "<tr id=\"regcont\">";
 
+                        $langurl = "/".$langurl;
+                        if ($langurl == "/") $langurl = "";
+                        $langurl = str_replace("//","/",$langurl);
 
                         $output .= "
                         <td id=\"col-hw\">
 
-                        ".'<div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">&nbsp;<a href="/'.$langurl.'/hardware-profile/system-'.$pub_id.'" target="_blank">'.$scandate_txt.' (see details ...)</a></div></div>';
+                        ".'<div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">&nbsp;<a href="'.$langurl.'/hardware-profile/system-'.$pub_id.'" target="_blank">'.$scandate_txt.' (see details ...)</a></div></div>';
 			$output .= " </td>";
 
                         # Status ---
@@ -729,6 +733,9 @@ function lhg_donation_table_shortcode($attr) {
         global $txt_cp_totalkarma;
         global $txt_cp_details;
 
+        # update detailed points overview in transverse DB
+        lhg_update_points_db();
+
         # before we create the table we update the data in the transverse DB
         lhg_update_karma_values('quarterly');
 
@@ -738,8 +745,8 @@ function lhg_donation_table_shortcode($attr) {
 
         $langurl = lhg_get_lang_url_from_region( $region );
 
-	# Show table of top users of ongoing Quarter
-	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse();
+	# Show table of top users of ongoing quarter
+	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse( false, false );
 
 
         $i = 0;
@@ -1066,6 +1073,78 @@ function lhg_donation_list_shortcode($attr) {
 
         return $output;
 }
+
+function lhg_donation_history($attr) {
+        global $lang;
+
+	$start = $attr['start'];
+	$end   = $attr['end'];
+
+        list($endyear, $endmonth) = explode("-",$end);
+        $enddate = "1-".( intval($endmonth) +1)."-".$endyear;
+
+        $start_timestamp = strtotime($start);
+	$end_timestamp   = strtotime($enddate);
+
+	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse( $start_timestamp, $end_timestamp );
+
+        #print_r("LGUID:   $list_guid");
+        var_dump($list_guid);
+        var_dump($list_points_guid);
+
+
+        $i = 0;
+        if (sizeof($list_guid) > 0)
+	foreach($list_guid as $guid){
+
+
+		$user_tmp = lhg_get_userdata_guid($guid);
+                $user=$user_tmp[0];
+
+                if ( $user !== false ){
+                	#var_dump($user);
+                        #print sizeof($uid)."<p>";
+        	        $user_nicename = $user->user_nicename;
+                	$points = $list_points_guid[$i];
+
+			# get user's avatar
+                        $avatar = $user->avatar;
+                        # repair URL if linking to .de avatar on .com server
+                        if (strpos($avatar,"src='/avatars/") > 0) $avatar = str_replace( "src='/avatars/" , "src='http://www.linux-hardware-guide.de/avatars/" , $avatar );
+
+                        $wpuid_de = $user->wpuid_de;
+                        $wpuid_com = $user->wpuid;
+	                $user_language_txt = $user->language;
+        		$user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
+			$total_karma = $user->karma_com + $user->karma_de; //$num_com * 3 + $num_art * 50;
+
+                        if ($lang == "de") $uid = $user->wpuid_de;
+                        if ($lang == "com") $uid = $user->wpuid;
+
+                        //registration date
+                        #$regdate = date("d. M Y", strtotime(get_userdata( $uid ) -> user_registered ) );
+
+                        //donates to
+                        if ($user->donation_target_date_de > $user->donation_target_date_com) $donation_target = $user->donation_target_de;
+                        if ($user->donation_target_date_de <= $user->donation_target_date_com) $donation_target = $user->donation_target_com;
+                        if ($donation_target == "") $donation_target = 1;
+                        if ($donation_target == 0) $donation_target = 1;
+
+                        $output .="User: $user_nicename -> Points: $points -> $donation_target <br>";
+
+		}
+                $i++;
+	}
+
+
+        #$iendmonth= (int)$endmonth;
+        $output .= "Donation History: -> ";
+
+
+
+        return $output;
+}
+
 
 function lhg_scancommand_shortcode($attr) {
         global $lang;
