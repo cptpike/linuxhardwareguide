@@ -283,6 +283,7 @@ function lhg_return_donation_results($startdate, $enddate) {
 
 function lhg_update_points_db(){
 
+        #error_log("Updating Points DB");
         global $wpdb;
         global $lang;
 
@@ -293,10 +294,16 @@ function lhg_update_points_db(){
         $timestamp = $lhg_price_db->get_var($sql);
 
         # Need this if run for the very first time
-        if ($timestamp == "") $timestamp = 0;
-
-        # find new entries
-	$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` WHERE timestamp > `'.$timestamp.'` ORDER BY timestamp DESC ') . $limitq);
+        if ($timestamp == "") {
+                # first run
+                $timestamp = 1;
+	        #error_log("Timestamp: $timestamp");
+        	# find new entries
+		$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` ORDER BY timestamp DESC ') );
+        }else{
+        	# find new entries
+		$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` WHERE timestamp > `'.$timestamp.'` ORDER BY timestamp DESC ') . $limitq);
+	}
 
         # Sum up achieved points of the accumulation time span
 	foreach($results as $result){
@@ -305,7 +312,7 @@ function lhg_update_points_db(){
 		$user_nicename = $user->display_name;
 		$points = $result->points;
                 #$cp_inQuarter = cp_TimeInQuarter($result->timestamp);
-		error_log( "($lang) $user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data ");
+		#error_log( "($lang) $user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data ");
 
                 lhg_add_points_to_db( $result->uid, $result->points, $result->timestamp, $result->type, $result->data );
 
