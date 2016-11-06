@@ -362,23 +362,46 @@ function cp_getAllQuarterlyPoints(){
 
 }
 
-function cp_getAllQuarterlyPoints_transverse(){
+function cp_getAllQuarterlyPoints_transverse( $startdate, $enddate ){
 
         global $lhg_price_db;
-        $sql = "SELECT * FROM `lhgtransverse_users` WHERE karma_quarterly_com <> 0 OR karma_quarterly_de <> 0";
-        $results = $lhg_price_db->get_results($sql);
+
+        if (is_numeric( $startdate ) && is_numeric( $enddate ) ){
+	        $sql = "SELECT * FROM `lhgtransverse_points` WHERE timestamp > $startdate AND timestamp < $enddate ";
+	        $results = $lhg_price_db->get_results($sql);
+
+	        # Sum up achieved points of the accumulation time span
+		foreach($results as $result){
+			$points = $result->points;
+
+                        # get guid
+                        if ( ($result->wpuid_com) > 0) $guid = lhg_get_guid_from_wpuid_com($result->wpuid_com);
+                        if ( ($result->wpuid_de) > 0) $guid = lhg_get_guid_from_wpuid_de($result->wpuid_de);
+
+                        # collect data in array
+			$founduser_points[$guid] += $points;
+        	        $founduser_guid[$guid] = $guid;
+                        #error_log("P: $points -> $guid -> ".$result->wpuid_com."");
+	        }
 
 
-        # Sum up achieved points of the accumulation time span
-	foreach($results as $result){
-		$user_nicename = $result->user_nicename;
-		$points = $result->karma_quarterly_com + $result->karma_quarterly_de;
-                #$cp_inQuarter = cp_TimeInQuarter($result->timestamp);
-		#print "$user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data <br>";
+	}else{
+        	$sql = "SELECT * FROM `lhgtransverse_users` WHERE karma_quarterly_com <> 0 OR karma_quarterly_de <> 0";
+	        $results = $lhg_price_db->get_results($sql);
 
-                $founduser_points[$result->id] = $points;
-                $founduser_guid[$result->id] = $result->id;
+	        # Sum up achieved points of the accumulation time span
+		foreach($results as $result){
+			$user_nicename = $result->user_nicename;
+			$points = $result->karma_quarterly_com + $result->karma_quarterly_de;
+        	        #$cp_inQuarter = cp_TimeInQuarter($result->timestamp);
+			#print "$user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data <br>";
+
+	                $founduser_points[$result->id] = $points;
+        	        $founduser_guid[$result->id] = $result->id;
+	        }
         }
+
+
         #print "USERP: <br>";
         #var_dump($founduser_points);
         #print "<br>ID: <br>";

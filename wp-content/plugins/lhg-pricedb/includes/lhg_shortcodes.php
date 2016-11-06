@@ -1076,6 +1076,7 @@ function lhg_donation_list_shortcode($attr) {
 
 function lhg_donation_history($attr) {
         global $lang;
+        global $donation;
 
 	$start = $attr['start'];
 	$end   = $attr['end'];
@@ -1089,10 +1090,9 @@ function lhg_donation_history($attr) {
 	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse( $start_timestamp, $end_timestamp );
 
         #print_r("LGUID:   $list_guid");
-        var_dump($list_guid);
-        var_dump($list_points_guid);
 
-
+	$total_points = 0; # collects all points collected in this time frame
+        $donation_points = array(); # collects all points per donation target in this time frame
         $i = 0;
         if (sizeof($list_guid) > 0)
 	foreach($list_guid as $guid){
@@ -1125,12 +1125,87 @@ function lhg_donation_history($attr) {
                         #$regdate = date("d. M Y", strtotime(get_userdata( $uid ) -> user_registered ) );
 
                         //donates to
-                        if ($user->donation_target_date_de > $user->donation_target_date_com) $donation_target = $user->donation_target_de;
-                        if ($user->donation_target_date_de <= $user->donation_target_date_com) $donation_target = $user->donation_target_com;
-                        if ($donation_target == "") $donation_target = 1;
-                        if ($donation_target == 0) $donation_target = 1;
+                        # TODO:
+                        # to be updated, because we need the donation target at the end of the given time frame
+                        $donation_target = lhg_get_donation_target_by_date( $guid, $end_timestamp );
 
-                        $output .="User: $user_nicename -> Points: $points -> $donation_target <br>";
+                        $total_points += $points;
+                        $donation_points[$donation_target] += $points;
+                        #$output .="User: $user_nicename -> Points: $points -> $donation_target <br>";
+
+
+                        ## show user info
+                        ##
+			$user_list .= '<div class="donations-short-user-list">
+                        		<div class="donations-short-user-list-avatar">';
+
+			# TODO: localized hardware profile should be linked. Not US version
+
+			# linked avatar to user page if on local server
+			# link avatar to guser page, if user present on other servers
+			if ($lang == "de") {
+				if ($user->wpuid_de != 0) {
+					$user_list .= '<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+			                $close0 = 1; # remember that link has to be closed
+			        } else {
+					$user_list .= '<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close0 = 1;
+			        }
+			}
+
+			if ($lang != "de") {
+				if ($user->wpuid != 0) {
+					$user_list .= '<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+			                $close0 = 1; # remember that link has to be closed
+			        } else {
+					$user_list .= '<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close0 = 1; # remember that link has to be closed
+			        }
+			}
+
+			$user_list .='    <div class="userlist-avatar">'.
+			      $avatar.'
+			    </div> ';
+
+			if ($close0 == 1) $user_list .= '</a></div>';
+                        $user_list .= '<div class="donations-short-user-list-text"><center>';
+
+
+			# show link to user page if on local server
+			# link to guser page, if user present on other servers
+			if ($lang == "de") {
+				if ($user->wpuid_de != 0) {
+			        	$user_list .= '		<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+			                $close1 = 1; # remember that link has to be closed
+			        } else {
+			        	$user_list .= '		<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close1 = 1;
+			        }
+			}
+
+			if ($lang != "de") {
+				if ($user->wpuid != 0) {
+			        	$user_list .= '		<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+			                $close1 = 1;
+			        } else {
+			        	$user_list .= '		<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close1 = 1;
+			        }
+			}
+
+			$user_list .= "".$user_nicename."";
+
+			if ($close1 == 1) $user_list .= '</a>';
+
+
+
+
+                        $user_list .= "<br>$points Points
+                         to<br>".
+                        $donation[$donation_target]["Name"]."
+
+                        </center> </div>";
+                        $user_list .= "</div>";
 
 		}
                 $i++;
@@ -1138,7 +1213,18 @@ function lhg_donation_history($attr) {
 
 
         #$iendmonth= (int)$endmonth;
-        $output .= "Donation History: -> ";
+        $output .= "<h2>Donations from ".date("d M Y",$start_timestamp)." to ".date("d M Y",$end_timestamp).":</h2>
+                        Collected Points: <b>$total_points</b><br>
+                        ";
+
+	foreach($donation_points as $key => $donation_point){
+                if ($donation_point > 0)
+                $output .= "Donations to ". $donation[$key]["Name"].": <b>".round($donation_point/$total_points*100)."%</b> ($donation_point points)<br>";
+	}
+
+
+        $output .= "<br>Users that collected and donated points:<br>
+        ".$user_list."";
 
 
 

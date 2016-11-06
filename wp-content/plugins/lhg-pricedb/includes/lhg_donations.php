@@ -111,16 +111,81 @@ global $donation;
 
 function lhg_update_donation_settings(){
   global $lang;
+  global $lhg_price_db;
+
+  error_log("Update settings");
 
   //echo "Found??: ".$_POST['lhg_user_donation_target'];
 
   if(!isset($_POST['lhg_user_donation_target']))
    return;
-  //get user id
-  $user_id = get_current_user_id();
   //validate submitted value otherwise set to default
   $user_donation_target = $_POST['lhg_user_donation_target'];
-  //update user locale
+
+
+  // get user id
+  // check if own or other user's profile is edited
+  $user_id = get_current_user_id();
+  $edituser = $_POST['user_id'];
+
+  if ( ($edituser > 0 ) && ($edituser != $user_id) ) {
+	  #error_log("Editing of other user: ".$edituser);
+          $guid = lhg_get_guid( $edituser );
+          $user_id = $edituser;
+  }else{
+	  $current_user = wp_get_current_user();
+	  $cuid = $current_user->ID;
+	  $guid = lhg_get_guid( $cuid);
+	  #error_log("UID settings to be conged for  changed: $user_id - $guid");
+  }
+  
+  // first add to history DB before value is overwritten
+  $timestamp = time();
+
+  // check if old value exists, if not, store for history reasons
+  $sql = "SELECT id FROM `lhgtransverse_donations` WHERE guid = \"".$guid."\" ";
+  $result = $lhg_price_db->get_var($sql);
+  if ($result == "") {
+        # old value was not stored. Entry needed. First get old value
+
+        #error_log("No entry found for $guid");
+
+	$sql = "SELECT *  FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+  	$results = $lhg_price_db->get_results($sql);
+
+        #var_dump($results);
+
+        #error_log("DB res: ".$results[0]->donation_target_com);
+        #error_log("DB res: ".$results[0]->donation_target_de);
+
+	if ( ( $results[0]->donation_target_com != "" ) && ( $results[0]->donation_target_date_com > $results[0]->donation_target_date_de ) ) {
+                # found an old and valid com value
+		$sql = "INSERT INTO lhgtransverse_donations (guid, timestamp, donation_target) VALUES (%s, %s, %s) ";
+		$safe_sql = $lhg_price_db->prepare( $sql, $guid, $timestamp-1, $results[0]->donation_target_com);
+		$result = $lhg_price_db->query($safe_sql);
+	}elseif ( ( $results[0]->donation_target_d != "" ) && ( $results[0]->donation_target_date_de > $results[0]->donation_target_date_com ) ) {
+                # found an old and valid de value
+		$sql = "INSERT INTO lhgtransverse_donations (guid, timestamp, donation_target) VALUES (%s, %s, %s) ";
+		$safe_sql = $lhg_price_db->prepare( $sql, $guid, $timestamp-1, $results[0]->donation_target_de);
+		$result = $lhg_price_db->query($safe_sql);
+	}else{
+                #nothing found, fallback value used
+                # found an old and valid de value
+		$sql = "INSERT INTO lhgtransverse_donations (guid, timestamp, donation_target) VALUES (%s, %s, %s) ";
+		$safe_sql = $lhg_price_db->prepare( $sql, $guid, $timestamp-1, 1);
+		$result = $lhg_price_db->query($safe_sql);
+        }
+
+  }
+
+  #write new settings to DB
+  $sql = "INSERT INTO lhgtransverse_donations (guid, timestamp, donation_target) VALUES (%s, %s, %s) ";
+  $safe_sql = $lhg_price_db->prepare( $sql, $guid, $timestamp, $user_donation_target);
+  $result = $lhg_price_db->query($safe_sql);
+
+
+
+  //afterwards, modify user entires (locally and in transverse DB)
   update_user_meta($user_id, 'user_donation_target', $user_donation_target);
 
   //also store in priceDB
@@ -129,8 +194,10 @@ function lhg_update_donation_settings(){
   if ($lang != "de") lhg_update_userdb_by_uid( "donation_target_date_com", $user_id, time() );
   if ($lang == "de") lhg_update_userdb_by_uid( "donation_target_date_de", $user_id, time() );
 
- }
+
+}
 add_filter('personal_options_update','lhg_update_donation_settings');
+add_filter('edit_user_profile_update','lhg_update_donation_settings');
 
 
 function lhg_return_donation_targets() {
@@ -258,5 +325,38 @@ function lhg_add_points_to_db( $uid, $points, $timestamp, $type, $comment){
                 $result = $lhg_price_db->query($safe_sql);
 
 }
+
+# This function returns the selected donation target, which was selected by a user at a certain date
+# needed for calculation of donation histories
+function lhg_get_donation_target_by_date($guid, $timestamp) {
+
+        global $lhg_price_db;
+
+        # 1 look if donation target is set in history DB
+        $sql = "SELECT donation_target FROM `lhgtransverse_donations` WHERE guid = \"".$guid."\" AND timestamp < \"".$timestamp."\" ORDER BY timestamp DESC LIMIT 1 ";
+  	$result = $lhg_price_db->get_var($sql);
+        #error_log("Test 1: $result for $guid");
+        if ($result > 0) return $result;
+
+        # 2 look if a later entry exists (i.e. donation target was never changed before)
+        $sql = "SELECT donation_target FROM `lhgtransverse_donations` WHERE guid = \"".$guid."\" ORDER BY timestamp ASC LIMIT 1 ";
+  	$result = $lhg_price_db->get_var($sql);
+        #error_log("Test 2: $result for $guid");
+        if ($result > 0) return $result;
+
+        # 3 look if value exists in transverse user DB
+        $user_tmp = lhg_get_userdata_guid($guid);
+        $user=$user_tmp[0];
+        if ($user->donation_target_date_de > $user->donation_target_date_com) $donation_target = $user->donation_target_de;
+        if ($user->donation_target_date_de <= $user->donation_target_date_com) $donation_target = $user->donation_target_com;
+        if ($donation_target == "") $donation_target = 1;
+        if ($donation_target == 0) $donation_target = 1;
+        #error_log("Test 3: $donation_target for $guid");
+        if ($result > 0) return $donation_target;
+
+        #error_log("Test 4: default for $guid");
+        return 1; # default value if nothing found
+}
+
 
 ?>
