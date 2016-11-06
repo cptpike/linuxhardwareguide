@@ -2891,3 +2891,29 @@ tr#quarterly-points-header-row {
 	font-style: italic;
         font-size: 0.9em;
 }
+
+.donations-short-user-list{
+	border: 0px solid;
+        float: left;
+        padding: 10px;
+        
+}
+
+.donations-short-user-list-avatar{
+	border: 0px solid red;
+	// #width: 50%;
+        width: 41px;
+        height: 41px;
+        padding 1px;
+        margin: 1px auto;
+}
+
+.donations-short-user-list-text{
+	border: 0px solid green;
+	// #width: 50%;
+
+        padding 1px;
+        margin: 1px auto;
+        align: center;
+}
+
