@@ -1090,9 +1090,6 @@ function lhg_donation_history($attr) {
 	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse( $start_timestamp, $end_timestamp );
 
         #print_r("LGUID:   $list_guid");
-        var_dump($list_guid);
-        var_dump($list_points_guid);
-
 
 	$total_points = 0; # collects all points collected in this time frame
         $donation_points = array(); # collects all points per donation target in this time frame
