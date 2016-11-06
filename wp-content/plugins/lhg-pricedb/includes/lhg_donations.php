@@ -293,6 +293,8 @@ function lhg_update_points_db(){
 	if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM lhgtransverse_points WHERE wpuid_de > 0";
         $timestamp = $lhg_price_db->get_var($sql);
 
+        #error_log("Found timestamp: $timestamp");
+
         # Need this if run for the very first time
         if ($timestamp == "") {
                 # first run
@@ -359,10 +361,8 @@ function lhg_get_donation_target_by_date($guid, $timestamp) {
         $user=$user_tmp[0];
         if ($user->donation_target_date_de > $user->donation_target_date_com) $donation_target = $user->donation_target_de;
         if ($user->donation_target_date_de <= $user->donation_target_date_com) $donation_target = $user->donation_target_com;
-        if ($donation_target == "") $donation_target = 1;
-        if ($donation_target == 0) $donation_target = 1;
         #error_log("Test 3: $donation_target for $guid");
-        if ($result > 0) return $donation_target;
+        if ($donation_target > 0) return $donation_target;
 
         #error_log("Test 4: default for $guid");
         return 1; # default value if nothing found
