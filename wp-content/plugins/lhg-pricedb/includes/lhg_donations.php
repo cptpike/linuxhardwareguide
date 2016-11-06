@@ -292,6 +292,9 @@ function lhg_update_points_db(){
 	if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM lhgtransverse_points WHERE wpuid_de > 0";
         $timestamp = $lhg_price_db->get_var($sql);
 
+        # Need this if run for the very first time
+        if ($timestamp == "") $timestamp = 0;
+
         # find new entries
 	$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` WHERE timestamp > `'.$timestamp.'` ORDER BY timestamp DESC ') . $limitq);
 
