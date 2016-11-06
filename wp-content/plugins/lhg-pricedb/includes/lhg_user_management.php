@@ -919,6 +919,34 @@ function lhg_get_guid( $uid ) {
         return $results[0]->id;
 }
 
+function lhg_get_guid_from_wpuid_com( $uid ) {
+        global $lhg_price_db;
+
+        if ($uid == "") {
+                error_log("ERROR: lhg_get_guid_from_wpuid_com -> empty uid provided");
+                return;
+	}
+
+	$sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+
+        return $results[0]->id;
+}
+
+function lhg_get_guid_from_wpuid_de( $uid ) {
+        global $lhg_price_db;
+
+        if ($uid == "") {
+                error_log("ERROR: lhg_get_guid_from_wpuid_de -> empty uid provided");
+                return;
+	}
+
+	$sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+
+        return $results[0]->id;
+}
+
 # return the UID (of current server) based on global UID
 function lhg_get_uid_from_guid( $guid ) {
         global $lhg_price_db;
