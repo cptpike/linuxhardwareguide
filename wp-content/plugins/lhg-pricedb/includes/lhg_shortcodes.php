@@ -11,6 +11,7 @@ add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
 add_shortcode( 'lhg_donation_testing', 'lhg_donation_testing');
 add_shortcode( 'lhg_scan_overview', 'lhg_scan_overview_shortcode');
 add_shortcode( 'lhg_graphicscard', 'lhg_graphicscard_shortcode');
+add_shortcode( 'lhg_hardware_scans_points', 'lhg_hardware_scans_points_shortcode');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -1087,12 +1088,59 @@ function lhg_donation_history($attr) {
         $start_timestamp = strtotime($start);
 	$end_timestamp   = strtotime($enddate);
 
+        # 
+	$total_points = 0; # collects all points collected in this time frame
+        $donation_points = array(); # collects all points per donation target in this time frame
+
+
+        #
+        # donation points by hardware scans
+        #
+        # donations to distribution was introduced after 09-2016
+        # skip output otherwise
+        if ( $end_timestamp > strtotime("1-10-2016") ) {
+		$points_scan = lhg_points_from_hwscans( $start_timestamp, $end_timestamp );
+
+        	foreach ($points_scan as $key => $points) {
+                	#error_log("Pts: $points -> $key");
+	                $total_points += $points;
+        	        $donation_points[$key] += $points;
+		}
+	}
+
+        # sort by points
+        arsort($points_scan);
+        $distri = lhg_get_distribution_array();
+	$logo = $distri[$distri_name]["logo"];
+
+        foreach ($points_scan as $key => $points) {
+	        $distri_name = lhg_get_distri_name( $donation[$key]["Name"] );
+		$logo = $distri[$distri_name]["logo"];
+
+                $scan_output .= '<div class="donations-short-user-list">
+                        		<div class="donations-short-user-list-avatar">'.
+
+                                        "<img src=\"".$logo."\" width=45px>
+                                        </div>
+
+                                        ".'<div class="donations-short-user-list-text">
+                                        	<center>'.
+                                        	$donation[$key]["Name"]."<br><b>".round($points/$total_points*100)."%</b> ($points points)
+                                        	</center>
+                                        </div>
+
+                                </div>";
+	}
+
+
+        #
+        # donation points collected by users
+
 	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse( $start_timestamp, $end_timestamp );
 
         #print_r("LGUID:   $list_guid");
 
-	$total_points = 0; # collects all points collected in this time frame
-        $donation_points = array(); # collects all points per donation target in this time frame
+
         $i = 0;
         if (sizeof($list_guid) > 0)
 	foreach($list_guid as $guid){
@@ -1212,6 +1260,11 @@ function lhg_donation_history($attr) {
 	}
 
 
+
+        #print "Scan results:";
+        #var_dump($scans_donation_target);
+
+
         #$iendmonth= (int)$endmonth;
         $output .= "<h2>Donations from ".date("d M Y",$start_timestamp)." to ".date("d M Y",$end_timestamp).":</h2>
                         Collected Points: <b>$total_points</b><br>
@@ -1225,6 +1278,10 @@ function lhg_donation_history($attr) {
 
         $output .= "<br>Users that collected and donated points:<br>
         ".$user_list."";
+
+        # donations to distribution was introduced after 09-2016
+        # skip output otherwise
+        if ( $end_timestamp > strtotime("1-10-2016") ) $output .= '<br clear=all>Hardware scan results:<br>'.$scan_output."<br clear=all>";
 
 
 
@@ -1263,3 +1320,61 @@ function lhg_donation_testing($attr, $content) {
         return;
 }
 
+#shortcode to show points collected by hardware scans
+function lhg_hardware_scans_points_shortcode($attr) {
+        global $lang;
+        global $donation;
+
+	$start = $attr['start'];
+	$end   = $attr['end'];
+
+        $start_timestamp = strtotime($start);
+	$end_timestamp   = strtotime($enddate);
+
+        if ($start == "") $start_timestamp = cp_StartOfQuarter();
+	if ($end == "") $end_timestamp = time();
+
+        #
+	$total_points = 0; # collects all points collected in this time frame
+        $donation_points = array(); # collects all points per donation target in this time frame
+
+        #
+        # donation points by hardware scans
+        #
+
+	$points_scan = lhg_points_from_hwscans( $start_timestamp, $end_timestamp );
+
+        foreach ($points_scan as $key => $points) {
+                #error_log("Pts: $points -> $key");
+                $total_points += $points;
+                $donation_points[$key] += $points;
+
+	}
+
+        # sort by points
+        arsort($points_scan);
+        $distri = lhg_get_distribution_array();
+	$logo = $distri[$distri_name]["logo"];
+
+        foreach ($points_scan as $key => $points) {
+	        $distri_name = lhg_get_distri_name( $donation[$key]["Name"] );
+		$logo = $distri[$distri_name]["logo"];
+                $url  = $distri[$distri_name]["url"];
+
+                $scan_output .= '<div class="donations-short-user-list">
+                        		<div class="donations-short-user-list-avatar">'.
+
+                                        '<a href="'.$url.'">'."<img src=\"".$logo."\" width=45px></a>
+                                        </div>
+
+                                        ".'<div class="donations-short-user-list-text">
+                                        	<center> <a href="'.$url.'">'.
+                                        	$donation[$key]["Name"]."</a><br><b>$points points</b>
+                                        	</center>
+                                        </div>
+
+                                </div>";
+	}
+
+        return $scan_output;
+}
