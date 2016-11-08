@@ -36,17 +36,91 @@ $donation = array(
                 ),
 
 	7 => array (
-                "Name" => "Apache Software Foundation",
-                "NameShort" => "ASF",
-                ),
-
-	8 => array (
                 "Name" => "Linux Foundation",
                 "NameShort" => "Linux FND",
                 ),
 
+	8 => array (
+                "Name" => "Ubuntu community projects",
+                "NameShort" => "Ubuntu",
+                ),
 
-             );
+	9 => array (
+                "Name" => "SPI / Debian",
+                "NameShort" => "SPI / Debian",
+                ),
+
+	10 => array (
+                "Name" => "Korora Project",
+                "NameShort" => "Korora",
+                ),
+
+	11 => array (
+                "Name" => "SPI / Arch Linux",
+                "NameShort" => "SPI / Arch",
+                ),
+
+	12 => array (
+                "Name" => "Manjaro Linux",
+                "NameShort" => "Manjaro",
+                ),
+
+	13 => array (
+                "Name" => "Raspbian",
+                "NameShort" => "Raspbian",
+                ),
+
+	14 => array (
+                "Name" => "Ultimate Edition",
+                "NameShort" => "Ultimate Edition",
+                ),
+
+	15 => array (
+                "Name" => "Gentoo Linux",
+                "NameShort" => "Gentoo",
+                ),
+
+	16 => array (
+                "Name" => "Linux From Scratch",
+                "NameShort" => "LFS",
+                ),
+
+	17 => array (
+                "Name" => "Mageia",
+                "NameShort" => "Mageia",
+                ),
+
+	18 => array (
+                "Name" => "Pisi Linux",
+                "NameShort" => "Pisi Linux",
+                ),
+
+	19 => array (
+                "Name" => "KDE Neon",
+                "NameShort" => "KDE Neon",
+                ),
+
+	20 => array (
+                "Name" => "Elementary OS",
+                "NameShort" => "Elementary OS",
+                ),
+
+	21 => array (
+                "Name" => "ALDOS",
+                "NameShort" => "Aldos",
+                ),
+
+	22 => array (
+                "Name" => "CentOS",
+                "NameShort" => "CentOS",
+                ),
+
+	23 => array (
+                "Name" => "PCLinuxOS",
+                "NameShort" => "PCLinuxOS",
+                ),
+
+);
 
 
 # show donation selector on profile page
@@ -220,6 +294,23 @@ function lhg_return_donation_targets() {
 
 	}
 
+        # also include points from hardware scans
+        $start_timestamp = cp_StartOfQuarter();
+	$points_scan = lhg_points_from_hwscans( $start_timestamp, time() );
+
+        foreach ($points_scan as $key => $points) {
+                #error_log("Pts: $points -> $key");
+                $total_points += $points;
+                $donation_points[$key] += $points;
+
+                $donation_targets[$j] = $donation[$key]["Name"];
+                $donation_points[$j] = $points;
+                $donation_users[$j] = 0;
+
+                $j++;
+	}
+
+
         return array($donation_targets, $donation_points, $donation_users);
 }
 
@@ -368,5 +459,37 @@ function lhg_get_donation_target_by_date($guid, $timestamp) {
         return 1; # default value if nothing found
 }
 
+# calcualte donation points coming from hardware scans
+function lhg_points_from_hwscans( $start_timestamp, $end_timestamp ) {
+
+        global $lhg_price_db;
+
+        # 1 look if donation target is set in history DB
+        $sql = "SELECT distribution FROM `lhgscansessions` WHERE scandate >= \"".$start_timestamp."\" AND scandate < \"".$end_timestamp."\" ";
+  	$results = $lhg_price_db->get_results($sql);
+
+        $distri_array = lhg_get_distribution_array();
+
+        $donation_targets = array();
+        $points = array();
+
+        foreach ($results as $result) {
+                # get distribution id string
+                $distri = lhg_get_distri_name($result->distribution);
+
+                #error_log("SCans: $distri -> $donation_target");
+
+                # to whom to contribute the donation points for this distribution?
+                $donation_target = $distri_array[$distri]["donation_target"];
+
+                if ($donation_target > 0) {
+                        # donate some karma points for each scan
+	                $points[$donation_target] += 20;
+		}
+	}
+
+        return $points;
+        #return array($donation_targets, $points);
+}
 
 ?>
