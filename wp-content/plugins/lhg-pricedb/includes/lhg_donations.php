@@ -120,6 +120,16 @@ $donation = array(
                 "NameShort" => "PCLinuxOS",
                 ),
 
+	24 => array (
+                "Name" => "Chakra",
+                "NameShort" => "Chakra",
+                ),
+
+	25 => array (
+                "Name" => "Slackware",
+                "NameShort" => "Slackware",
+                ),
+
 );
 
 
