@@ -193,6 +193,19 @@ function lhg_get_distribution_array( )  {
                         "url" => "http://www.pclinuxos.com/",
                         "donation_target" => 23
                         ),
+
+                "chakra" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/chakra-logo.png",
+                        "url" => "https://chakralinux.org/",
+                        "donation_target" => 24
+                        ),
+
+                "slackware" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/slackware-logo.png",
+                        "url" => "http://www.slackware.com/",
+                        "donation_target" => 25
+                        ),
+
 );
 
         return $dist;
@@ -284,6 +297,12 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"PCLinuxOS") > -1 )
                 return "pclinuxos";
+
+        if ( strpos($distribution,"Chakra") > -1 )
+                return "chakra";
+
+        if ( strpos($distribution,"Slackware") > -1 )
+                return "slackware";
 
 }
 
