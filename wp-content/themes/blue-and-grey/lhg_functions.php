@@ -4076,7 +4076,7 @@ if ($lang == "de") {
 	$txt_scan_result	= "Ergebnis";
 	$txt_scan_results	= "Ergebnisse";
 	$txt_scan_title		= "Identifizierte Hardware-Konfigurationen";
-	$txt_scan_text          = 'Diese Hardware-Komponente wurde von Linux-Benutzern unter folgenden System-Konfigurationen eingesetzt. S&auml;mtliche Ergebnisse wurdens mit dem <a href="./add-hardware">LHG Scan Tool</a> gesammelt:';
+	$txt_scan_text          = 'Diese Hardware-Komponente wurde von Linux-Benutzern unter folgenden System-Konfigurationen eingesetzt. S&auml;mtliche Ergebnisse wurdens mit dem <a href="./hardware-eintragen">LHG Scan Tool</a> gesammelt:';
 
 
         //user-submit-form.php
