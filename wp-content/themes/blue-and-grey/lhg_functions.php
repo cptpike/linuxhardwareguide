@@ -206,6 +206,12 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 25
                         ),
 
+                "devuan" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/devuan-logo.png",
+                        "url" => "https://devuan.org/",
+                        "donation_target" => 26
+                        ),
+
 );
 
         return $dist;
@@ -303,6 +309,9 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"Slackware") > -1 )
                 return "slackware";
+
+        if ( strpos($distribution,"Devuan") > -1 )
+                return "devuan";
 
 }
 
