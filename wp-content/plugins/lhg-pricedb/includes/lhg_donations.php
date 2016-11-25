@@ -130,6 +130,11 @@ $donation = array(
                 "NameShort" => "Slackware",
                 ),
 
+	26 => array (
+                "Name" => "Devuan",
+                "NameShort" => "Devuan",
+                ),
+
 );
 
 
