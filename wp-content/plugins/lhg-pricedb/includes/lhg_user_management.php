@@ -52,6 +52,25 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
 	#error_log("User $user_id permission check cap: $cap - caps:".join(",",$caps) );
 
+
+        # user can edit own posts
+        if ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) {  # needed for comment activation
+                #error_log ("Test ongoign");
+
+        	if ( $user_owns_hardware ) {
+			$caps = array();
+                } elseif ( $karma < LHG_KARMA_edit_posts ) {
+                	$caps[] = 'activate_plugins';
+                } else {
+			$caps = array();
+                        #error_log("Enough points test nr 1. Let go!");
+        	}
+                return $caps;
+
+
+	}
+
+        # user can edit other (and own) posts
         if ( ( ( 'edit_post' == $cap )  && in_array( 'edit_others_posts', $caps) ) or
              ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) or   # needed for comment activation
              ( ( 'edit_post' == $cap )  && in_array( 'edit_published_posts', $caps) ) or   # edit translated posts
@@ -63,9 +82,11 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 	$caps[] = 'activate_plugins';
                 } else {
 			$caps = array();
+                        #error_log("Enough points test nr 1. Let go!");
         	}
                 return $caps;
 	}
+
 
         if ( 'edit_posts' == $cap ) {
                 #error_log("User wants to edit post - caps:".join(",",$caps) );
