@@ -135,6 +135,21 @@ $donation = array(
                 "NameShort" => "Devuan",
                 ),
 
+	27 => array (
+                "Name" => "SolydX SolydK",
+                "NameShort" => "Solyd",
+                ),
+
+	28 => array (
+                "Name" => "Antergos",
+                "NameShort" => "Antergos",
+                ),
+
+	29 => array (
+                "Name" => "Funtoo",
+                "NameShort" => "Funtoo",
+                ),
+
 );
 
 
