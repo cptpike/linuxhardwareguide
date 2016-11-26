@@ -4,8 +4,6 @@
 # extract from wpdb -> store in priceDB
 add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
 
-
-
 // ini_set( 'display_errors', 1 );
 // error_reporting(-1);
 
@@ -212,6 +210,24 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 26
                         ),
 
+                "solidxk" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/solyd-xk-logo.png",
+                        "url" => "https://solydxk.com/",
+                        "donation_target" => 27
+                        ),
+
+                "antergos" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/antergos-logo.png",
+                        "url" => "https://antergos.com/",
+                        "donation_target" => 28
+                        ),
+
+                "funtoo" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/funtoo.png",
+                        "url" => "http://funtoo.org/",
+                        "donation_target" => 29
+                        ),
+
 );
 
         return $dist;
@@ -312,6 +328,15 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"Devuan") > -1 )
                 return "devuan";
+
+        if ( strpos($distribution,"Solyd") > -1 )
+                return "solydxk";
+
+        if ( strpos($distribution,"Antergos") > -1 )
+                return "antergos";
+
+        if ( strpos($distribution,"Funtoo") > -1 )
+                return "funtoo";
 
 }
 
