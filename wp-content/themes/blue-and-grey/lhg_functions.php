@@ -210,7 +210,7 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 26
                         ),
 
-                "solidxk" => array(
+                "solydxk" => array(
                         "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/solyd-xk-logo.png",
                         "url" => "https://solydxk.com/",
                         "donation_target" => 27
@@ -223,7 +223,7 @@ function lhg_get_distribution_array( )  {
                         ),
 
                 "funtoo" => array(
-                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/funtoo.png",
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/funtoo-logo.png",
                         "url" => "http://funtoo.org/",
                         "donation_target" => 29
                         ),
