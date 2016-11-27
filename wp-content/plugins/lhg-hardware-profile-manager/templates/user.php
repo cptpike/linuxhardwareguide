@@ -278,6 +278,30 @@ echo "$message<br>
 ?>
 </fieldset>
 </form>
+
+<?php
+
+        $uid = get_current_user_id();
+        # Debug option:
+        #$uid = 12335;
+        $scanarray = lhg_get_scanids_by_uid( $uid );
+
+        if ( !empty($scanarray) ){
+	print " <p>
+        	<h2>My Hardware Scans</h2>";
+                print "<ul>";
+                foreach ($scanarray as $scanid){
+                        #ToDo: show scan time, distribution, status
+                        #ToDO: do not break language subdirectory
+                        print '<li><a href="/hardware-profile/scan-'.$scanid.'">'.$scanid.'</a>';
+		}
+                print "</ul>";
+	}
+
+
+
+?>
+
 <?php
 $output = ob_get_contents();
 ob_end_clean();
