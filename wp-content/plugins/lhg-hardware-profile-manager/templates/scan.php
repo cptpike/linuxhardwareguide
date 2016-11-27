@@ -3512,6 +3512,7 @@ function lhg_clean_scan_comment ( $comment ) {
 
         $modified_comment = str_replace('\"','"',$comment);
         $modified_comment = str_replace("\'","'",$modified_comment);
+        $modified_comment = str_replace("\n","<br>",$modified_comment);
 
         return $modified_comment;
 
