@@ -564,6 +564,25 @@ function lhg_create_rating_img( $rating ) {
 	}
         return $output;
 }
-		       
+
+
+# get all scans corresponding to certain uid
+function lhg_get_scanids_by_uid ( $uid ) {
+
+        global $lang;
+        global $lhg_price_db;
+
+	if ($lang != de) $results = $lhg_price_db->get_results("SELECT sid FROM `lhgscansessions` WHERE wp_uid = $uid");
+	if ($lang == de) $results = $lhg_price_db->get_results("SELECT sid FROM `lhgscansessions` WHERE wp_uid_de = $uid");
+
+        $scanarray=array();
+        foreach ($results as $result) {
+                #error_log("Res: ".$result->sid);
+                array_push($scanarray, $result->sid);
+	}
+
+        return $scanarray;
+
+}
 
 ?>
