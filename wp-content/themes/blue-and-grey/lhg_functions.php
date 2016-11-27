@@ -4139,7 +4139,7 @@ Ausgabe von lspci, lsusb und lshw...';
         $txt_username  	= "Benutzername";
 	$txt_register  	= "Registrieren";
 	$txt_mail  	= "Email Adresse";
-        $txt_pwd_send   = "Ein Paswort wird Ihnen zugeschickt.";
+        $txt_pwd_send   = "Ein Passwort wird Ihnen zugeschickt.";
         $txt_new_pwd    = "Neues Passwort erstellen";
         $txt_user_or_mail = "Benutzername oder E-mail";
 
