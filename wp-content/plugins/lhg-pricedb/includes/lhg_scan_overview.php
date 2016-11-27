@@ -137,8 +137,10 @@ function lhg_menu_hw_scans () {
 
 	if ($_POST != "") lhg_db_update_scaninfo();
 
+        lhg_show_new_scan_chats();
+
         $res = lhg_db_get_scan_sids ();
-        print "<h1>Hardware Scans</h1>";
+        print "<h2>Hardware Scans</h2>";
         print "<br>";
 
 #print "POST:";
@@ -584,5 +586,40 @@ function lhg_get_scanids_by_uid ( $uid ) {
         return $scanarray;
 
 }
+
+function lhg_show_new_scan_chats () {
+
+        global $lang;
+        global $lhg_price_db;
+
+        # 1. find feedback chats where registered users are involved
+        #$uid = get_current_user_id();
+        # Debug
+        #$uid = 12335;
+        # ToDo: currently only working for .com server? "uid" seems to be language dependent
+	if ($lang != de) $scanids = $lhg_price_db->get_results("SELECT DISTINCT(scanid) FROM `lhgscan_comments` WHERE user > 0 AND commenttype <> 'status_change'");
+	#if ($lang == de) $results = $lhg_price_db->get_results("SELECT sid FROM `lhgscansessions` WHERE wp_uid_de = $uid");
+
+        # 2. check if registered user had last comment
+        foreach ($scanids as $tmp_scanid) {
+                $scanid = $tmp_scanid->scanid;
+                # ToDo: should this be limted to "feedback_needed" scans?
+                $reguser_last_comment_timestamp = $lhg_price_db->get_var("SELECT MAX(comment_date) FROM `lhgscan_comments` WHERE user > 0 AND scanid = '$scanid' AND commenttype <> 'status_change'");
+                $last_comment_timestamp = $lhg_price_db->get_var("SELECT MAX(comment_date) FROM `lhgscan_comments` WHERE scanid = '$scanid' AND commenttype <> 'status_change'");
+                #var_dump($my_last_comment_timestamp);
+
+                if ($last_comment_timestamp > $reguser_last_comment_timestamp)
+                	$output .= 'New comment for <a href="/hardware-profile/editscan-'.$scanid.'">'.$scanid.'</a><br>';
+	}
+
+        # if we found new chats than show the overview
+        if ($output != "") {
+	        print "<h2>New Scan Feedback</h2>";
+                print $output;
+	}
+
+}
+
+
 
 ?>
