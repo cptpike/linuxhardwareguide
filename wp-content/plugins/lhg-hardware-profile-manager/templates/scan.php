@@ -3329,7 +3329,7 @@ print '
 	<meta charset=\'UTF-8\'>
         <meta http-equiv="refresh" content="15">
 	
-	<title>Progressing Data - Please wait</title>
+	<title>Processing Data - Please wait</title>
 	
 	<link rel=\'stylesheet\' href=\'css/style.css\'>
 	
