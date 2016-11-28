@@ -244,38 +244,15 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 
                         if ($uploader_guid > 0) {
 	                        $user_tmp = lhg_get_userdata_guid( $uploader_guid );
+                                $imgurl = lhg_get_avatar_url_by_guid( $uploader_guid );
         			$user=$user_tmp[0];
 			        $user_nicename = $user->user_nicename;
 		        	$avatar = $user->avatar;
 			        $wpuid_de = $user->wpuid_de;
 			        $wpuid_com = $user->wpuid;
-                                #Gravatar stored avatar image
-                                if (strpos($avatar,"gravatar") > 1) {
-                                	$start = strpos($avatar, "src='");
-	                                $imgurl = substr($avatar, $start+5);
-        	                        $tmp = explode("' class", $imgurl);
-                	                $imgurl = $tmp[0];
-                        	        $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
-				}else{
+                        	$usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
 
-                                        if (strpos($avatar,"http://") ) {
 
-	                                        #local avatar .com
-	                                	$start = strpos($avatar, 'src="');
-		                                $imgurl = substr($avatar, $start+5);
-        		                        $tmp = explode('" class', $imgurl);
-                		                $imgurl = $tmp[0];
-                        		        $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
-	                                }else{
-
-	                                        #local avatar .de
-        	                        	$start = strpos($avatar, "src='");
-		                                $imgurl = substr($avatar, $start+5);
-        		                        $tmp = explode("' class", $imgurl);
-                		                $imgurl = $tmp[0];
-                        		        $usertxt = '<img src="http://www.linux-hardware-guide.de'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
-                                        }
-                                }
 			}
 
 
