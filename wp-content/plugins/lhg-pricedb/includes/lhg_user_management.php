@@ -899,6 +899,80 @@ function lhg_get_userdata_guid( $guid ) {
 
 }
 
+function lhg_get_avatar_url_by_guid( $guid ) {
+        global $lhg_price_db;
+
+	$sql = "SELECT avatar FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+        $avatar = $lhg_price_db->get_var($sql);
+
+        #Gravatar stored avatar image
+        if (strpos($avatar,"gravatar") > 1) {
+        	$start = strpos($avatar, "src='");
+	        $imgurl = substr($avatar, $start+5);
+                $tmp = explode("' class", $imgurl);
+                $imgurl = $tmp[0];
+                $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
+	}else{
+
+        	if ( strpos($avatar,"http://") &&  strpos($avatar, 'src="') ) {
+
+		        #local avatar .com
+	        	$start = strpos($avatar, 'src="');
+			$imgurl = substr($avatar, $start+5);
+        		$tmp = explode('" class', $imgurl);
+                	$imgurl = $tmp[0];
+
+        	} elseif ( ( strpos($avatar,"http://") == "" ) && strpos($avatar, "src='") ) {
+
+
+	                $start = strpos($avatar, "src='");
+		        $imgurl = substr($avatar, $start+5);
+        		$tmp = explode("' class", $imgurl);
+                	$imgurl = $tmp[0];
+
+
+	        	# repair needed?
+			$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+		        $user = $lhg_price_db->get_results($sql);
+                        #error_log("pos:".strpos($user[0]->avatar, "/ava") );
+                        if ( ($user[0]->wpuid_de > 0 ) && (strpos($user[0]->avatar, "/ava") == 1 ) ) {
+		                # we have a .de user with obviously broken .de avatar
+	                	$imgurl = str_replace( "/avatar", "http://www.linux-hardware-guide.de/avatar", imgurl);
+                                #error_log("repair!");
+			}
+
+
+	        } else {
+
+	        	#local avatar .de
+        	        $start = strpos($avatar, "src='");
+		        $imgurl = substr($avatar, $start+5);
+        		$tmp = explode("' class", $imgurl);
+                	$imgurl = $tmp[0];
+                }
+        }
+
+
+        # add server
+        if ( strpos($imgurl,"http://") == "" ) {
+		$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+		$user = $lhg_price_db->get_results($sql);
+
+                if ($user[0]->wpuid_de > 0 ) {
+	        	$imgurl = "http://www.linux-hardware-guide.de".$imgurl;
+		} elseif ($user[0]->wpuid > 0 ) {
+	        	$imgurl = "http://www.linux-hardware-guide.com".$imgurl;
+		}
+
+	}
+
+        #error_log("IMGURL: $imgurl");
+        return $imgurl;
+
+
+}
+
+
 function lhg_get_karma( $uid ) {
 
         global $lhg_price_db;
