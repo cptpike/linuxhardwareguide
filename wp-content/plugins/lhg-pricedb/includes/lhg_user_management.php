@@ -892,7 +892,7 @@ function lhg_get_userdata_guid( $guid ) {
 	}
 
 
-        var_dump($user);
+        #var_dump($user);
         #error_log("Avatar: ".$user->avatar);
 
         return $user;
