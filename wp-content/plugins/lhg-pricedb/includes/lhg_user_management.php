@@ -905,6 +905,8 @@ function lhg_get_avatar_url_by_guid( $guid ) {
 	$sql = "SELECT avatar FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
         $avatar = $lhg_price_db->get_var($sql);
 
+        #error_log("AVT: $avatar");
+
         #Gravatar stored avatar image
         if (strpos($avatar,"gravatar") > 1) {
         	$start = strpos($avatar, "src='");
@@ -953,8 +955,10 @@ function lhg_get_avatar_url_by_guid( $guid ) {
         }
 
 
+
         # add server
-        if ( strpos($imgurl,"http://") == "" ) {
+        #error_log("IMGURL_START: ".strpos($imgurl,"http://")." -> ".$imgurl);
+        if ( strpos($imgurl,"http://") != 0 ) {
 		$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
 		$user = $lhg_price_db->get_results($sql);
 
