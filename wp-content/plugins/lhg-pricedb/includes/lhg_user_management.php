@@ -884,11 +884,10 @@ function lhg_get_userdata_guid( $guid ) {
         $user = $lhg_price_db->get_results($sql);
 
         # repair avatar
-
-        error_log("avatar: ".$user[0]->avatar);
+        #error_log("avatar: ".$user[0]->avatar);
         if ( ($user[0]->wpuid_de > 0 ) && (strpos($user[0]->avatar, "<img src='/") > -1 ) ) {
                 # we have a .de user with obviously broken .de avatar
-                error_log("Repair avatar!");
+                #error_log("Repair avatar!");
                 $user[0]->avatar = str_replace( "<img src='/", "<img src='http://www.linux-hardware-guide.de/", $user[0]->avatar);
 	}
 
