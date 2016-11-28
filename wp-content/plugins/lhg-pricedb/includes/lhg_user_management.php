@@ -676,6 +676,7 @@ function lhg_update_userdb_by_uid( $type , $uid , $data) {
 function lhg_update_userdb_by_guid( $type , $guid , $data) {
 
         global $lhg_price_db;
+        global $lang;
 
         if ($type == "email") {
 		        $sql = "UPDATE `lhgtransverse_users` SET emails =  \"$data\" WHERE id = \"".$guid."\" ";
@@ -728,6 +729,11 @@ function lhg_update_userdb_by_guid( $type , $guid , $data) {
                         return;
 	}
         if ($type == "avatar") {
+                        # add domain in .de uploaded avatars
+                        if ( ($lang == "de") && (strpos($data, "<img src='/") > -1 ) ) {
+                                $data = str_replace( "<img src='/", "<img src='http://www.linux-hardware-guide.de/", $data);
+			}
+
 		        $sql = "UPDATE `lhgtransverse_users` SET avatar =  %s WHERE id = \"".$guid."\" ";
                         $safe_sql=$lhg_price_db->prepare($sql, $data);
     			$result = $lhg_price_db->query($safe_sql);
