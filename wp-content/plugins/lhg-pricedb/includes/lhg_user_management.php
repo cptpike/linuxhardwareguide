@@ -956,9 +956,9 @@ function lhg_get_avatar_url_by_guid( $guid ) {
 
 
 
-        # add server
+        # add server if image URL still starts with absolute path
         #error_log("IMGURL_START: ".strpos($imgurl,"http://")." -> ".$imgurl);
-        if ( strpos($imgurl,"http://") != 0 ) {
+	if ( strpos($imgurl,"/avat") == 0 ) {
 		$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
 		$user = $lhg_price_db->get_results($sql);
 
