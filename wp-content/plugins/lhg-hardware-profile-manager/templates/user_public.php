@@ -46,6 +46,9 @@ $urlpath = $pieces['path'];
 $hwprofpos   = strpos($urlpath,"/hardware-profile/user");
 $url_user_id = (int)substr($urlpath,$hwprofpos+22);
 
+$guid = 0;
+if ($uid > 0 ) $guid = lhg_get_guid_from_uid( $uid );
+
 
 # Support for Global UID (guid) instead of UID
 # needed to see (simplified) user profiles from other servers
@@ -54,14 +57,17 @@ if ( $show_guser_profile == 1) {
 	$guid = (int)substr($urlpath,$hwprofpos+23);
 	$url_user_id =  lhg_get_uid_from_guid( $guid );
 	#error_log("GUID $guid instead of UID $url_user_id");
-
 }
 
 //echo "UID: $url_user_id";
 
 
-//check if user exists of fail;
-$check = get_userdata( $url_user_id );
+//check if user exists or fail;
+if ($url_user_id > 0) {
+	$check = get_userdata( $url_user_id );
+} elseif ( ($url_user_id == 0) && ($guid > 0) ){
+	$check = lhg_get_userdata_guid( $guid );
+} 
 
 if ($check == false) {
         return "Profile does not exist";
@@ -116,6 +122,7 @@ echo "$message<br>
 <?php
 
 	$user = get_userdata( $public_user_ID );
+        $user_guid = lhg_get_userdata_guid ( $guid );
         $email = $user->user_email;
 
         //Get user Language
@@ -151,7 +158,12 @@ echo "$message<br>
     		#echo 'User first name: ' . $current_user->user_firstname . '<br />';
     		#echo 'User last name: ' . $current_user->user_lastname . '<br />';
     		$displayname = $user->display_name;
-                $avatar = get_avatar( $public_user_ID , 96 );
+
+                if ( $show_guser_profile == 1) {
+                        $avatar = "<img src=".lhg_get_avatar_url_by_guid( $guid )." width=96 height=96>";
+		}else{
+	                $avatar = get_avatar( $public_user_ID , 96 );
+                }
 
 
                 $rank_level = lhg_get_rank_level( $public_user_ID );
