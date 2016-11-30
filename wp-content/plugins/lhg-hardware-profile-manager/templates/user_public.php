@@ -26,9 +26,7 @@ global $txt_subscr_numart;
 global $txt_subscr_numcom;
 global $txt_subscr_public_hw_profile;
 global $txt_subscr_lat_sub;
-global $txt_subscr_rank;
-global $txt_subscr_nextpromo;  //Next promotion
-global $txt_subscr_nohw;
+
 
 // Avoid direct access to this piece of code
 if (!function_exists('add_action')){
@@ -66,10 +64,7 @@ if ( $show_guser_profile == 1) {
 $check = get_userdata( $url_user_id );
 
 if ($check == false) {
-        # user not available on local server. Have to rely on data from transverse server
-
-        #return "Profile does not exist";
-        $transverse_profile = 1;
+        return "Profile does not exist";
 }else{
 //        echo "User exists<br>";
 }
@@ -120,46 +115,12 @@ echo "$message<br>
 <fieldset style="border:0">
 <?php
 
-if ($public_user_ID != 0) {
-                # we have user data
-        	$user = get_userdata( $public_user_ID );
-                $email = $user->user_email;
-	        $karma = lhg_get_karma( $public_user_ID ); //$num_com * 3 + $num_art * 50;
-                $displayname = $user->display_name;
-                $avatar = get_avatar( $public_user_ID , 96 );
-}
-
-if ($public_user_ID == 0) {
-                # we are limited to guser data
-        	$user_tmp = lhg_get_userdata_guid($guid);
-                $user=$user_tmp[0];
-                $email = $user->emails;
-		$karma = $user->karma_com + $user->karma_de; //$num_com * 3 + $num_art * 50;
-        	$displayname = $user->user_nicename;
-                $avatar = $user->avatar;
-                # make it bigger!
-                $avatar = str_replace("s=40","s=96",$avatar);
-                $avatar = str_replace("s%3D40","s%3D96",$avatar);
-                $avatar = str_replace("avatar-40","avatar-96",$avatar);
-                $avatar = str_replace("height='40'","height='96'",$avatar);
-                $avatar = str_replace("width='40'","width='96'",$avatar);
-                #error_log("Avatar: $avatar");
-                #var_dump($user);
-}
-
+	$user = get_userdata( $public_user_ID );
+        $email = $user->user_email;
 
         //Get user Language
-        $user_tmp = lhg_get_userdata_guid($guid);
-        $user=$user_tmp[0];
-
-        # Check if user has .de account -> add flag
-        if ($user->wpuid != 0) $user_language_txt = lhg_get_locale_from_id ( $public_user_ID );
-        if ($user->wpuid != 0) $user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
-
-        # Check if user has .de account -> add flag
-        if ($user->wpuid_de != 0) $user_language_flag .= " ".lhg_show_flag_by_lang( "de" )." ";
-
-
+        $user_language_txt = lhg_get_locale_from_id ( $public_user_ID );
+        $user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
 
         //get user registration date
         $regdate = date("d. M Y", strtotime(get_userdata( $public_user_ID ) -> user_registered ) );
@@ -180,6 +141,7 @@ if ($public_user_ID == 0) {
         #if (function_exists('cp_getPoints'))
         #$karma = cp_getPoints( $public_user_ID ); //$num_com * 3 + $num_art * 50;
 
+        $karma = lhg_get_karma( $public_user_ID ); //$num_com * 3 + $num_art * 50;
 
 	$subscriptions = $wp_subscribe_reloaded->get_subscriptions('email', 'equals', $email, 'dt', 'DESC');
 
@@ -188,6 +150,8 @@ if ($public_user_ID == 0) {
     		#echo 'User email: ' . $current_user->user_email . '<br />';
     		#echo 'User first name: ' . $current_user->user_firstname . '<br />';
     		#echo 'User last name: ' . $current_user->user_lastname . '<br />';
+    		$displayname = $user->display_name;
+                $avatar = get_avatar( $public_user_ID , 96 );
 
 
                 $rank_level = lhg_get_rank_level( $public_user_ID );
@@ -220,14 +184,14 @@ if ($public_user_ID == 0) {
                 $squares .= '<br>'.$rank_txt.'</div>';
 
                 echo '<div class="hwprofile-avatar" title="'.$tooltip.'">'.$avatar.$squares.'</div>';
-                echo '<div class="hwprofile-karma">Karma: <br><div class="hwprofile-karma-num">'.$karma.'</div></div>';
+                if ($lang != "de") echo '<div class="hwprofile-karma">Karma: <br><div class="hwprofile-karma-num">'.$karma.'</div></div>';
 
 		if ($displayname != "") echo '<div id="subscribe-reloaded-displayname">'.__('<strong>'.$txt_subscr_name.'</strong>','subscribe-reloaded').': '.$displayname.'</div>';
                 if ($show_email_address)
                 echo '<div id="subscribe-reloaded-email-p">'.__('<strong>Email</strong>','subscribe-reloaded').': '.$email.'</div>';
 
-                if ($public_user_ID != 0) echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_regdate.': '.$regdate.'</div>';
-                echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_language.': '.$user_language_flag.'</div>';
+                echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_regdate.': '.$regdate.'</div>';
+                if ($lang != "de") echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_language.': '.$user_language_flag.'</div>';
 
                 //Rank+Title info
                 if (function_exists('cp_getAllPoints'))
@@ -257,10 +221,12 @@ if ($public_user_ID == 0) {
 
                 //echo "Allpoints: $sumpoints";
 
-                echo '<br><div id="subscribe-reloaded-email-p">'.$txt_subscr_rank.': '.$rank_txt.' (#'.$rank_level.')</div>';
+                if ($lang != "de") echo '<br><div id="subscribe-reloaded-email-p">Rank: '.$rank_txt.' (#'.$rank_level.')</div>';
 
-        	echo '<div class="rateline" style="border: 0px solid #000;"><div style="float: left;">'.$txt_subscr_nextpromo.':&nbsp; </div> <div class="outerbox" style="background-color: #eee; width: 80px; float: left; margin: 4px 0px;"><div class="box" style="border: 0px solid #088; background-color: #2b8fc3; height: 8px; width: '.(100*$karma/$karma_rank_total).'%;" ></div></div> &nbsp;('.$karma.' of '.$karma_rank_total.' points)</div><br clear="all">';
-
+                $karma_width = (100*$karma/$karma_rank_total);
+                # Limit karma bar at 100% (breakes design otherwise)
+                if ($karma_width > 100) $karma_width = 100;
+        	if ($lang != "de") echo '<div class="rateline" style="border: 0px solid #000;"><div style="float: left;">Next promotion:&nbsp; </div> <div class="outerbox" style="background-color: #eee; width: 80px; float: left; margin: 4px 0px;"><div class="box" style="border: 0px solid #088; background-color: #2b8fc3; height: 8px; width: '.$karma_width.'%;" ></div></div> &nbsp;('.$karma.' of '.$karma_rank_total.' points)</div><br clear="all">';
 
 
 		echo '</fieldset></form>';
@@ -268,18 +234,14 @@ if ($public_user_ID == 0) {
 
 
 
-#  -----  Section Hardware Profile
-# We do not have the following data because we are on a transverse server. We therefore skip this output.
-if ($public_user_ID != 0) {
-
-	echo '<br><form id="post_list_form"><fieldset>';
-        echo "<h2>$txt_subscr_public_hw_profile</h2>";
+                echo '<br><form id="post_list_form"><fieldset>';
+		echo "<h2>$txt_subscr_public_hw_profile</h2>";
 
 
-        echo '<p id="subscribe-reloaded-legend-p">'.__($txt_subscr_legend.'', 'subscribe-reloaded').'</p>';
-	//echo '<ul id="subscribe-reloaded-list">';
+                echo '<p id="subscribe-reloaded-legend-p">'.__($txt_subscr_legend.'', 'subscribe-reloaded').'</p>';
+		//echo '<ul id="subscribe-reloaded-list">';
 
-	if (is_array($subscriptions) && !empty($subscriptions)){
+		if (is_array($subscriptions) && !empty($subscriptions)){
 
                 echo '<table id="registration">';
                 echo '<tr id="header">
@@ -392,7 +354,6 @@ echo "
 		}
                 echo "</table>";
 
-	}
 
 
 /*
@@ -437,19 +398,20 @@ echo "
 
 		echo '<p id="subscribe-reloaded-update-p"><button type="submit" class="subscribe-form-button" value="'.__($txt_update,'subscribe-reloaded').'" />'.__($txt_update,'subscribe-reloaded').'&nbsp;<i class="icon-arrow-right icon-button"></i></button><input type="hidden" name="sre" value="'.urlencode($email).'"/></p>';
                 */
-	else{
-	        # We do not have the following data because we are on a transverse server. We therefore skip this output.
-        	if ($public_user_ID != 0) echo '<p>'.__($txt_subscr_nohw, 'subscribe-reloaded').'</p>';
 	}
+	else{
+		echo '<p>'.__('No hardware components were added to the profile so far.', 'subscribe-reloaded').'</p>';
+	}
+?>
+</fieldset>
 
-        print "</fieldset>
-        </form>";
-}
+</form>
 
 
-# ---- Section last hardware entries
-if ($public_user_ID != 0) {
-	print '<br><form id="post_list_form">';
+<?php
+?>
+<br><form id="post_list_form">
+<?php
 
                 echo "<h2>".$txt_subscr_lat_sub."</h2>";
 
@@ -470,12 +432,16 @@ echo $output;
 
 echo '<div id="subscribe-reloaded-email-p">'.$txt_subscr_numcom.': '.$num_com.'</div>';
 
-echo' </form>';
-}
+?>
+</form>
+
+<?php
+
 
 $output = ob_get_contents();
 ob_end_clean();
 return $output;
+
 
 
 
