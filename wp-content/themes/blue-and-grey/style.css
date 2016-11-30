@@ -2491,6 +2491,11 @@ input.hwscan-comment-button-green {
         height: 24px;
 }
 
+.attachment-55x55 { 
+	width: 55px;
+        height: 55px;
+}
+
 .user-feedback { 
 	border: 1px solid #DFDFDF;
         border-radius: 3px;
