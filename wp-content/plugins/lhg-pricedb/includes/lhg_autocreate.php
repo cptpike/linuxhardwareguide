@@ -2512,3 +2512,26 @@ function lhg_correct_post_comment_status( $post_ID, $post_after ) {
 }
 
 
+# code to be executed
+function lhg_url_request_autotranslate(  ) {
+        error_log("starting auto-translation");
+
+        # parse request
+
+        # create translation
+
+        # update post history
+
+        $lang_from = "en";
+        $lang_to = "de";
+        $postid_from = 111;
+        $postid_to = 112;
+        $guid = 1;
+
+        lhg_post_history_translation( $lang_from, $lang_to, $postid_from, $postid_to, $guid);
+
+
+}
+
+
+?>
