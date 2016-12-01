@@ -30,6 +30,8 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_auto_finder.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_donations.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_user_management.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_user_hardware.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_post_history.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_json.php');
 #require_once(plugin_dir_path(__FILE__).'includes/lhg_chat.php');
 #require_once(plugin_dir_path(__FILE__).'includes/lhg_wpadmin_mods.php');
 require_once('/var/www/wordpress/version.php');
@@ -37,6 +39,9 @@ require_once('/var/www/wordpress/version.php');
 # store new tags in LHGDB
 add_action ('edit_post', 'lhg_update_tag_links' );
 add_action ('save_post', 'lhg_update_tag_links' );
+
+# execute code based on the URL
+add_action( 'init', 'lhg_url_based_code' );
 
 
 # Disable visual editor for all users - breaks too many things
@@ -827,5 +832,25 @@ function lhg_update_tag_links ( $postid ) {
         #return $properties;
 }
 
+function lhg_url_based_code ( ) {
+
+        #error_log("URL: ".$_SERVER['REQUEST_URI']);
+        #error_log("POS: ".strpos( $_SERVER['REQUEST_URI'], '/json' ));
+
+	if ( strpos( $_SERVER['REQUEST_URI'], '/autotranslate' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_url_request_autotranslate();
+	    exit;
+	}
+
+	if ( strpos( $_SERVER['REQUEST_URI'], '/json' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_url_request_json();
+	    exit;
+	}
+
+}
 
 ?>
