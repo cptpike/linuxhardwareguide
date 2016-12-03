@@ -2621,7 +2621,7 @@ add_action ('edit_post', 'lhg_initiate_autotranslate' );
 function lhg_initiate_autotranslate( $postid ) {
 	global $lhg_price_db;
 
-        error_log("starting auto-translation after article update or publishing");
+        #error_log("starting auto-translation after article update or publishing");
 
         #first check if article was already translated
         global $lang;
