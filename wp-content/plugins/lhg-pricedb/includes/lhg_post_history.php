@@ -27,7 +27,7 @@ function lhg_post_history_translation( $lang_from, $lang_to, $postid_from, $post
         if ( ($lang_from == "en") && ($lang_to == "de") ) {
                 $timestamp = time();
         	$sql = "INSERT INTO lhgtransverse_post_history ( timestamp, postid_com, postid_de,  change_type, change_comment, guid) VALUES ('%s', '%s', '%s', '%s', '%s', '%s') ";
-		$safe_sql = $lhg_price_db->prepare( $sql, $timestamp, $postid_from, $postid_to, "auto_translation", "Automatic translation from ".$postid_from." to ".$postid_to, $guid);
+		$safe_sql = $lhg_price_db->prepare( $sql, $timestamp, $postid_from, $postid_to, "auto_translation_en->de", "Automatic translation from ".$postid_from." to ".$postid_to, $guid);
 		$result = $lhg_price_db->query($safe_sql);
 
         }
