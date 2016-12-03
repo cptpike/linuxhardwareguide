@@ -151,6 +151,9 @@ $cpu0 = implode("\n",$new_cpulines);
   	add_post_meta($newPostID, $key, $value);
   }
 
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
+
   return $newPostID;
 
 
@@ -417,6 +420,9 @@ $article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" versi
   	add_post_meta($newPostID, $key, $value);
   }
 
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
+
   return $newPostID;
 
 }
@@ -558,6 +564,9 @@ function lhg_create_pci_article ($title, $sid, $id ) {
   } else { //if the custom field doesn't have a value
   	add_post_meta($newPostID, $key, $value);
   }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
 
   return $newPostID;
 
@@ -888,6 +897,9 @@ function lhg_create_drive_article ($title, $sid, $id ) {
   	add_post_meta($newPostID, $key, $value);
   }
 
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
+
   return $newPostID;
 }
 
@@ -1066,6 +1078,9 @@ It is automatically recognized and fully supported by the Linux kernel:
   } else { //if the custom field doesn't have a value
   	add_post_meta($newPostID, $key, $value);
   }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
 
   return $newPostID;
 }
@@ -2514,23 +2529,183 @@ function lhg_correct_post_comment_status( $post_ID, $post_after ) {
 
 # code to be executed
 function lhg_url_request_autotranslate(  ) {
-        error_log("starting auto-translation");
 
-        # parse request
+}
 
-        # create translation
+# starting automatic translation
+function lhg_create_article_translation( $postid, $postid_server ) {
 
-        # update post history
 
+
+        #error_log("PID: $postid - $postid_server");
+
+	global $lhg_price_db;
+
+        if ($postid_server != com) {
+                print "Translation only tested from com -> de";
+                print "Stopping for safety reasons";
+                exit;
+	}
+
+        # tag translation
+        list($tagarray_ids, $tagarray_names) = lhg_create_article_translation_tags( $postid, $postid_server );
+
+        # title translation
+        $translated_title = lhg_create_article_translation_title( $postid, $postid_server );
+
+        #error_log("TT: $translated_title");
+
+        # icon
+        $icon = lhg_create_article_translation_icon( $postid, $postid_server );
+
+        # category translation
+        $category_ids = lhg_create_article_translation_categories( $postid, $postid_server );
+
+        # content translation
+        $result_content = lhg_create_article_translation_content( $postid, $postid_server );
+
+        # local Amazon ID
+        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server );
+
+
+        # create new article
+	$myPost = array(
+			'post_status' => 'publish',
+                        'post_content' => $result_content,
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $translated_title,
+			'post_category' => $category_ids,
+                        'tags_input' => $tagarray_names,
+                        'comment_status' => 'open'
+		);
+
+  	$newPostID = wp_insert_post($myPost);
+
+        #error_log("Created article: $newPostID");
+
+
+        # add amazon id
+	update_post_meta($newPostID, 'amazon-product-single-asin', $amazon_id );
+
+        #
+        # auto-create link with com article
+        #
+        # set new post id
+        $sql = "UPDATE lhgtransverse_posts SET `postid_de` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $newPostID, $postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        # link icon with article
+	lhg_create_article_translation_iconcreation( $icon, $newPostID, $postid_server );
+
+
+        # create history entry
         $lang_from = "en";
         $lang_to = "de";
-        $postid_from = 111;
-        $postid_to = 112;
-        $guid = 1;
-
-        lhg_post_history_translation( $lang_from, $lang_to, $postid_from, $postid_to, $guid);
+        $postid_from = $postid;
+        $postid_to = $newPostID;
+  	lhg_post_history_translation( $lang_from, $lang_to, $postid_from, $postid_to, $guid);
 
 
+
+}
+
+
+#
+# if an article is updated an automatic translation can be checked
+# if article is already translated and modified, translation will not be done
+#
+add_action ('edit_post', 'lhg_initiate_autotranslate' );
+
+function lhg_initiate_autotranslate( $postid ) {
+	global $lhg_price_db;
+
+        error_log("starting auto-translation after article update or publishing");
+
+        #first check if article was already translated
+        global $lang;
+
+        # check if article was already published
+        if ($lang == "de")  $sql = "SELECT postid_com FROM lhgtransverse_posts WHERE postid_de  = '%s' ";
+        if ($lang != "de")  $sql = "SELECT postid_de  FROM lhgtransverse_posts WHERE postid_com = '%s' ";
+	$safe_sql = $lhg_price_db->prepare( $sql,  $postid );
+	$translated_postid = $lhg_price_db->get_var($safe_sql);
+
+        if ($translated_postid > 0) {
+                # translation already exists
+                $article_translated = 1;
+	}else{
+                # initiate translation
+                lhg_initiate_autotranslate_by_json_request( $postid );
+                return;
+        }
+
+        # check if article was already edited
+        if ($lang == "de")  $sql = "SELECT timestamp FROM lhgtransverse_post_history WHERE postid_com  = '%s' AND chage_type = '%s' ";
+        if ($lang != "de")  $sql = "SELECT timestamp  FROM lhgtransverse_post_history WHERE postid_de   = '%s' AND chage_type = '%s' ";
+	$safe_sql = $lhg_price_db->prepare( $sql,  $translated_postid, "acticle_edited" );
+	$edited_timestamp = $lhg_price_db->get_var($safe_sql);
+
+        if ( ($tranlsated_postid == 1) && !($edited_timestamp > 0 ) ) {
+                # article was auto translated but never modified.
+                # Consequently, we can overwrite the article
+                lhg_initiate_autotranslate_update_by_json_request( $postid );
+                return;
+        }
+}
+
+function lhg_initiate_autotranslate_by_json_request( $postid ) {
+
+	global $lhg_price_db;
+
+        # set json conterpart and admin GUID
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12") {
+		$url = "http://192.168.56.13/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+		$url = "http://192.168.56.12/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+		$url = "http://192.168.3.113/json";
+        	$guid = 22;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+		$url = "http://192.168.3.112/json";
+        	$guid = 22;
+	}
+
+
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+
+        $data = array (
+                'guid' => $guid,
+                'password' => $password,
+                'request' => 'create_article_translation',
+                'postid' => $postid,
+                'postid_server' => 'com'
+        );
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
+}
+
+
+
+function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
+        error_log("To be implemented: lhg_initiate_autotranslate_update_by_json_request");
 }
 
 
