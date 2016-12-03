@@ -844,6 +844,13 @@ function lhg_url_based_code ( ) {
 	    exit;
 	}
 
+	if ( strpos( $_SERVER['REQUEST_URI'], '/debug' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_send_url_request();
+	    exit;
+	}
+
 	if ( strpos( $_SERVER['REQUEST_URI'], '/json' ) === 0 ) {
 	    // DO YOUR THING HERE, THEN REDIRECT
 	    #wp_redirect( 'http://example.com' );
@@ -851,6 +858,37 @@ function lhg_url_based_code ( ) {
 	    exit;
 	}
 
+}
+
+
+function lhg_send_url_request ( ) {
+
+	global $lhg_price_db;
+
+	$url = "http://192.168.3.112/json";
+        $guid = 22;
+
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+
+        $data = array (
+                'guid' => $guid,
+                'password' => $password,
+                'request' => 'create_article_translation',
+                'postid' => 54465,
+                'postid_server' => 'com'
+        );
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
+        print "Data requested";
+        var_dump($response);
+        exit;
 }
 
 ?>
