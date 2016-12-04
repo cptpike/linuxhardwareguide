@@ -2611,6 +2611,93 @@ function lhg_create_article_translation( $postid, $postid_server ) {
 
 }
 
+# starting automatic translation update
+function lhg_update_article_translation( $postid, $postid_server ) {
+
+
+
+        #error_log("PID: $postid - $postid_server");
+
+	global $lhg_price_db;
+        global $lang;
+
+        if ($postid_server != com) {
+                print "Translation only tested from com -> de";
+                print "Stopping for safety reasons";
+                exit;
+	}
+
+        # tag translation
+        list($tagarray_ids, $tagarray_names) = lhg_create_article_translation_tags( $postid, $postid_server );
+
+        # title translation
+        $translated_title = lhg_create_article_translation_title( $postid, $postid_server );
+
+        #error_log("TT: $translated_title");
+
+        # icon - do not update the icon
+        #$icon = lhg_create_article_translation_icon( $postid, $postid_server );
+
+        # category translation
+        $category_ids = lhg_create_article_translation_categories( $postid, $postid_server );
+
+        # content translation
+        $result_content = lhg_create_article_translation_content( $postid, $postid_server );
+
+        # local Amazon ID
+        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server );
+
+        # get translated postid
+	if ($lang == "de") $sql = "SELECT `postid_de`  FROM `lhgtransverse_posts` WHERE postid_com = %s";
+	if ($lang != "de") $sql = "SELECT `postid_com` FROM `lhgtransverse_posts` WHERE postid_de = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $translated_postid = $lhg_price_db->get_var($safe_sql);
+
+        #error_log("Updating pid: $translated_postid");
+
+        # create new article
+	$myPost = array(
+                        'ID' => $translated_postid,
+                        'post_status' => 'publish',
+                        'post_content' => $result_content,
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $translated_title,
+			'post_category' => $category_ids,
+                        'tags_input' => $tagarray_names,
+                        'comment_status' => 'open'
+		);
+
+  	wp_update_post($myPost);
+
+        #error_log("Created article: $newPostID");
+
+
+        # add amazon id
+	update_post_meta($translated_postid, 'amazon-product-single-asin', $amazon_id );
+
+        #
+        # auto-create link with com article
+        #
+        # set new post id
+        #$sql = "UPDATE lhgtransverse_posts SET `postid_de` = \"%s\" WHERE postid_com = %s";
+	#$safe_sql = $lhg_price_db->prepare($sql, $newPostID, $postid);
+	#$result = $lhg_price_db->query($safe_sql);
+
+        # link icon with article
+	#lhg_create_article_translation_iconcreation( $icon, $newPostID, $postid_server );
+
+
+        # create history entry
+        $lang_from = "en";
+        $lang_to = "de";
+        $postid_from = $postid;
+        $postid_to = $translated_postid;
+  	lhg_post_history_translation_update( $lang_from, $lang_to, $postid_from, $postid_to, $guid);
+
+
+}
+
 
 #
 # if an article is updated an automatic translation can be checked
