@@ -5,22 +5,46 @@
 function lhg_url_request_json( ) {
 
 
-        if ($_POST["request"] == "create_article_translation")
-                lhg_json_request_create_article_translation( $_POST );
-
+        if ($_POST["request"] == "create_article_translation") {
+                lhg_json_request_create_article_translation( $_POST, "create" );
+	}elseif ($_POST["request"] == "article_translation_update"){
+                lhg_json_request_create_article_translation( $_POST, "update" );
+        }else{
+        	error_log("Unknown request type: ".$_POST["request"]);
+        }
 
         exit;
 }
 
 
-function lhg_json_request_create_article_translation( $data ) {
+function lhg_json_request_create_article_translation( $data , $request_type ) {
+
+        #error_log("autocreate: $request_type");
 
 	global $lhg_price_db;
 
         #check guid
         # auto translation only allowed from "admin"
-        if ( ($data["guid"]) == 22) {
-                $guid = 22;
+        if ($_SERVER['SERVER_ADDR'] == "192.168.56.12") {
+                $allowed_guid = 9;
+        }
+
+        if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+                $allowed_guid = 9;
+        }
+
+        if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+                $allowed_guid = 22;
+        }
+
+        if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+                $allowed_guid = 22;
+        }
+
+
+
+        if ( ($data["guid"]) == $allowed_guid) {
+                $guid = $allowed_guid;
 	}else{
                 lhg_json_error("invalid_guid", $data["guid"] );
 	}
@@ -67,29 +91,30 @@ function lhg_json_request_create_article_translation( $data ) {
                 }
 
                 # check if article already translated
-        	if ( $data["postid_server"] == "com" ) $sql = "SELECT postid_de FROM `lhgtransverse_posts` WHERE postid_com = \"%s\" ";
-        	if ( $data["postid_server"] == "de" ) $sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE postid_de = \"%s\" ";
-		$safe_sql = $lhg_price_db->prepare( $sql, $data["postid"] );
-		$transverse_postid = $lhg_price_db->get_var($safe_sql);
+                if ($request_type == "create") {
+	        	if ( $data["postid_server"] == "com" ) $sql = "SELECT postid_de FROM `lhgtransverse_posts` WHERE postid_com = \"%s\" ";
+        		if ( $data["postid_server"] == "de" ) $sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE postid_de = \"%s\" ";
+			$safe_sql = $lhg_price_db->prepare( $sql, $data["postid"] );
+			$transverse_postid = $lhg_price_db->get_var($safe_sql);
 
-                if ( $transverse_postid == 0 ) {
-                        # post not yet translated
-                } else {
-	                lhg_json_error("article_translated", $transverse_postid );
+        	        if ( $transverse_postid == 0 ) {
+                	        # post not yet translated
+	                } else {
+		                lhg_json_error("article_translated", $transverse_postid );
+                	}
                 }
 
                 # all tests passed - start translation
-                lhg_create_article_translation( $data["postid"], $data["postid_server"] );
-
+                if ($request_type == "create") lhg_create_article_translation( $data["postid"], $data["postid_server"] );
+                if ($request_type == "update") lhg_update_article_translation( $data["postid"], $data["postid_server"] );
 
 
 	}else{
                 lhg_json_error("unknown_postid", $data["postid"] );
 	}
 
-
-
 }
+
 
 function lhg_json_error( $type , $value ) {
 
@@ -130,6 +155,7 @@ function lhg_json_error( $type , $value ) {
                         );
         } 
 
+        error_log("JSON error: ".json_encode($data));
         print json_encode($data);
         exit;
 }
