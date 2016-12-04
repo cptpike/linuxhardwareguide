@@ -2995,8 +2995,26 @@ function lhg_create_article_translation_amazonid( $postid, $postid_server ) {
 function lhg_create_article_translation_iconcreation( $result_icon, $newPostID, $postid_server ) {
 
         if ($result_icon != "")  {
-		$upload_dir = wp_upload_dir();
-                $image_url="http://www.linux-hardware-guide.com".$result_icon;
+
+        	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12"){
+			$murl = "http://192.168.56.13";
+		}
+
+		if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+			$murl = "http://192.168.56.12";
+		}
+
+		if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+			$murl = "http://192.168.3.113";
+		}
+
+		if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+			$murl = "http://192.168.3.112";
+		}
+
+
+  		$upload_dir = wp_upload_dir();
+                $image_url= $murl.$result_icon;
 		$image_data = file_get_contents($image_url);
 		$filename = basename($image_url);
 
