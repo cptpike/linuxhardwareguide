@@ -2647,7 +2647,8 @@ function lhg_initiate_autotranslate( $postid ) {
 	$safe_sql = $lhg_price_db->prepare( $sql,  $translated_postid, "acticle_edited" );
 	$edited_timestamp = $lhg_price_db->get_var($safe_sql);
 
-        if ( ($tranlsated_postid == 1) && !($edited_timestamp > 0 ) ) {
+
+        if ( ($article_translated == 1) && !($edited_timestamp > 0 ) ) {
                 # article was auto translated but never modified.
                 # Consequently, we can overwrite the article
                 lhg_initiate_autotranslate_update_by_json_request( $postid );
@@ -2706,9 +2707,52 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
 }
 
 
-
+# update translation if it never was modified in between
 function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
-        error_log("To be implemented: lhg_initiate_autotranslate_update_by_json_request");
+
+	global $lhg_price_db;
+
+        # set json conterpart and admin GUID
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12") {
+		$url = "http://192.168.56.13/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+		$url = "http://192.168.56.12/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+		$url = "http://192.168.3.113/json";
+        	$guid = 22;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+		$url = "http://192.168.3.112/json";
+        	$guid = 22;
+	}
+
+
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+
+        $data = array (
+                'guid' => $guid,
+                'password' => $password,
+                'request' => 'article_translation_update',
+                'postid' => $postid,
+                'postid_server' => 'com'
+        );
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
 }
 
 # translate the tags to new article
