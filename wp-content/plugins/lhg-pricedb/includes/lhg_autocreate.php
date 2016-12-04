@@ -2657,6 +2657,7 @@ function lhg_initiate_autotranslate( $postid ) {
 
 function lhg_initiate_autotranslate_by_json_request( $postid ) {
 
+        #error_log("Translation request started");
 	global $lhg_price_db;
 
         # set json conterpart and admin GUID
@@ -2700,12 +2701,200 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
         		array( 'body' => $data, 'timeout' => 20 )
 	            );
 
+        #error_log("Json request posted");
+
 }
 
 
 
 function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
         error_log("To be implemented: lhg_initiate_autotranslate_update_by_json_request");
+}
+
+# translate the tags to new article
+function lhg_create_article_translation_tags( $postid, $postid_server ) {
+
+        #
+        # get tags
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `tagids_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_tags = $lhg_price_db->get_var($safe_sql);
+
+        $tagarray_slug = explode(",",$result_tags);
+
+        $tagarray_ids  = array();
+        $tagarray_names= array();
+        foreach($tagarray_slug as $tagarray_s){
+
+	  # get "de" slug from DB
+  	  $sql = "SELECT `slug_de` FROM `lhgtransverse_tags` WHERE slug_com = %s";
+          $safe_sql = $lhg_price_db->prepare($sql, $tagarray_s);
+          $de_tag = $lhg_price_db->get_var($safe_sql);
+
+          #fallback
+          #print "ERROR: tag ($tagarray_s) not found -> fallback used<br>";
+          if ($de_tag == "") $de_tag = $tagarray_s;
+
+          $tmp = get_term_by('slug', $de_tag , 'post_tag');
+          #var_dump($tmp); print "<br>";
+	  array_push($tagarray_ids, $tmp->term_id );
+	  array_push($tagarray_names, $tmp->name );
+
+	}
+
+        return array($tagarray_ids, $tagarray_names);
+}
+
+# translate title
+function lhg_create_article_translation_title( $postid, $postid_server ) {
+
+        #
+        # get title
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `title_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_title = $lhg_price_db->get_var($safe_sql);
+
+	$result_title_de = lhg_translate_title_en_to_de( $result_title );
+
+        return $result_title_de;
+}
+
+# transfer icon
+function lhg_create_article_translation_icon( $postid, $postid_server ) {
+
+        #
+        # get icon
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `icon_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_icon = $lhg_price_db->get_var($safe_sql);
+
+        return $result_icon;
+}
+
+# translate categories
+function lhg_create_article_translation_categories( $postid, $postid_server ) {
+
+        #
+        # get categories
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `categories_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_categories = $lhg_price_db->get_var($safe_sql);
+
+        $category_slugs = explode(",",$result_categories);
+        $category_ids   = array();
+
+        foreach($category_slugs as $cat_slug){
+
+          $catid = get_category_by_slug($cat_slug);
+          #var_dump ($catid);
+
+          # 1. auto recognition by slug
+          if ( ($catid->cat_ID) != "") array_push($category_ids, $catid->cat_ID );
+
+          # 2. not all categories are found by english slugs.
+          # No use for automatic detection. We simply identify them manually here:
+          if ($cat_slug == "cctv" ) array_push($category_ids, 663);
+          if ($cat_slug == "internal" ) array_push($category_ids, 335);
+          if ($cat_slug == "ultrabook" ) array_push($category_ids, 589);
+          if ($cat_slug == "all-in-one-printer" ) array_push($category_ids, 368);
+          if ($cat_slug == "external" ) array_push($category_ids, 333);
+          if ($cat_slug == "ssd" ) array_push($category_ids, 601);
+          if ($cat_slug == "printer" ) array_push($category_ids, 323);
+          if ($cat_slug == "laser-printer" ) array_push($category_ids, 488);
+          if ($cat_slug == "graphiccards" ) array_push($category_ids, 507);
+          if ($cat_slug == "network" ) array_push($category_ids, 5);
+
+	}
+        return $category_ids;
+}
+
+# translate content
+function lhg_create_article_translation_content( $postid, $postid_server ) {
+
+        #
+        # get content
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `postcontent_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_content = $lhg_price_db->get_var($safe_sql);
+
+        $result_content = str_replace("<!--:us-->","",$result_content);
+        $result_content = str_replace("<!--:-->","",$result_content);
+        # for safety reasons we had to replace chars when storing them in PriceDB. Now we need to
+        # revert this (normally only for the [code] block but we do not distinguish text and code yet - ToDo!)
+        $result_content = str_replace("&lt;","<",$result_content);
+        $result_content = str_replace("&gt;",">",$result_content);
+        $result_content = str_replace("&quot;","\"",$result_content);
+        $result_content = str_replace("&amp;","&",$result_content);
+
+        return $result_content;
+}
+
+# translate content
+function lhg_create_article_translation_amazonid( $postid, $postid_server ) {
+
+        #
+        # guess AMAZON ID
+        #
+  	global $lhg_price_db;
+
+	$sql = "SELECT `shop_article_id` FROM `lhgprices` WHERE lhg_article_id = %s AND shop_id = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid, 7);
+        $amazon_id = $lhg_price_db->get_var($safe_sql);
+
+        return $amazon_id;
+}
+
+
+# created post image
+function lhg_create_article_translation_iconcreation( $result_icon, $newPostID, $postid_server ) {
+
+        if ($result_icon != "")  {
+		$upload_dir = wp_upload_dir();
+                $image_url="http://www.linux-hardware-guide.com".$result_icon;
+		$image_data = file_get_contents($image_url);
+		$filename = basename($image_url);
+
+                #print "FN: $filename <br>";
+                #print "IU: $image_url <br>";
+
+                if(wp_mkdir_p($upload_dir['path']))
+    			$file = $upload_dir['path'] . '/' . $filename;
+		else
+    			$file = $upload_dir['basedir'] . '/' . $filename;
+
+		file_put_contents($file, $image_data);
+
+		$wp_filetype = wp_check_filetype($filename, null );
+
+                $attachment = array(
+		    'post_mime_type' => $wp_filetype['type'],
+		    'post_title' => sanitize_file_name($filename),
+		    'post_content' => '',
+		    'post_status' => 'inherit'
+		);
+		$attach_id = wp_insert_attachment( $attachment, $file, $newPostID );
+		require_once(ABSPATH . 'wp-admin/includes/image.php');
+		$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+		wp_update_attachment_metadata( $attach_id, $attach_data );
+
+		set_post_thumbnail( $newPostID, $attach_id );
+
+	}
 }
 
 
