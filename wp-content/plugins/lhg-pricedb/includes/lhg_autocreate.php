@@ -2655,9 +2655,6 @@ function lhg_create_article_translation( $postid, $postid_server, $data ) {
         # content translation
         $result_content = lhg_create_article_translation_content( $postid, $postid_server );
 
-        # local Amazon ID
-        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server, $data["ASIN"] );
-
 
         # create new article
 	$myPost = array(
@@ -2677,8 +2674,12 @@ function lhg_create_article_translation( $postid, $postid_server, $data ) {
 
 
         # add amazon id
-	update_post_meta($newPostID, 'amazon-product-single-asin', $amazon_id );
-        if ($amazon_id == "") $amazon_id = $data["ASIN"];
+        # local Amazon ID
+        lhg_create_article_translation_amazonid( $newPostID, $data["ASIN"] );
+
+
+	#update_post_meta($newPostID, 'amazon-product-single-asin', $amazon_id );
+        #if ($amazon_id == "") $amazon_id = $data["ASIN"];
         if ($lang == "de") lhg_amazon_create_db_entry( "de", $newPostID, $amazon_id );
 
         #
@@ -2737,8 +2738,6 @@ function lhg_update_article_translation( $postid, $postid_server, $data ) {
         # content translation
         $result_content = lhg_create_article_translation_content( $postid, $postid_server );
 
-        # local Amazon ID
-        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server, $data["ASIN"] );
 
         # get translated postid
 	if ($lang == "de") $sql = "SELECT `postid_de`  FROM `lhgtransverse_posts` WHERE postid_com = %s";
@@ -2767,11 +2766,15 @@ function lhg_update_article_translation( $postid, $postid_server, $data ) {
 
 
         # add amazon id
-        if ($amazon_id == "") $amazon_id = $data["ASIN"];
+        # local Amazon ID
+        lhg_create_article_translation_amazonid( $translated_postid, $data["ASIN"] );
+
+
+        #if ($amazon_id == "") $amazon_id = $data["ASIN"];
         #error_log("AID: ".$amazon_id);
         #error_log("data: ".json_encode($data) );
-	update_post_meta($translated_postid, 'amazon-product-single-asin', $amazon_id );
-        if ($lang == "de") lhg_amazon_create_db_entry( "de", $translated_postid, $amazon_id );
+	#update_post_meta($translated_postid, 'amazon-product-single-asin', $amazon_id );
+        #if ($lang == "de") lhg_amazon_create_db_entry( "de", $translated_postid, $amazon_id );
 
         #
         # auto-create link with com article
@@ -3092,23 +3095,26 @@ function lhg_create_article_translation_content( $postid, $postid_server ) {
 }
 
 # translate content
-function lhg_create_article_translation_amazonid( $postid, $postid_server, $asin ) {
+function lhg_create_article_translation_amazonid( $postid, $asin ) {
 
-        # does not create but just returns the ASIN!
 
         # use AMAZON ID that was transmitted by JSON request
-        if ($asin != "") return $asin;
+        #if ($asin != "") return;
 
-        #
-        # Otherwise guess AMAZON ID
-        #
-  	global $lhg_price_db;
+        #error_log("AID: ".$amazon_id);
+        #error_log("data: ".json_encode($data) );
 
-	$sql = "SELECT `shop_article_id` FROM `lhgprices` WHERE lhg_article_id = %s AND shop_id = %s";
-        $safe_sql = $lhg_price_db->prepare($sql, $postid, 7);
-        $amazon_id = $lhg_price_db->get_var($safe_sql);
+        # create post meta data
+        update_post_meta($postid, 'amazon-product-single-asin', $asin );
+        update_post_meta($postid, 'amazon-product-content-hook-override', 2 );
+        update_post_meta($postid, 'amazon-product-content-location', 1 );
+        update_post_meta($postid, 'amazon-product-excerpt-hook-override', 2 );
+        update_post_meta($postid, 'amazon-product-isactive', 1 );
+        update_post_meta($postid, 'amazon-product-newwindow', 3 );
 
-        return $amazon_id;
+        if ($lang == "de") lhg_amazon_create_db_entry( "de", $translated_postid, $amazon_id );
+
+        return;
 }
 
 
