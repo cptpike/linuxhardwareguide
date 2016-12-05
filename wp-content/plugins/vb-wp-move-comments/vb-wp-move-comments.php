@@ -125,14 +125,14 @@ if ($rating_image != "n.a.")
 
 			if ($lang == "de") $sql = "SELECT `postid_com` FROM `lhgtransverse_posts` WHERE postid_de = %s";
 			if ($lang != "de") $sql = "SELECT `postid_de` FROM `lhgtransverse_posts` WHERE postid_com = %s";
-		        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+		        $safe_sql = $lhg_price_db->prepare($sql, $comment->comment_post_ID );
 		        $trans_postid = $lhg_price_db->get_var($safe_sql);
 
                         if ($trans_postid > 0){
                         	print '<br><a href="../wp-admin/admin.php?movecomment&cid='.$comment->comment_ID.'">move comment to transverse server</a>';
                         }else{
-                                if ($lang == "de") print "Artikel kann nicht auf .com Server verschoben werden";
-                                if ($lang != "de") print "Article kann not be moved to .de server";
+                                if ($lang == "de") print "<br>Artikel kann nicht auf .com Server verschoben werden";
+                                if ($lang != "de") print "<br>Article kann not be moved to .de server";
                         }
                         ?>
 		</td>
