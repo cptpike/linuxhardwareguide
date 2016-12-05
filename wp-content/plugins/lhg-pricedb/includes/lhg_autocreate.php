@@ -2535,10 +2535,17 @@ function lhg_url_request_autotranslate(  ) {
 # move comment to transverse server
 function lhg_url_request_move_comment(  ) {
 
+
+
         # ToDo: no support for attachments
 
 	global $lhg_price_db;
         global $lang;
+
+        if (!current_user_can("moderate_comments")){
+                print "You are not allowed to moderate comments";
+                exit;
+	}
 
         $cid = $_GET['cid'];
 
