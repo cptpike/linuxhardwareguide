@@ -2600,6 +2600,7 @@ function lhg_url_request_move_comment(  ) {
                 'comment_author' => $comment->comment_author,
                 'comment_author_email' => $comment->comment_author_email,
                 'comment_author_url' => $comment->comment_author_url,
+                'comment_author_IP' => $comment->comment_author_IP,
                 'comment_agent' => $comment->comment_agent,
                 'commentid_server' => 'com'
         );
@@ -3146,6 +3147,43 @@ function lhg_create_article_translation_iconcreation( $result_icon, $newPostID, 
 		set_post_thumbnail( $newPostID, $attach_id );
 
 	}
+}
+
+# created comment based on transfer request
+function lhg_create_comment_by_json_request( $data ) {
+
+        global $lhg_price_db;
+        global $lang;
+
+        # get postid comment needs to be associated with
+        $o_postid = $data["comment_postid"];
+        if ( $data["commentid_server"] == "com" ) $sql = "SELECT postid_de  FROM `lhgtransverse_posts` WHERE postid_com = \"%s\" ";
+        if ( $data["commentid_server"] == "de" )  $sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE postid_de  = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $o_postid );
+	$new_postid = $lhg_price_db->get_var($safe_sql);
+
+        # get user id comment needs to be associated with
+        $comment_guid = $data["comment_guid"];
+        if ($lang == "de") $sql = "SELECT wpuid_de FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+        if ($lang != "de") $sql = "SELECT wpuid    FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $comment_guid );
+	$new_uid = $lhg_price_db->get_var($safe_sql);
+
+        $data = array(
+                'comment_post_ID' => $new_postid,
+                'user_id' => $new_uid,
+                'comment_date' => $data["comment_date"],
+                'comment_date_gmt' => $data["comment_date_gmt"],
+                'comment_content' => $data["comment_content"],
+                'comment_agent' => $data["comment_agent"],
+                'comment_author' => $data["comment_author"],
+                'comment_author_email' => $data["comment_author_email"],
+                'comment_author_url' => $data["comment_author_url"],
+                'comment_author_IP' => $data["comment_author_url"],
+        );
+
+        wp_insert_comment( $data );
+        exit;
 }
 
 
