@@ -2590,6 +2590,7 @@ function lhg_url_request_move_comment(  ) {
 
         $data = array (
                 'comment_guid' => $comment_guid,
+                'comment_postid' => $comment->comment_post_ID,
                 'password' => $password,
                 'request' => 'move_comment',
                 'comment_id' => $cid,
