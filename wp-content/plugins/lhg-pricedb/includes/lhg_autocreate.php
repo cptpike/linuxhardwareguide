@@ -2885,7 +2885,7 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
 
         # add ASIN to request if available
 	$key = "amazon-product-single-asin";
-  	if($val = get_post_meta($postid, $key, FALSE)) {
+  	if($val = get_post_meta($postid, $key, TRUE)) {
 	  	$data['ASIN'] = $val;
   	}
 
@@ -2946,7 +2946,7 @@ function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
 
         # add ASIN to request if available
 	$key = "amazon-product-single-asin";
-  	if($val = get_post_meta($postid, $key, FALSE)) {
+  	if($val = get_post_meta($postid, $key, TRUE)) {
 	  	$data['ASIN'] = $val;
   	}
 
