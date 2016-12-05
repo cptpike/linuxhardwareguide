@@ -858,6 +858,14 @@ function lhg_url_based_code ( ) {
 	    exit;
 	}
 
+	if ( strpos( $_SERVER['REQUEST_URI'], '/wp-admin/admin.php?movecomment' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_url_request_move_comment();
+	    exit;
+	}
+
+
 }
 
 
