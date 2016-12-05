@@ -2678,6 +2678,7 @@ function lhg_create_article_translation( $postid, $postid_server, $data ) {
 
         # add amazon id
 	update_post_meta($newPostID, 'amazon-product-single-asin', $amazon_id );
+        if ($amazon_id == "") $amazon_id = $data["ASIN"];
         if ($lang == "de") lhg_amazon_create_db_entry( "de", $newPostID, $amazon_id );
 
         #
@@ -2767,10 +2768,10 @@ function lhg_update_article_translation( $postid, $postid_server, $data ) {
 
         # add amazon id
         if ($amazon_id == "") $amazon_id = $data["ASIN"];
-        error_log("AID: ".$amazon_id);
-        error_log("data: ".json_encode($data) );
+        #error_log("AID: ".$amazon_id);
+        #error_log("data: ".json_encode($data) );
 	update_post_meta($translated_postid, 'amazon-product-single-asin', $amazon_id );
-        if ($lang == "de") lhg_amazon_create_db_entry( "de", $myPost, $amazon_id );
+        if ($lang == "de") lhg_amazon_create_db_entry( "de", $translated_postid, $amazon_id );
 
         #
         # auto-create link with com article
