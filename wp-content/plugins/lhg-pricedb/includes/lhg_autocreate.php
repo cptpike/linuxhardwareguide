@@ -2588,6 +2588,9 @@ function lhg_url_request_move_comment(  ) {
 	$safe_sql = $lhg_price_db->prepare( $sql, $comment->user_id );
 	$comment_guid = $lhg_price_db->get_var($safe_sql);
 
+        if ($lang == "de") $server="de";
+        if ($lang != "de") $server="com";
+
         $data = array (
                 'comment_guid' => $comment_guid,
                 'comment_postid' => $comment->comment_post_ID,
@@ -2602,7 +2605,7 @@ function lhg_url_request_move_comment(  ) {
                 'comment_author_url' => $comment->comment_author_url,
                 'comment_author_IP' => $comment->comment_author_IP,
                 'comment_agent' => $comment->comment_agent,
-                'commentid_server' => 'com'
+                'commentid_server' => $server
         );
 
         // request the action
@@ -2834,6 +2837,7 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
 
         #error_log("Translation request started");
 	global $lhg_price_db;
+        global $lang;
 
         # set json conterpart and admin GUID
 
@@ -2862,13 +2866,15 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
 	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
 	$password = $lhg_price_db->get_var($safe_sql);
 
+        if ($lang == "de") $server = "de";
+        if ($lang != "de") $server = "com";
 
         $data = array (
                 'guid' => $guid,
                 'password' => $password,
                 'request' => 'create_article_translation',
                 'postid' => $postid,
-                'postid_server' => 'com'
+                'postid_server' => $server
         );
 
         # add ASIN to request if available
@@ -2892,6 +2898,7 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
 function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
 
 	global $lhg_price_db;
+        global $lang;
 
         # set json conterpart and admin GUID
 
@@ -2920,13 +2927,15 @@ function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
 	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
 	$password = $lhg_price_db->get_var($safe_sql);
 
+        if ($lang == "de") $server = "de";
+        if ($lang != "de") $server = "com";
 
         $data = array (
                 'guid' => $guid,
                 'password' => $password,
                 'request' => 'article_translation_update',
                 'postid' => $postid,
-                'postid_server' => 'com'
+                'postid_server' => $server
         );
 
         # add ASIN to request if available
