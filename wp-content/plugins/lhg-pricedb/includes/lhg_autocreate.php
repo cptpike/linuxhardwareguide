@@ -2630,6 +2630,7 @@ function lhg_create_article_translation( $postid, $postid_server, $data ) {
         #error_log("PID: $postid - $postid_server");
 
 	global $lhg_price_db;
+        global $lang;
 
         if ($postid_server != com) {
                 print "Translation only tested from com -> de";
@@ -2677,6 +2678,7 @@ function lhg_create_article_translation( $postid, $postid_server, $data ) {
 
         # add amazon id
 	update_post_meta($newPostID, 'amazon-product-single-asin', $amazon_id );
+        if ($lang == "de") lhg_amazon_create_db_entry( "de", $newPostID, $amazon_id );
 
         #
         # auto-create link with com article
@@ -2764,7 +2766,11 @@ function lhg_update_article_translation( $postid, $postid_server, $data ) {
 
 
         # add amazon id
+        if ($amazon_id == "") $amazon_id = $data["ASIN"];
+        error_log("AID: ".$amazon_id);
+        error_log("data: ".json_encode($data) );
 	update_post_meta($translated_postid, 'amazon-product-single-asin', $amazon_id );
+        if ($lang == "de") lhg_amazon_create_db_entry( "de", $myPost, $amazon_id );
 
         #
         # auto-create link with com article
@@ -2879,7 +2885,7 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
 
         # add ASIN to request if available
 	$key = "amazon-product-single-asin";
-  	if($val = get_post_meta($newPostID, $key, FALSE)) { 
+  	if($val = get_post_meta($postid, $key, FALSE)) {
 	  	$data['ASIN'] = $val;
   	}
 
@@ -2940,7 +2946,7 @@ function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
 
         # add ASIN to request if available
 	$key = "amazon-product-single-asin";
-  	if($val = get_post_meta($newPostID, $key, FALSE)) { 
+  	if($val = get_post_meta($postid, $key, FALSE)) {
 	  	$data['ASIN'] = $val;
   	}
 
@@ -3086,6 +3092,8 @@ function lhg_create_article_translation_content( $postid, $postid_server ) {
 
 # translate content
 function lhg_create_article_translation_amazonid( $postid, $postid_server, $asin ) {
+
+        # does not create but just returns the ASIN!
 
         # use AMAZON ID that was transmitted by JSON request
         if ($asin != "") return $asin;
