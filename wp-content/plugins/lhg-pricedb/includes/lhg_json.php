@@ -21,7 +21,7 @@ function lhg_url_request_json( ) {
 
 function lhg_json_request_create_article_translation( $data , $request_type ) {
 
-        #error_log("autocreate: $request_type");
+        error_log("autocreate: $request_type - data:".json_encode($data) );
 
 	global $lhg_price_db;
 
@@ -176,10 +176,12 @@ function lhg_json_request_move_comment( $data ) {
         #check postid
         if ( is_numeric( $data["comment_postid"] ) ) {
 
+                # check if original article exists
         	if ( $data["commentid_server"] == "com" ) $sql = "SELECT id FROM `lhgtransverse_posts` WHERE postid_com = \"%s\" ";
         	if ( $data["commentid_server"] == "de" ) $sql = "SELECT id FROM `lhgtransverse_posts` WHERE postid_de = \"%s\" ";
 		$safe_sql = $lhg_price_db->prepare( $sql, $data["comment_postid"] );
 		$dbid = $lhg_price_db->get_var($safe_sql);
+
 
                 # check if postid exists in DB
                 if ( $dbid > 0 ) {
@@ -229,7 +231,7 @@ function lhg_json_error( $type , $value ) {
 	} elseif ($type == "unknown_postid") {
                 $data = array (
                 	'error_code' => 3,
-                        'error_message' => "Uknown post ID: $value"
+                        'error_message' => "Unknown post ID: $value"
                         );
 
 	} elseif ($type == "unknown_server") {
