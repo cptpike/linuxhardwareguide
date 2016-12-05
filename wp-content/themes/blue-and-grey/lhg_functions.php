@@ -1251,12 +1251,16 @@ add_action('manage_users_custom_column', 'add_custom_user_columns', 15, 3);
 add_filter('manage_users_columns', 'add_user_columns', 15, 1);
 
 function add_comment_columns( $columns ) {
-     $columns['language'] = __('Language')." / ".__('Rating');
+     global $lang;
+     if ($lang != "de") $columns['language'] = __('Language')." / ".__('Rating');
+     if ($lang == "de") $columns['language'] = __('Rating');
      //$defaults['title'] = __('Title', 'user-column');
      return $columns;
 }
 
 function add_custom_comment_columns($column_name, $id) {
+      global $lang;
+
       $flag_url="/wp-content/plugins/qtranslate/flags/";
       if( $column_name == 'language' ) {
 		$lang   = get_comment_meta( $id, 'language', true );
@@ -1271,19 +1275,22 @@ function add_custom_comment_columns($column_name, $id) {
                 //echo "L: $lang";
 
                 //default
-                $out = '<img src="'.$flag_url."us.png".'">';
-                if ($lang == "com") $out= '<img src="'.$flag_url."us.png".'">';
-                if ($lang == "ca")  $out= '<img src="'.$flag_url."ca.png".'">';
-                if ($lang == "zh")  $out= '<img src="'.$flag_url."cn.png".'">';
-                if ($lang == "fr")  $out= '<img src="'.$flag_url."fr.png".'">';
-                if ($lang == "in")  $out= '<img src="'.$flag_url."in.png".'">';
-                if ($lang == "it")  $out= '<img src="'.$flag_url."it.png".'">';
-                if ($lang == "jp")  $out= '<img src="'.$flag_url."jp.png".'">';
-                if ($lang == "uk")  $out= '<img src="'.$flag_url."uk.png".'">';
-                if ($lang == "es")  $out= '<img src="'.$flag_url."es.png".'">';
-                if ($lang == "nl")  $out= '<img src="'.$flag_url."nl.png".'">';
-                if ($lang == "de")  $out= '<img src="'.$flag_url."de.png".'">';
-
+                # show language icon in comment section on servers with multiple
+                # language support
+                if ($lang != "de") {
+                	$out = '<img src="'.$flag_url."us.png".'">';
+	                if ($lang == "com") $out= '<img src="'.$flag_url."us.png".'">';
+        	        if ($lang == "ca")  $out= '<img src="'.$flag_url."ca.png".'">';
+	                if ($lang == "zh")  $out= '<img src="'.$flag_url."cn.png".'">';
+        	        if ($lang == "fr")  $out= '<img src="'.$flag_url."fr.png".'">';
+	                if ($lang == "in")  $out= '<img src="'.$flag_url."in.png".'">';
+        	        if ($lang == "it")  $out= '<img src="'.$flag_url."it.png".'">';
+	                if ($lang == "jp")  $out= '<img src="'.$flag_url."jp.png".'">';
+        	        if ($lang == "uk")  $out= '<img src="'.$flag_url."uk.png".'">';
+	                if ($lang == "es")  $out= '<img src="'.$flag_url."es.png".'">';
+        	        if ($lang == "nl")  $out= '<img src="'.$flag_url."nl.png".'">';
+	                if ($lang == "de")  $out= '<img src="'.$flag_url."de.png".'">';
+                }
                 echo $out."<br>".$rating_result;
       }
 }
