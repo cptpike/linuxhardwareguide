@@ -2532,8 +2532,86 @@ function lhg_url_request_autotranslate(  ) {
 
 }
 
+# move comment to transverse server
+function lhg_url_request_move_comment(  ) {
+
+        # ToDo: no support for attachments
+
+	global $lhg_price_db;
+        global $lang;
+
+        $cid = $_GET['cid'];
+
+        #$parsed = parse_url( $_SERVER['REQUEST_URI'] );
+        #print "Parsed: ".$parsed['query']."<br>";
+        print "Move comment ".$_GET['cid']."<br>";
+
+        # set json conterpart and admin GUID
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12") {
+		$url = "http://192.168.56.13/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+		$url = "http://192.168.56.12/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+		$url = "http://192.168.3.113/json";
+        	$guid = 22;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+		$url = "http://192.168.3.112/json";
+        	$guid = 22;
+	}
+
+        # get comment
+        $comment = get_comment($cid);
+
+        # get JSON password for transverse requests
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+        # get GUID of comment owner
+        if ($lang == "de") $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"%s\" ";
+        if ($lang != "de") $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $comment->user_id );
+	$comment_guid = $lhg_price_db->get_var($safe_sql);
+
+        $data = array (
+                'comment_guid' => $comment_guid,
+                'password' => $password,
+                'request' => 'move_comment',
+                'comment_id' => $cid,
+                'comment_content' => $comment->comment_content,
+                'comment_date' => $comment->comment_date,
+                'comment_date_gmt' => $comment->comment_date_gmt,
+                'comment_author' => $comment->comment_author,
+                'comment_author_email' => $comment->comment_author_email,
+                'comment_author_url' => $comment->comment_author_url,
+                'comment_agent' => $comment->comment_agent,
+                'commentid_server' => 'com'
+        );
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
+        wp_redirect( "/wp-admin/edit-comments.php?comment_status=approved" );
+
+        # Todo: delete comments (implement only after functioning transfer was tested
+
+        exit;
+
+
+}
+
 # starting automatic translation
-function lhg_create_article_translation( $postid, $postid_server ) {
+function lhg_create_article_translation( $postid, $postid_server, $data ) {
 
 
 
@@ -2565,7 +2643,7 @@ function lhg_create_article_translation( $postid, $postid_server ) {
         $result_content = lhg_create_article_translation_content( $postid, $postid_server );
 
         # local Amazon ID
-        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server );
+        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server, $data["ASIN"] );
 
 
         # create new article
@@ -2612,7 +2690,7 @@ function lhg_create_article_translation( $postid, $postid_server ) {
 }
 
 # starting automatic translation update
-function lhg_update_article_translation( $postid, $postid_server ) {
+function lhg_update_article_translation( $postid, $postid_server, $data ) {
 
 
 
@@ -2645,7 +2723,7 @@ function lhg_update_article_translation( $postid, $postid_server ) {
         $result_content = lhg_create_article_translation_content( $postid, $postid_server );
 
         # local Amazon ID
-        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server );
+        $amazon_id = lhg_create_article_translation_amazonid( $postid, $postid_server, $data["ASIN"] );
 
         # get translated postid
 	if ($lang == "de") $sql = "SELECT `postid_de`  FROM `lhgtransverse_posts` WHERE postid_com = %s";
@@ -2784,6 +2862,13 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
                 'postid_server' => 'com'
         );
 
+        # add ASIN to request if available
+	$key = "amazon-product-single-asin";
+  	if($val = get_post_meta($newPostID, $key, FALSE)) { 
+	  	$data['ASIN'] = $val;
+  	}
+
+
         // request the action
         $response = wp_remote_post( $url,
         		array( 'body' => $data, 'timeout' => 20 )
@@ -2834,6 +2919,12 @@ function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
                 'postid' => $postid,
                 'postid_server' => 'com'
         );
+
+        # add ASIN to request if available
+	$key = "amazon-product-single-asin";
+  	if($val = get_post_meta($newPostID, $key, FALSE)) { 
+	  	$data['ASIN'] = $val;
+  	}
 
         // request the action
         $response = wp_remote_post( $url,
@@ -2976,10 +3067,13 @@ function lhg_create_article_translation_content( $postid, $postid_server ) {
 }
 
 # translate content
-function lhg_create_article_translation_amazonid( $postid, $postid_server ) {
+function lhg_create_article_translation_amazonid( $postid, $postid_server, $asin ) {
+
+        # use AMAZON ID that was transmitted by JSON request
+        if ($asin != "") return $asin;
 
         #
-        # guess AMAZON ID
+        # Otherwise guess AMAZON ID
         #
   	global $lhg_price_db;
 
