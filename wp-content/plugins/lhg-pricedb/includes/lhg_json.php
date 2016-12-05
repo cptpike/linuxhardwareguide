@@ -21,7 +21,7 @@ function lhg_url_request_json( ) {
 
 function lhg_json_request_create_article_translation( $data , $request_type ) {
 
-        error_log("autocreate: $request_type - data:".json_encode($data) );
+        #error_log("autocreate: $request_type - data:".json_encode($data) );
 
 	global $lhg_price_db;
 
