@@ -3188,7 +3188,7 @@ function lhg_create_comment_by_json_request( $data ) {
                 'comment_author' => $data["comment_author"],
                 'comment_author_email' => $data["comment_author_email"],
                 'comment_author_url' => $data["comment_author_url"],
-                'comment_author_IP' => $data["comment_author_url"],
+                'comment_author_IP' => $data["comment_author_IP"],
         );
 
         wp_insert_comment( $data );
