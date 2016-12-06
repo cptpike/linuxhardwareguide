@@ -93,11 +93,12 @@ function lhg_json_request_create_article_translation( $data , $request_type ) {
                 }
 
                 # check if article already translated
+	        if ( $data["postid_server"] == "com" ) $sql = "SELECT postid_de FROM `lhgtransverse_posts` WHERE postid_com = \"%s\" ";
+        	if ( $data["postid_server"] == "de" ) $sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE postid_de = \"%s\" ";
+		$safe_sql = $lhg_price_db->prepare( $sql, $data["postid"] );
+		$transverse_postid = $lhg_price_db->get_var($safe_sql);
+
                 if ($request_type == "create") {
-	        	if ( $data["postid_server"] == "com" ) $sql = "SELECT postid_de FROM `lhgtransverse_posts` WHERE postid_com = \"%s\" ";
-        		if ( $data["postid_server"] == "de" ) $sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE postid_de = \"%s\" ";
-			$safe_sql = $lhg_price_db->prepare( $sql, $data["postid"] );
-			$transverse_postid = $lhg_price_db->get_var($safe_sql);
 
         	        if ( $transverse_postid == 0 ) {
                 	        # post not yet translated
@@ -106,9 +107,11 @@ function lhg_json_request_create_article_translation( $data , $request_type ) {
                 	}
                 }
 
+                if ($request_type == "update" ) $update_allowed = lhg_check_update_by_json_allowed( $transverse_postid, $data["postid_server"], $data );
+
                 # all tests passed - start translation
                 if ($request_type == "create") lhg_create_article_translation( $data["postid"], $data["postid_server"], $data );
-                if ($request_type == "update") lhg_update_article_translation( $data["postid"], $data["postid_server"], $data );
+                if ( ($request_type == "update") && ($update_allowed === true) ) lhg_update_article_translation( $data["postid"], $data["postid_server"], $data );
 
 
 	}else{
@@ -266,6 +269,13 @@ function lhg_json_error( $type , $value ) {
                         );
 
 
+	} elseif ($type == "update_check_failed") {
+                $data = array (
+                	'error_code' => 9,
+                        'error_message' => "Article can not be updated. Check failed for post ID: $value"
+                        );
+
+
 	} else {
                 $data = array (
                 	'error_code' => 999,
@@ -273,11 +283,80 @@ function lhg_json_error( $type , $value ) {
                         );
         } 
 
+        # General logging disabled due to high amount of messages
+        # only useful for debugging
         error_log("JSON error: ".json_encode($data));
+
         print json_encode($data);
         exit;
 }
 
 
+# check if we can overwrite an article with an automatic translation
+# input: postid of local server (not the original one)
+function lhg_check_update_by_json_allowed( $postid, $postid_server, $data ) {
+
+                global $lang;
+                global $lhg_price_db;
+
+
+                # get last date of article editing
+                if ($lang != "de") $sql = "SELECT MAX(timestamp) FROM `lhgtransverse_post_history` WHERE change_type = \"%s\" AND guid > 0 AND postid_com = \"%s\" ";
+                if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM `lhgtransverse_post_history` WHERE change_type = \"%s\" AND guid > 0 AND postid_de = \"%s\" ";
+		$safe_sql = $lhg_price_db->prepare( $sql, "article_edited", $postid );
+		$timestamp_last_edit = $lhg_price_db->get_var($safe_sql);
+
+                # get last date of automatic translation
+                if ($lang != "de") $sql = "SELECT MAX(timestamp) FROM `lhgtransverse_post_history` WHERE change_type = \"%s\" AND postid_com = \"%s\" ";
+                if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM `lhgtransverse_post_history` WHERE change_type = \"%s\" AND postid_de = \"%s\" ";
+		if ($lang == "de") $safe_sql = $lhg_price_db->prepare( $sql, "auto_translation_en->de", $postid );
+		if ($lang != "de") $safe_sql = $lhg_price_db->prepare( $sql, "auto_translation_de->en", $postid );
+		$timestamp_autotranslation = $lhg_price_db->get_var($safe_sql);
+
+                # get last date of automatic translation update
+                if ($lang != "de") $sql = "SELECT MAX(timestamp) FROM `lhgtransverse_post_history` WHERE change_type = \"%s\" AND postid_com = \"%s\" ";
+                if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM `lhgtransverse_post_history` WHERE change_type = \"%s\" AND postid_de = \"%s\"";
+		if ($lang == "de") $safe_sql = $lhg_price_db->prepare( $sql, "auto_translation_update_en->de", $postid );
+		if ($lang != "de") $safe_sql = $lhg_price_db->prepare( $sql, "auto_translation_update_de->en", $postid );
+		$timestamp_autoupdate = $lhg_price_db->get_var($safe_sql);
+
+                #error_log("PID: $postid TLE: $timestamp_last_edit - TAU: $timestamp_autoupdate TAT: $timestamp_autotranslation ");
+
+
+		if ($timestamp_autotranslation == "") $timestamp_autotranslation = 0;
+		if ($timestamp_autoupdate      == "") $timestamp_autoupdate = 0;
+		if ($timestamp_last_edit       == "") $timestamp_last_edit = 0;
+
+                $update_allowed = false; # failsave mode
+
+                if ( $timestamp_last_edit > max( $timestamp_autotranslation, $timestamp_autoupdate ) ) {
+                        # article was already manually edited
+                        # Do not overwrite
+                        $update_allowed = false;
+                        #error_log("1");
+		}
+
+                if ( $timestamp_last_edit < max($timestamp_autotranslation, $timestamp_autoupdate ) ) {
+                        # current article status is based on atomatic translation
+                        # can be updated
+                        $update_allowed = true;
+                        #error_log("2");
+		}
+
+                if ( ($timestamp_last_edit == 0 ) && ($timestamp_autoupdate == 0) && ($timestamp_autotranslation == 0) ) {
+                        # Unknown status - nothing found in history database
+                        # Do not overwrite
+                        $update_allowed = false;
+                        #error_log("3");
+
+		}
+
+                #error_log("END - TLE: $timestamp_last_edit - TAU: $timestamp_autoupdate TAT: $timestamp_autotranslation ");
+
+                if ($update_allowed === false) lhg_json_error("update_check_failed", $postid );
+
+                return $update_allowed;
+
+}
 
 ?>
