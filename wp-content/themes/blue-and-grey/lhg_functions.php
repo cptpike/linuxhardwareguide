@@ -228,6 +228,12 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 29
                         ),
 
+                "bodhi" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/bodhi-logo.png",
+                        "url" => "http://www.bodhilinux.com/",
+                        "donation_target" => 30
+                        ),
+
 );
 
         return $dist;
@@ -337,6 +343,9 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"Funtoo") > -1 )
                 return "funtoo";
+
+        if ( strpos($distribution,"Bodhi") > -1 )
+                return "bodhi";
 
 }
 
