@@ -2274,6 +2274,7 @@ td#col-scanresults-distri{
         vertical-align: middle;
         padding-top:16px;
         margin-left: 64px;
+        min-width: 150px;
         }        
 
 .subscribe-hwtext-span-scan-small{
