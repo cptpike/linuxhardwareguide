@@ -150,6 +150,11 @@ $donation = array(
                 "NameShort" => "Funtoo",
                 ),
 
+	30 => array (
+                "Name" => "Bodhi Linux",
+                "NameShort" => "Bodhi",
+                ),
+
 );
 
 
