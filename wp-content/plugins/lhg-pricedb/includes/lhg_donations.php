@@ -190,25 +190,19 @@ lhg_donation_selector ($user_donation_target);
 <?php
 }
 
+
+# Lists all possible donation targets
+# automatically selects $user_donation_target
 function lhg_donation_selector ($user_donation_target) {
-global $donation;
-        /*
-        //include check of possible array values
-        if($user_l, $lang_array) ){
-                $error = "- Error: Lang not found (".$user_language.")";
-		$user_language = "com";
+	global $donation;
+
+	$i=1;
+	foreach ($donation as $target) {
+
+        	print '<option value="'.$i.'" '.selected($i,$user_donation_target).'>'.$donation[$i]["Name"].'</option>';
+	        $i++;
+
         }
-        */
-?>
-   <option value="1" <?php selected('1',$user_donation_target); ?>     ><?php echo $donation[1]["Name"]; ?></option>
-   <option value="2" <?php selected('2',$user_donation_target); ?>     ><?php echo $donation[2]["Name"]; ?></option>
-   <option value="3" <?php selected('3',$user_donation_target); ?>     ><?php echo $donation[3]["Name"]; ?></option>
-   <option value="4" <?php selected('4',$user_donation_target); ?>     ><?php echo $donation[4]["Name"]; ?></option>
-   <option value="5" <?php selected('5',$user_donation_target); ?>     ><?php echo $donation[5]["Name"]; ?></option>
-   <option value="6" <?php selected('6',$user_donation_target); ?>     ><?php echo $donation[6]["Name"]; ?></option>
-   <option value="7" <?php selected('7',$user_donation_target); ?>     ><?php echo $donation[7]["Name"]; ?></option>
-   <option value="8" <?php selected('8',$user_donation_target); ?>     ><?php echo $donation[8]["Name"]; ?></option>
-<?php
 
 }
 
