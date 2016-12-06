@@ -2389,6 +2389,7 @@ function lhg_taglist_by_title ( $title  ) {
 function lhg_translate_title_en_to_de( $title )  {
         # ToDo: Translate only properties, not product ID
 
+	$title = str_replace("Optical Drive","Optisches Laufwerk",$title);
 	$title = str_replace("Socket","Sockel",$title);
 	$title = str_replace("socket","Sockel",$title);
 	$title = str_replace(" Burner","-Brenner",$title);
