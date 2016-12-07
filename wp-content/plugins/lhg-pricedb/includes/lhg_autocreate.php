@@ -2894,6 +2894,12 @@ function lhg_initiate_autotranslate_by_json_request( $postid ) {
 	  	$data['ASIN'] = $val;
   	}
 
+        # post thumbnail to be transferred
+        if ( has_post_thumbnail( $postid ) ) { // check if the post has a Post Thumbnail assigned to it.
+		$imgurl = get_the_post_thumbnail_url( $postid );
+	  	$data['thumbnail'] = $imgurl;
+	}
+
 
         // request the action
         $response = wp_remote_post( $url,
@@ -2954,6 +2960,21 @@ function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
   	if($val = get_post_meta($postid, $key, TRUE)) {
 	  	$data['ASIN'] = $val;
   	}
+
+        # post thumbnail to be transferred
+        if ( has_post_thumbnail( $postid ) ) { // check if the post has a Post Thumbnail assigned to it.
+		#$imgurl = get_the_post_thumbnail_url( $postid );
+
+                $post = get_post( $postid );
+		$post_thumbnail_id = get_post_thumbnail_id( $post );
+
+		$imgurl = wp_get_attachment_url( get_post_thumbnail_id( $postid ) );
+
+		if ( $imgurl != "" ) {
+                        #$imgurl = wp_get_attachment_image_src( $post_thumbnail_id, 'thumbnail-size', true );
+        	        $data['thumbnail'] = $imgurl;
+		}
+	}
 
         // request the action
         $response = wp_remote_post( $url,
