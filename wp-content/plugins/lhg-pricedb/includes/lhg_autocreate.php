@@ -2648,7 +2648,7 @@ function lhg_create_article_translation( $postid, $postid_server, $data ) {
         #error_log("TT: $translated_title");
 
         # icon
-        $icon = lhg_create_article_translation_icon( $postid, $postid_server );
+        $icon = lhg_create_article_translation_icon( $postid, $postid_server, $data );
 
         # category translation
         $category_ids = lhg_create_article_translation_categories( $postid, $postid_server );
@@ -2692,7 +2692,7 @@ function lhg_create_article_translation( $postid, $postid_server, $data ) {
 	$result = $lhg_price_db->query($safe_sql);
 
         # link icon with article
-	lhg_create_article_translation_iconcreation( $icon, $newPostID, $postid_server );
+	lhg_create_article_translation_iconcreation( $icon, $newPostID, $postid_server, "create" );
 
 
         # create history entry
@@ -2731,7 +2731,7 @@ function lhg_update_article_translation( $postid, $postid_server, $data ) {
         #error_log("TT: $translated_title");
 
         # icon - do not update the icon
-        #$icon = lhg_create_article_translation_icon( $postid, $postid_server );
+        $icon = lhg_create_article_translation_icon( $postid, $postid_server, $data);
 
         # category translation
         $category_ids = lhg_create_article_translation_categories( $postid, $postid_server );
@@ -2786,7 +2786,7 @@ function lhg_update_article_translation( $postid, $postid_server, $data ) {
 	#$result = $lhg_price_db->query($safe_sql);
 
         # link icon with article
-	#lhg_create_article_translation_iconcreation( $icon, $newPostID, $postid_server );
+	lhg_create_article_translation_iconcreation( $icon, $translated_postid, $postid_server, "update"  );
 
 
         # create history entry
@@ -3047,16 +3047,21 @@ function lhg_create_article_translation_title( $postid, $postid_server ) {
 }
 
 # transfer icon
-function lhg_create_article_translation_icon( $postid, $postid_server ) {
+# $data ... full JSON object
+function lhg_create_article_translation_icon( $postid, $postid_server, $data ) {
 
         #
         # get icon
         #
         global $lhg_price_db;
 
-	$sql = "SELECT `icon_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
-        $safe_sql = $lhg_price_db->prepare($sql, $postid);
-        $result_icon = $lhg_price_db->get_var($safe_sql);
+        $result_icon = $data['thumbnail'];
+
+        if ($result_icon == "") {
+        	$sql = "SELECT `icon_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        	$safe_sql = $lhg_price_db->prepare($sql, $postid);
+	        $result_icon = $lhg_price_db->get_var($safe_sql);
+	}
 
         return $result_icon;
 }
@@ -3150,7 +3155,30 @@ function lhg_create_article_translation_amazonid( $postid, $asin ) {
 
 
 # created post image
-function lhg_create_article_translation_iconcreation( $result_icon, $newPostID, $postid_server ) {
+function lhg_create_article_translation_iconcreation( $result_icon, $newPostID, $postid_server, $type ) {
+
+
+        #error_log("NPID: $newPostID -> ".has_post_thumbnail( $newPostID ) );
+
+        if ( has_post_thumbnail( $newPostID ) ) { // check if the post has a Post Thumbnail assigned to it.
+		#$imgurl = get_the_post_thumbnail_url( $postid );
+
+                #$post = get_post( $newPostID );
+		#$post_thumbnail_id = get_post_thumbnail_id( $post );
+
+		$imgurl = wp_get_attachment_url( get_post_thumbnail_id( $newPostID ) );
+
+	}
+
+        # compare the image file names. The paths can be different between .de and .com server
+        if ( end(split("/",$result_icon)) == end(split("/",$imgurl)) ) {
+                # nothing to be done
+                #error_log("Already correct image used");
+                return;
+	}
+
+        #error_log("Update image $result_icon");
+        #error_log("Old image $imgurl");
 
         if ($result_icon != "")  {
 
