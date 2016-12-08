@@ -4,6 +4,9 @@
 
 function lhg_url_request_json( ) {
 
+        # enable full JSON Debugging
+        # Warning: output can contain passwords
+        #error_log(json_encode( $_POST ) );
 
         if ($_POST["request"] == "create_article_translation") {
                 lhg_json_request_create_article_translation( $_POST, "create" );
@@ -323,20 +326,20 @@ function lhg_check_update_by_json_allowed( $postid, $postid_server, $data ) {
                 #error_log("PID: $postid TLE: $timestamp_last_edit - TAU: $timestamp_autoupdate TAT: $timestamp_autotranslation ");
 
 
-		if ($timestamp_autotranslation == "") $timestamp_autotranslation = 0;
-		if ($timestamp_autoupdate      == "") $timestamp_autoupdate = 0;
-		if ($timestamp_last_edit       == "") $timestamp_last_edit = 0;
+		if ($timestmap_autotranslation == "") $timestmap_autotranslation = 0;
+		if ($timestmap_autoupdate      == "") $timestmap_autoupdate = 0;
+		if ($timestmap_last_edit       == "") $timestmap_last_edit = 0;
 
                 $update_allowed = false; # failsave mode
 
-                if ( $timestamp_last_edit > max( $timestamp_autotranslation, $timestamp_autoupdate ) ) {
+                if ( $timestamp_last_edit > max( $timestmap_autotranslation, $timestamp_autoupdate ) ) {
                         # article was already manually edited
                         # Do not overwrite
                         $update_allowed = false;
                         #error_log("1");
 		}
 
-                if ( $timestamp_last_edit < max($timestamp_autotranslation, $timestamp_autoupdate ) ) {
+                if ( $timestamp_last_edit < max($timestmap_autotranslation, $timestamp_autoupdate ) ) {
                         # current article status is based on atomatic translation
                         # can be updated
                         $update_allowed = true;
@@ -351,7 +354,23 @@ function lhg_check_update_by_json_allowed( $postid, $postid_server, $data ) {
 
 		}
 
-                #error_log("END - TLE: $timestamp_last_edit - TAU: $timestamp_autoupdate TAT: $timestamp_autotranslation ");
+                if ( ($timestamp_last_edit == 0 ) && ($timestamp_autoupdate > 0) && ($timestamp_autotranslation == 0) ) {
+                        # Unknown status - nothing found in history database
+                        # Do not overwrite
+                        $update_allowed = true;
+                        #error_log("4");
+
+		}
+
+                if ( ($timestamp_last_edit == 0 ) && ($timestamp_autoupdate == 0) && ($timestamp_autotranslation > 0) ) {
+                        # Unknown status - nothing found in history database
+                        # Do not overwrite
+                        $update_allowed = true;
+                        #error_log("5");
+
+		}
+
+                #error_log("TLE: $timestamp_last_edit - TAU: $timestamp_autoupdate TAT: $timestamp_autotranslation ");
 
                 if ($update_allowed === false) lhg_json_error("update_check_failed", $postid );
 
