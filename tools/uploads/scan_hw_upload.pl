@@ -40,6 +40,9 @@ our    $rescan = 0;
 # USB IDs of Logitech Unifying Receivers
 @lur_uids = ("046d:c52b","046d:c52f");
 
+# store all identified post ids in this list. Needed for cleanup activities
+@identified_posts = ();
+
 our $laptop_identified = 0;
 
 #exit 0;
@@ -161,7 +164,7 @@ sub check_mainboard {
 }
 
 sub check_mainboard_full_fingerprint(){
-    # make comparins of PCI and subsystem ids as fingerprint check
+    # make comparison of PCI and subsystem ids for fingerprint check
     # provides multiple search results
     # returns:
     #          Reference to array of match probablility (0 ... 100)
@@ -206,7 +209,11 @@ sub check_mainboard_full_fingerprint(){
                 # counters for matching probability
                 $pcounter[int($postid)] +=1;
                 $scounter[int($postid)] +=$sresult;
-            
+                
+                #if ( ($postid == 52141) or ($postid == 167079) ){ print "Post candidate: $postid - PCIID: $p \n";}
+                #if ( ($postid == 167079) ){ print "Post candidate: $postid - PCIID: $p / Sid: $sarray[$i] -> Sres: $sresult \n";}
+
+                
             }
         }
         $i++;
@@ -227,6 +234,17 @@ sub check_mainboard_full_fingerprint(){
     # Fingerprint elements (also counting empty elements, because matching also is relevant there)
     $max = scalar(@parray) + scalar(@sarray);
     $prob = ($scounter[$mindex]+$pcounter[$mindex])/$max;
+    
+    # prob instead of total points
+    #$i = 0;
+    #foreach $j (@identifiedmb) {
+    #    if ($j > 3) { 
+    #        $prob2 = ($scounter[$i]+$pcounter[$i])/$max;
+    #        print "post $i: $prob2 probability\n";
+    #    }
+    #    $i++;
+    #}
+
     
     print "       -> Found PID: $mindex\n";
     print "       -> Scounter: $scounter[$mindex]/".scalar(@sarray)." Pcounter: $pcounter[$mindex]/".scalar(@parray)."\n";
@@ -575,6 +593,9 @@ sub storescan_mainboard_found {
     my $pciid    = shift;
     my $pciname  = shift;
     
+    # add found postid to array for cleanup
+    push @identified_posts, $postid;
+    
     
     #if ($rescan == 0) {
     #        $lhg_db = DBI->connect($database, $user, $pw);
@@ -616,6 +637,8 @@ sub storescan_mainboard_found_usb {
     my $pciid    = shift;
     my $pciname  = shift;
     
+    # add found postid to array for cleanup
+    push @identified_posts, $postid;
     
     #check if exists
     $lhg_db = DBI->connect($database, $user, $pw);
@@ -886,6 +909,10 @@ sub storescan_mainboard_found_usb {
     my $usbid = shift;
     my $usbname = shift;
     
+    # add found postid to array for cleanup
+    push @identified_posts, $postid;
+
+    
     $lhg_db = DBI->connect($database, $user, $pw);
     $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
     $sth_glob = $lhg_db->prepare($myquery);
@@ -949,6 +976,10 @@ sub storescan_usb_found {
     my $postid  = shift;
     my $usbid   = shift;
     my $usbname = shift;
+    
+    # add found postid to array for cleanup
+    push @identified_posts, $postid;
+
     
     $lhg_db = DBI->connect($database, $user, $pw);
     $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND usbid = ?";
@@ -1205,6 +1236,21 @@ sub get_linux_distribution {
             break;
         }
         
+        #print "Dist: $_ -- ".index($_,'PRETTY_NAME="Slackware')."\n";
+        if ( index($_,'PRETTY_NAME="Slackware') == 0 ) {
+            
+            $dist = substr($_,13);#"Slackware";
+            $dist = substr($dist,0,-2);#"Slackware";
+            break;
+        }
+        
+        if ( index($_,'PRETTY_NAME="Gentoo') == 0 ) {
+            
+            $dist = substr($_,13);#"Slackware";
+            $dist = substr($dist,0,-2);#"Slackware";
+            break;
+        }
+
         #print "Line: $_";
         $pos = index($_,"Description:");
         
@@ -1432,8 +1478,11 @@ sub check_pci_devices {
                                 
                                 # we found the correct postid, clear the other ones
                                 @postids = ( $postid );
-                                #print "store PCIID: $pciid\n";
+                                #print "store PCIID: $pciid (Check=".$check_match.")\n";
                                 storescan_pci_found($sid, $postid, $pciid, $pciname);
+                            } else {
+                                #@postids = ();
+                                #$postid = "";
                             }
                             
                             #print "       Match? $check_match \n";
@@ -1455,7 +1504,7 @@ sub check_pci_devices {
                 }
             
                 #print "PID: $postid - $postids[0] - $postids[1] \n";
-                if ($postid == "") {
+                if ( ($postid == "") or ($check_match == 0) ) {
                     #print "Notfound: $pciid\n";
                     storescan_pci_notfound($sid, $pciid, $pciname);
                 } elsif ($postid == -1) {
@@ -1902,18 +1951,24 @@ sub storescan_pci_found {
     my $pciid   = shift;
     my $pciname = shift;
     
+    
     #ToDo: Sanity checks necessary!!
     if ($pciid eq "") {
         print "       ERROR: pciid empty\n";
         return;
     }
     
+    # add found postid to array for cleanup
+    push @identified_posts, $postid;
+
+    
     $lhg_db = DBI->connect($database, $user, $pw);
     $myquery = "SELECT id FROM `lhghwscans` WHERE sid = ? AND pciid = ?";
     $sth_glob = $lhg_db->prepare($myquery);
     $sth_glob->execute($sid, $pciid);
     ($id) = $sth_glob->fetchrow_array();
-
+    
+    print "       Linking PCIID $pciid -> ".get_product_from_postid( $postid )."\n";
     
     if ($id >  0) {
         $myquery = "UPDATE `lhghwscans` SET postid = ? WHERE id = ?";
@@ -2017,6 +2072,10 @@ sub storescan_cpu_found {
     my $postid  = shift;
     my $cpuname = shift;
     my $scantype = "cpu";
+    
+    # add found postid to array for cleanup
+    push @identified_posts, $postid;
+    
     
     #ToDo: Sanity checks necessary!!
     $lhg_db = DBI->connect($database, $user, $pw);
@@ -2256,6 +2315,10 @@ sub storescan_drive_found {
     my $postid  = shift;
     my $drivename = shift;
     my $scantype = "drive";
+    
+    # add found postid to array for cleanup
+    push @identified_posts, $postid;
+
     
     #ToDo: Sanity checks necessary!!
     $lhg_db = DBI->connect($database, $user, $pw);
@@ -2541,7 +2604,7 @@ sub calculate_laptop_probability {
 
     # get mainboard name
     $title = get_mainboard_name( $sid );
-    #print "Mainboard name: $title\n";
+    #print "($title)\n";
 
     if ( ( index($title,"TOSHIBA") != -1 )  && index($title,"Satellite") != -1 ) {$probability = 1;}
     if ( ( index($title,"Toshiba") != -1 )  && index($title,"Satellite") != -1 ) {$probability = 1;}
@@ -2557,6 +2620,10 @@ sub calculate_laptop_probability {
     if ( index($title,"Compaq Presario")  != -1 ) {$probability = 1;}
     if ( index($title,"Notebook") != -1 )  {$probability = 1;}
     if ( index($title,"Sleekbook") != -1 )  {$probability = 1;}
+    if ( index($title,"ProBook") != -1 )  {$probability = 1;}
+    if ( index($title,"Dell Latitude") != -1 )  {$probability = 1;}
+    if ( ( index($title,"Dell") != -1 )  && index($title,"Precision")  != -1 )    {$probability = 1;}
+
     
     if ( ( $title =~ /ASUSTeK/ ) && ( $title =~ / K[0-9][0-9]/ ) ) {$probability = 1;}
     if ( ( $title =~ /Acer/ ) && ( $title =~ / Aspire [0-9][0-9]/ ) ) {$probability = 1;}
@@ -2605,7 +2672,7 @@ sub get_mainboard_name {
     open(FILE2, "<", "/var/www/uploads/".$sid."/dmesg.txt");
     
     while ( <FILE> ) {
-        if ($_ =~ m/ DMI: /) {
+        if ( ($_ =~ m/ DMI: /) && !($_ =~ m/HDMI/) ){
             $dmiline = $_;
             break;
         }
@@ -2722,7 +2789,7 @@ sub check_duplicates {
     
     
     foreach ( @{$sids} ) {
-        print "Duplicate candidate: @{$_} ";
+        #print "Duplicate candidate: @{$_} ";
         
         # compare fingerprints
         @fp = `/var/www/uploads/fingerprints.pl @{$_} 2> /dev/null`;
@@ -2741,7 +2808,7 @@ sub check_duplicates {
         
         if (@fp ~~ @lfp) {
             #if ( array_diff(@fp, @lfp) == "" ) {
-            print "-> dup\n";# Scan looks like a duplicate of @{$_}\n";
+            print "Duplicate scan found -> @{$_}\n";# Scan looks like a duplicate of @{$_}\n";
             
             # do not overwrite status value 
             if ($status eq "") {
@@ -2750,7 +2817,7 @@ sub check_duplicates {
                 $sth_glob->execute("duplicate", $sid);
             }
         } else {
-            print "-> OK\n"; #Scan @{$_} is NOT a duplicate\n";
+            #print "-> OK\n"; #Scan @{$_} is NOT a duplicate\n";
         }
 
     }
@@ -2777,7 +2844,37 @@ sub  cleanup {
     } else {
         #print "Nothing to do";
     }
-
+    
+    #
+    # check if some postids are still linked to this scan alhtouhg they were not identified
+    # this can happen if posts were identified by former runs of the scan program
+    #
+    
+    # check which postids are identified in the database and compare it with the ones identified 
+    # by this script
+    
+    $lhg_db = DBI->connect($database, $user, $pw);
+    $myquery = "SELECT DISTINCT postid FROM `lhghwscans` WHERE postid > 0 AND sid = ?";   
+    $sth_glob = $lhg_db->prepare($myquery);
+    $sth_glob->execute( $sid );
+    my @oldpciids = @{$lhg_db->selectcol_arrayref($sth_glob)};
+    
+    foreach $oldpostid (@oldpciids) { 
+        if ( grep( /^$oldpostid$/, @identified_posts ) ) {
+            #print "found it";
+        } else {
+            $myquery = "UPDATE `lhghwscans` SET postid = \"\" WHERE sid = ? AND postid = ?";
+            $sth_glob = $lhg_db->prepare($myquery);
+            $sth_glob->execute( $sid, $oldpostid );
+            print "       Old postid $oldpostid was not found by this scan -> cleaned\n";
+        }
+    }
+    
+    #foreach $postid (@identified_posts) { 
+    #    print "Identified postid: $postid ";
+    #    print "\n";
+    #
+    #}
 }
 
 sub  postid_is_mainboard { 
@@ -3160,5 +3257,6 @@ sub update_article_metadata {
     
     print "-----> Updating latest posts metadata\n";
     # suppress output and warnings
-    system("/var/www/uploads/extract_metadata.pl > /dev/null 2> /dev/null");
+    my $output = `/var/www/uploads/extract_metadata.pl > /dev/null 2> /dev/null`;
+    #print "$output";
 }
