@@ -70,8 +70,8 @@ while ($row = $sth_glob->fetchrow_hashref) {  # retrieve one row
     $i++;
     
     if ($option ne "-a") {
-        # check only 20 latest articles
-        if ($i > 20) {
+        # check/update only 50 latest articles
+        if ($i > 50) {
             exit 0;
         }
     }
