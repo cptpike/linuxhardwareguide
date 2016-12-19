@@ -1085,7 +1085,10 @@ function lhg_donation_history($attr) {
 	$end   = $attr['end'];
 
         list($endyear, $endmonth) = explode("-",$end);
-        $enddate = "1-".( intval($endmonth) +1)."-".$endyear;
+        if ($endmonth < 12) $enddate = "1-".( intval($endmonth) +1)."-".$endyear;
+        if ($endmonth == 12) $enddate = "1-1-".(intval($endyear)+1);
+
+        #error_log("END: $enddate - $endmonth");
 
         $start_timestamp = strtotime($start);
 	$end_timestamp   = strtotime($enddate);
