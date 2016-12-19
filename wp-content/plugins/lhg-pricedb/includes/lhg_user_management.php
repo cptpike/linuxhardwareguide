@@ -475,12 +475,12 @@ function lhg_link_hwscan( $uid, $sid ) {
 
         if ($result == "") {
 
-		#if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-		#if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-        	error_log("Lang: $lang -> Points $sid added for $uid");
+		if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+		if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+        	#error_log("Lang: $lang -> Points $sid added for $uid");
 
 	}else{
-                error_log("Points $sid for $uid already existing");
+                #error_log("Points $sid for $uid already existing");
         }
 
 
