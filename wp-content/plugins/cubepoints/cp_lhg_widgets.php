@@ -366,6 +366,15 @@ function cp_getAllQuarterlyPoints_transverse( $startdate, $enddate ){
 
         global $lhg_price_db;
 
+        if (!is_numeric( $startdate ) or !is_numeric( $enddate ) ){
+                #error_log("No start & end date given");
+                $startdate = cp_StartOfQuarter();
+                $enddate   = cp_EndOfQuarter();
+
+                #error_log("start: $startdate end: $enddate");
+	}
+
+
         if (is_numeric( $startdate ) && is_numeric( $enddate ) ){
 	        $sql = "SELECT * FROM `lhgtransverse_points` WHERE timestamp > $startdate AND timestamp < $enddate";
 	        $results = $lhg_price_db->get_results($sql);
