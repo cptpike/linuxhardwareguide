@@ -402,7 +402,7 @@ function lhg_add_scan_points() {
 
         global $lhg_price_db;
         global $lang;
-        $sql = "SELECT * FROM `lhgscansessions` WHERE karma <> \"linked\" ORDER BY id DESC LIMIT 10";
+        $sql = "SELECT * FROM `lhgscansessions` ORDER BY id DESC LIMIT 300";
         $results = $lhg_price_db->get_results($sql);
 
         foreach($results as $result){
@@ -412,6 +412,7 @@ function lhg_add_scan_points() {
                 #print " WPUID: ".$result->wp_uid;
                 #print " EM: ".$result->email;
                 #print "<br>";
+
 
                 if  ( ($lang != "de") && ($result->wp_uid != 0 ) ) {
                         # user was identified by its ID
@@ -466,12 +467,23 @@ function lhg_link_hwscan( $uid, $sid ) {
 
         #error_log("Create link for $uid with $sid");
         global $lang;
-
-	if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-	if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-        #error_log("Points added");
-
         global $lhg_price_db;
+
+        # check if points were already stored in DB
+        $sql = "SELECT * FROM `lhgtransverse_points` WHERE comment LIKE %$sid%";
+        $results = $lhg_price_db->get_results($sql);
+
+        if ($results == "") {
+
+		if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+		if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+        	error_log("Points $sid added for $uid");
+
+	}else{
+                error_log("Points $sid for $uid already existing");
+        }
+
+
         $sql = "UPDATE `lhgscansessions` SET `karma`=  \"linked\" WHERE sid = \"$sid\"";
     	$result = $lhg_price_db->query($sql);
 
