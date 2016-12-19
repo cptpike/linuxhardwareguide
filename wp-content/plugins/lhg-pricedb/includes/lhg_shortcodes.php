@@ -769,6 +769,8 @@ function lhg_donation_table_shortcode($attr) {
 	                $user_tmp = lhg_get_userdata_guid($guid);
                         $user=$user_tmp[0];
 
+                        #error_log("GUID: $guid");
+
                         if ( $user !== false )
                         if ($uid != 12378){
                                 #var_dump($user);
