@@ -470,14 +470,14 @@ function lhg_link_hwscan( $uid, $sid ) {
         global $lhg_price_db;
 
         # check if points were already stored in DB
-        $sql = "SELECT * FROM `lhgtransverse_points` WHERE comment LIKE %$sid%";
-        $results = $lhg_price_db->get_results($sql);
+        $sql = "SELECT id FROM `lhgtransverse_points` WHERE comment LIKE '%".$sid."%'";
+        $result = $lhg_price_db->get_var($sql);
 
-        if ($results == "") {
+        if ($result == "") {
 
-		if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-		if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-        	error_log("Points $sid added for $uid");
+		#if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+		#if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+        	error_log("Lang: $lang -> Points $sid added for $uid");
 
 	}else{
                 error_log("Points $sid for $uid already existing");
