@@ -403,7 +403,7 @@ function lhg_return_donation_results($startdate, $enddate) {
 
 function lhg_update_points_db(){
 
-        error_log("Updating Points DB");
+        #error_log("Updating Points DB");
         global $wpdb;
         global $lang;
 
@@ -413,7 +413,7 @@ function lhg_update_points_db(){
 	if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM lhgtransverse_points WHERE wpuid_de > 0";
         $timestamp = $lhg_price_db->get_var($sql);
 
-        error_log("Found timestamp: $timestamp");
+        #error_log("Found timestamp: $timestamp");
 
         # Need this if run for the very first time
         if ($timestamp == "") {
