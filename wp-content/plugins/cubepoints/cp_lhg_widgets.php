@@ -396,9 +396,9 @@ function cp_getAllQuarterlyPoints_transverse( $startdate, $enddate ){
                                 if ( strpos($result->comment, "/hardware-profile" ) > 0 ) {
 				        $sql_double = "SELECT MIN(timestamp) FROM `lhgtransverse_points` WHERE comment = '%s'";
                                         $safe_sql = $lhg_price_db->prepare($sql_double, $result->comment);
-				    	$min_timestamp = $lhg_price_db->query($safe_sql);
+				    	$min_timestamp = $lhg_price_db->get_var($safe_sql);
                                         if ($min_timestamp < $result->timestamp) $skip = 1; # this is a duplicate!
-                                        error_log("min: $min_timestamp = $result->timestamp ?");
+                                        #error_log("min: $min_timestamp = $result->timestamp ?");
 	                	}
 
                 	        # collect data in array
