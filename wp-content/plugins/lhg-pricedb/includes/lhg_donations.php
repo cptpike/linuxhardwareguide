@@ -165,6 +165,11 @@ $donation = array(
                 "NameShort" => "Point Linux",
                 ),
 
+	33 => array (
+                "Name" => "Parabola GNU/Linux-libre",
+                "NameShort" => "Parabola",
+                ),
+
 );
 
 
