@@ -252,6 +252,12 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 32
                         ),
 
+                "parabola" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/parabola-logo.png",
+                        "url" => "https://parabola.nu/",
+                        "donation_target" => 33
+                        ),
+
 );
 
         return $dist;
@@ -376,6 +382,9 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"Point Linux") > -1 )
                 return "point-linux";
+
+        if ( strpos($distribution,"Parabola") > -1 )
+                return "parabola";
 
 }
 
