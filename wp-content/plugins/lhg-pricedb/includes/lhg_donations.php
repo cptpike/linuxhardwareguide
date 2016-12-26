@@ -155,6 +155,16 @@ $donation = array(
                 "NameShort" => "Bodhi",
                 ),
 
+	31 => array (
+                "Name" => "MX Linux",
+                "NameShort" => "MX Linux",
+                ),
+
+	32 => array (
+                "Name" => "Point Linux",
+                "NameShort" => "Point Linux",
+                ),
+
 );
 
 
