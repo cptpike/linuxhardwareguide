@@ -368,6 +368,9 @@ function lhg_get_distri_name( $distribution ) {
         if ( strpos($distribution,"MX ") > -1 )
                 return "mx-linux";
 
+        if ( strpos($distribution,"MX-") > -1 )
+                return "mx-linux";
+
         if ( strpos($distribution,"HandyLinux") > -1 )
                 return "handylinux";
 
