@@ -33,6 +33,20 @@ $sth_glob = $lhg_db->prepare($myquery);
 $sth_glob->execute();
 #($num) = $sth_glob->fetchrow();
 
+# single Postid update
+if ($option =~ "-p") {
+    $postid = $ARGV[1];
+    print "Updating postid: $postid\n";
+    if ($postid == "") { 
+        exit;
+    }else{
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "SELECT * FROM `lhgtransverse_posts` WHERE ( ( (status_com = 'published') OR (status_com = '') ) AND postid_com = ? ) ";
+        $sth_glob = $lhg_db->prepare($myquery );
+        $sth_glob->execute( $postid );
+    }
+}
+
 #my @row;
 while ($row = $sth_glob->fetchrow_hashref) {  # retrieve one row
     #print join(", ", @row), "\n";
