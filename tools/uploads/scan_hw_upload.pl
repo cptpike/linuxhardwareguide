@@ -9,12 +9,13 @@
 # 0.2f - recognition of long HDD names added
 # 0.2g - Cleaning of USBID orphans due to duplicate IDs
 # 0.3  - Improved matching algorithm using subsystem IDs
+# 0.4  - Smartsearch for PCI devices added
 
 no warnings experimental::smartmatch; 
 
 $sid = $ARGV[0];
 
-print "Version: 0.3  \n";
+print "Version: 0.4  \n";
 $debug_level=1;
 
 # MYSQL CONFIG VARIABLES
@@ -1093,14 +1094,17 @@ sub create_db_metadata {
     #if ($uid ne "") {
     if ($uid eq " \\n"){ $uid = "none"; }
     if ($uid eq "")  { $uid = "none"; }
-        print "UID: ".trim($uid)."\n";
+    if ($uid eq " ")  { $uid = "none"; }
+    #print "UID: ".trim($uid)."\n";
     
     if ($lhguid eq " \\n"){ $lhguid = "none"; }
     if ($lhguid eq "")  { $lhguid = "none"; }
+    if ($lhguid eq " ")  { $lhguid = "none"; }
     if ($lhguidde eq " \\n"){ $lhguidde = "none"; }
     if ($lhguidde eq "")  { $lhguidde = "none"; }
-    print "LHGUID: $lhguid \n";
-    print "LHGUID.de: $lhguidde \n";
+    if ($lhguidde eq " ")  { $lhguidde = "none"; }
+    print "UID / LHGUID / LHGUID.de : ".trim($uid)." / $lhguid / $lhguidde\n";
+    #print "LHGUID.de: $lhguidde \n";
 #    $lhg_db = DBI->connect($database, $user, $pw);
     #    $myquery = "INSERT INTO `lhgscansessions` (uid) VALUES (?)";   
     #    $sth_glob = $lhg_db->prepare($myquery);
@@ -1494,15 +1498,26 @@ sub check_pci_devices {
                 
                 
                 if ( scalar(@postids) > 1 ) {
-                    print "       too many results (".scalar(@postids).") for $pciid - ... skipped \n";
-                    my $p;
-                    foreach $p (@postids) {
-                        print "         ".$p." - ".get_product_from_postid($p)."\n";
-                    }
-                    # do not save
-                    $postid = "";
+                    
+                    # smartsearch needed
+                    $smartsearch_postid = pci_smartsearch($pciid, @postids);
+                    
+                    if ($smartsearch_postid < 1) { 
+                    
+                        print "       too many results (".scalar(@postids).") for $pciid - ... skipped \n";
+                        my $p;
+                        foreach $p (@postids) {
+                            print "         ".$p." - ".get_product_from_postid($p)."\n";
+                        }
+                        # do not save
+                        $postid = "";
+                    } else { 
+                        storescan_pci_found($sid, $postid, $pciid, $pciname);
+                    } 
                 }
-            
+
+                
+           
                 #print "PID: $postid - $postids[0] - $postids[1] \n";
                 if ( ($postid == "") or ($check_match == 0) ) {
                     #print "Notfound: $pciid\n";
@@ -3229,9 +3244,15 @@ sub get_subsystem_id_by_pciid {
         $pciid_found   = grab_pciid($_);
             
         if ($pciid_found eq $pciid_search){
-            print "found $pciid_search";
+            #print "found $pciid_search";
             $nextline = <FILE2>;
-            print "NL: $nextline\n";
+            #print "NL: $nextline\n";
+            if ($nextline =~ /Subsystem/) {
+                $subsystemid   = grab_subsystemid($nextline);
+                if ($subsystemid != "") { 
+                    #print "Sub found: $subsystemid\n";
+                    return $subsystemid; }
+            }
         }
     }
     # looked into whole file. no match found
@@ -3257,6 +3278,40 @@ sub update_article_metadata {
     
     print "-----> Updating latest posts metadata\n";
     # suppress output and warnings
-    my $output = `/var/www/uploads/extract_metadata.pl > /dev/null 2> /dev/null`;
+    
+    ######
+    #print "DEBUG mode\n";
+    #my $output = `/var/www/uploads/extract_metadata.pl > /dev/null 2> /dev/null`;
+    ######
+    
+    my $output = `/var/www/uploads/extract_metadata.pl -a > /dev/null 2> /dev/null`;
     #print "$output";
+}
+
+sub pci_smartsearch {
+    
+    my $pciid = shift;
+    my @postids = shift;
+    
+    # try to identify by subsystem ID
+    $subsystem_id = get_subsystem_id_by_pciid( $pciid );
+    
+    if ($subsystem_id != 0) {
+        print "       Smartsearch $pciid::$subsystem_id -> ";
+    
+        $lhg_db = DBI->connect($database, $user, $pw);
+        $myquery = "SELECT postid_com FROM `lhgtransverse_posts` WHERE pciids LIKE ? AND subids LIKE ?";
+        $sth_glob = $lhg_db->prepare($myquery);
+        $sth_glob->execute( "%".$pciid."%", "%".$subsystem_id."%" );
+        ($postid) = $sth_glob->fetchrow_array();
+        
+        print "$postid\n";
+    
+        if ($postid != "") { return $postid; }
+
+    }
+    
+
+    
+    return 0;
 }
