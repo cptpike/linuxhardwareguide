@@ -234,6 +234,30 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 30
                         ),
 
+                "mx-linux" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/mx-linux-logo.png",
+                        "url" => "https://mxlinux.org/",
+                        "donation_target" => 31
+                        ),
+
+                "handylinux" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/handylinux-logo.png",
+                        "url" => "https://handylinux.org/",
+                        "donation_target" => -1
+                        ),
+
+                "point-linux" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/point-linux-logo.png",
+                        "url" => "https://pointlinux.org/",
+                        "donation_target" => 32
+                        ),
+
+                "parabola" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/parabola-logo.png",
+                        "url" => "https://parabola.nu/",
+                        "donation_target" => 33
+                        ),
+
 );
 
         return $dist;
@@ -346,6 +370,21 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"Bodhi") > -1 )
                 return "bodhi";
+
+        if ( strpos($distribution,"MX ") > -1 )
+                return "mx-linux";
+
+        if ( strpos($distribution,"MX-") > -1 )
+                return "mx-linux";
+
+        if ( strpos($distribution,"HandyLinux") > -1 )
+                return "handylinux";
+
+        if ( strpos($distribution,"Point Linux") > -1 )
+                return "point-linux";
+
+        if ( strpos($distribution,"Parabola") > -1 )
+                return "parabola";
 
 }
 
