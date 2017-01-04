@@ -1,5 +1,8 @@
 <?php
 
+# lhg_create_cpu_article
+
+
 function lhg_create_cpu_article ($title, $sid, $id ) {
   # returns the post id of created or already existing draft article
 
@@ -1010,7 +1013,7 @@ It is automatically recognized and fully supported by the Linux kernel:
 [/code]
 ';
 
-  $category_array = lhg_category_by_title ( $title  );
+  $category_array = lhg_category_by_title ( $title );
 
 
   #print "Article creation started";
@@ -1870,6 +1873,8 @@ function lhg_clean_usb_title ( $title ) {
   $title = str_replace("Inc.","",$title);
 
   $title = str_replace("America Info. Systems","",$title);
+  $title = str_replace("Belkin Components","Belkin",$title);
+  $title = str_replace("ASUSTek Comupter","Asus",$title);
   $title = str_replace("Pte.","",$title);
 
   $title = str_replace(",","",$title);
@@ -2276,6 +2281,8 @@ function lhg_category_by_title ( $title  ) {
   if (preg_match('/DVD writer/i',$title)) array_push ( $catlist , 478);
   if (preg_match('/ External/i',$title)) array_push ( $catlist , 333);
   if (preg_match('/ SSD/i',$title)) array_push ( $catlist , 583);
+  if (preg_match('/Ethernet/i',$title)) array_push ( $catlist , 5);
+  if (preg_match('/Ethernet/i',$title)) array_push ( $catlist , 322);
 
   return $catlist;
 }
