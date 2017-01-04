@@ -2052,11 +2052,19 @@ print '
                         $scantype=( $a_identified_hw->scantype );
 
 
-                        if ( ($usbid != "") && (strpos($title, "Matching Hub") > 0) ) { $skip = 1; $num_skip ++; }
-                        if ( ($usbid != "") && (strpos($title, "root hub") > 0) ) { $skip = 1; $num_skip ++; }
-                        # Skip "Intel Corp."
+
+                        # Skip certain entries
+                        #
+                        # "Intel Corp." standard devices
                         if ( ($usbid == "8087:8000") ) { $skip = 1; $num_skip ++; }
                         if ( ($usbid == "8087:8008") ) { $skip = 1; $num_skip ++; }
+
+                        #error_log("Title: $title");
+                        if ( (strpos($title, " File-CD Gadget") > 0) ) { $skip = 1; $num_skip ++; }
+
+                        if ( ($usbid != "") && (strpos($title, "Matching Hub") > 0) ) { $skip = 1; $num_skip ++; }
+                        if ( ($usbid != "") && (strpos($title, "root hub") > 0) ) { $skip = 1; $num_skip ++; }
+
 
                         if ($skip == 0) {
 
