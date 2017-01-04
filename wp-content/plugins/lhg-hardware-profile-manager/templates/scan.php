@@ -1205,7 +1205,18 @@ if (count($unidentified_hw_pci) > 0) {
 
 	        $mb_name = lhg_get_mainboard_name( $sid );
         	$clean_mb_name = lhg_clean_mainboard_name( $mb_name );
-		print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
+
+                #error_log("T: <$clean_mb_name>");
+                $mb_recognized = 1;
+		if (    ($clean_mb_name == "")
+                     or ($clean_mb_name == " ") ){
+                	print "<h2>Mainboard not recognized. Please provide name</h2>";
+                        $mb_recognized = 0;
+                }else{
+			print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
+                }
+
+
 	        #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
 	        if ($show_public_profile != 1)
 		        print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
@@ -1233,15 +1244,19 @@ if (count($unidentified_hw_pci) > 0) {
 			$article_created = '<span class="rating-mb"><nobr>'.$out1.'</nobr></span>';
 
 
-		if ($show_public_profile != 1)
+		if ($show_public_profile != 1) {
 			echo ' <form action="?" method="post" class="mb-usercomment">
-		       Please rate the '.$mb_or_laptop.': '.$article_created.'
-		       Let us know if the '.$mb_or_laptop.' was recognized incorrectly and how it is supported under Linux:<br>
-		       <textarea id="mb-usercomment" name="mb-usercomment" cols="10" rows="3">'.$mb_usercomment.'</textarea><br>
+		       Please rate the '.$mb_or_laptop.': '.$article_created.'';
+
+		       if ($mb_recongized == 1) echo 'Let us know if the '.$mb_or_laptop.' was recognized incorrectly and how it is supported under Linux:<br>';
+		       if ($mb_recongized == 0) echo 'The mainboard was not recognized, probably due to missing DMI information of the scan. <br>Please let us know what type of mainboard or laptop this is:<br>';
+
+		       echo '<textarea id="mb-usercomment" name="mb-usercomment" cols="10" rows="3">'.$mb_usercomment.'</textarea><br>
 		       If possible, please leave an URL to a web page where the '.$mb_or_laptop.' is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
 		       <input id="url-mb" name="url-mb" type="text" value="'.$url_mb.'" size="40" maxlenght="290">
 		       <br>
 		       <input type="submit" id="mb-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />';
+                       }
 
 	       if (current_user_can('publish_posts') && ($show_public_profile != 1) && ($editmode == 1) ) {
         	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit&scansid='.$sid.'">finalize article</a>)';
@@ -3111,6 +3126,9 @@ function lhg_show_scanned_component( $title, $id, $pciid ) {
         if (is_int(strpos($title,"PCI bridge [") ) )	  $showme = false;
         if (is_int(strpos($title,"SMBus [") ) )	  	  $showme = false;
         if (is_int(strpos($title,"Communication controller") ) )	$showme = false;
+        if (is_int(strpos($title,"I2C Controller") ) )	  $showme = false;
+        if (is_int(strpos($title,"Memory controller") ) ) $showme = false;
+        if (is_int(strpos($title,"Thermal subsystem") ) ) $showme = false;
 
 
         # some additional rules for laptops
@@ -3150,9 +3168,13 @@ function lhg_pci_component_is_onboard ( $title, $sid, $id, $pciid  ) {
         if (is_int(strpos($title,"USB controller [") ) ) $onboardstatus = "no";
         if (is_int(strpos($title,"VGA compatible controller [") ) ) $onboardstatus = "no";
         if (is_int(strpos($title,"Communication controller") ) ) $onboardstatus = "no";
+
+        if (is_int(strpos($title,"Intel") ) && is_int(strpos($title,"Communication controller") ) && is_int(strpos($title,"CSME HECI") ) ) $onboardstatus = "yes";
+
         if (is_int(strpos($title,"Intel Corporation") ) && is_int(strpos($title,"Graphics Controller") ) ) $onboardstatus = "yes";
         if (is_int(strpos($title,"Intel Corporation") ) && is_int(strpos($title,"High Definition Audio") ) ) $onboardstatus = "yes";
         if (is_int(strpos($title,"Intel Corporation") ) && is_int(strpos($title,"SATA Controller") ) ) $onboardstatus = "yes";
+        if (is_int(strpos($title,"Intel Corporation") ) && is_int(strpos($title,"Integrated Graphics") ) ) $onboardstatus = "yes";
 
         if ($prob_laptop > 0.8) {
                 # looks like a laptop. All PCI components onboard
