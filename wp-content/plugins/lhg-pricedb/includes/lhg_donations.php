@@ -319,7 +319,7 @@ add_filter('edit_user_profile_update','lhg_update_donation_settings');
 
 
 function lhg_return_donation_targets() {
-        # returns two arrays
+        # returns three arrays
         # 1 ... name of company/organization to which donation will go
         # 2 ... amount of points for this company/organization
         # 3 ... number of users that donated to this company/organization
@@ -418,7 +418,7 @@ function lhg_return_donation_results($startdate, $enddate) {
 
 function lhg_update_points_db(){
 
-        #error_log("Updating Points DB");
+        error_log("Updating Points DB");
         global $wpdb;
         global $lang;
 
@@ -428,7 +428,10 @@ function lhg_update_points_db(){
 	if ($lang == "de") $sql = "SELECT MAX(timestamp) FROM lhgtransverse_points WHERE wpuid_de > 0";
         $timestamp = $lhg_price_db->get_var($sql);
 
-        #error_log("Found timestamp: $timestamp");
+        error_log("Found timestamp: $timestamp");
+
+	$result = $wpdb->get_var( apply_filters('cp_logs_dbquery', 'SELECT MAX(timestamp) FROM `'.CP_DB.'` ') );
+        error_log("CP_DB max timestamp: $result");
 
         # Need this if run for the very first time
         if ($timestamp == "") {
@@ -440,7 +443,7 @@ function lhg_update_points_db(){
         }else{
         	# find new entries
 		#$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` ORDER BY timestamp DESC ') );
-		$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` WHERE timestamp > `'.$timestamp.'` ORDER BY timestamp DESC ') );
+		$results = $wpdb->get_results( apply_filters('cp_logs_dbquery', 'SELECT * FROM `'.CP_DB.'` WHERE `timestamp` >'.$timestamp.' ORDER BY TIMESTAMP DESC ') );
 	}
 
         # Sum up achieved points of the accumulation time span
