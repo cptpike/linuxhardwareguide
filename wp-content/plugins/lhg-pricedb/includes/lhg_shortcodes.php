@@ -132,6 +132,7 @@ function lhg_mainboard_intro_shortcode($attr) {
         if ( strpos(" ".$mainboard_properties,"Notebook") > 0 ) $type = "Laptop";
         if ( strpos(" ".$mainboard_properties,"Netbook") > 0 ) $type = "Netbook";
         if ( strpos(" ".$mainboard_properties,"Ultrabook") > 0 ) $type = "Ultrabook";
+        if ( strpos(" ".$mainboard_properties,"Mainboard") > 0 ) $type = "Mainboard";
 
         # Laptop screen size
         if (preg_match("/([0-9][0-9].[0-9] Inch|[0-9][0-9].[0-9]Inch|[0-9][0-9] Inch|[0-9][0-9]Inch)/i",$mainboard_properties,$match) == 1 ) {
