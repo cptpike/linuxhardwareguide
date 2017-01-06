@@ -401,6 +401,8 @@ function cp_getAllQuarterlyPoints_transverse( $startdate, $enddate ){
                                         #error_log("min: $min_timestamp = $result->timestamp ?");
 	                	}
 
+                                if ($guid == "") $skip = 1;
+
                 	        # collect data in array
                                 if ($skip == 0) {
 					$founduser_points[$guid] += $points;
