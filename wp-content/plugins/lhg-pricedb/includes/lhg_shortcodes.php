@@ -189,7 +189,7 @@ function lhg_mainboard_intro_shortcode($attr) {
 	}elseif( $type == "Mainboard") {
 
         }else{
-                error_log("lhg_mainboard_intro: Product type unknown (".$title,")");
+                error_log("lhg_mainboard_intro: Product type unknown (".$title.")");
 	}
 
         if ( $attr['dmi_output'] != "")
