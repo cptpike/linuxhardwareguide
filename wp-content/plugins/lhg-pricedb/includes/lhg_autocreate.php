@@ -2059,12 +2059,14 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( stristr($string, "Dual-Core") != false ) array_push($props,"Dual Core");
         if ( stristr($string, "Socket G2") != false ) array_push($props,"Socket G2");
 
-                #repair broken cache string
+        #repair broken cache string
         if ( preg_match("/ [0-9]{3}K Cache/i", $string, $match) == 1 ) array_push($props, str_replace("K Cache","KB Cache",$match[0]));
         if ( preg_match("/ [0-9]{1} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
         if ( preg_match("/ [0-9]{2} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
         if ( preg_match("/ [0-9]{1}MB Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-8)." MB Cache" );
         if ( preg_match("/ [0-9]{2}MB Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-8)." MB Cache" );
+        if ( preg_match("/ [0-9]{1}M Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-7)." MB Cache" );
+        if ( preg_match("/ [0-9]{2}M Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-7)." MB Cache" );
 
         # Sometimes CPU title do not have the word "Cache"
         if ( ( preg_match("/Cache/i", $string, $match) === false ) && ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/ [0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
