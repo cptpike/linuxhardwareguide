@@ -258,6 +258,12 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 33
                         ),
 
+                "black-panther" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/black-panther-logo.png",
+                        "url" => "http://www.blackpantheros.eu",
+                        "donation_target" => -1
+                        ),
+
 );
 
         return $dist;
@@ -385,6 +391,10 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"Parabola") > -1 )
                 return "parabola";
+
+        if ( strpos($distribution,"blackPanther") > -1 )
+                return "black-panther";
+
 
 }
 
