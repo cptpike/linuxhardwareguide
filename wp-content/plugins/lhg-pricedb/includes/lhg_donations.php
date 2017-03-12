@@ -170,6 +170,11 @@ $donation = array(
                 "NameShort" => "Parabola",
                 ),
 
+	34 => array (
+                "Name" => "blackPanther OS",
+                "NameShort" => "blackPanther OS",
+                ),
+
 );
 
 
