@@ -261,7 +261,7 @@ function lhg_get_distribution_array( )  {
                 "black-panther" => array(
                         "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/black-panther-logo.png",
                         "url" => "http://www.blackpantheros.eu",
-                        "donation_target" => -1
+                        "donation_target" => 34
                         ),
 
 );
