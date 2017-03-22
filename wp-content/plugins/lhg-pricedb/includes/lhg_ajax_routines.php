@@ -53,6 +53,14 @@ add_action('wp_ajax_nopriv_lhg_update_scan_status_ajax', 'lhg_update_scan_status
 add_action('wp_ajax_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
 add_action('wp_ajax_nopriv_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
 
+# modify title of post in scan overview
+add_action('wp_ajax_lhg_scan_update_title_ajax', 'lhg_scan_update_title_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_title_ajax', 'lhg_scan_update_title_ajax');
+
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_ajax');
+
 # AJAX funcitonalities
 
 # create a new mainboard article. Return the post id.
@@ -499,6 +507,16 @@ function lhg_scan_update_ajax() {
         $asinURL = $_REQUEST['asinURL'] ;
         $comment = $_REQUEST['comment'] ;
 
+        // store user submitted title
+        if ($title != "")
+
+
+
+
+        // ToDo
+        // ASIN processing disabled -> separate routine needed
+        $asinURL = "";
+
         // get image URL
         $pos = strpos($asinURL,"/B0");
         $asin = substr($asinURL, $pos+1,10);
@@ -586,6 +604,50 @@ function lhg_scan_update_ajax() {
         exit();
         //die();
 
+}
+
+# update post title on scan page
+function lhg_scan_update_title_ajax() {
+
+	$pid       = $_REQUEST['postid'];
+	$id        = $_REQUEST['id'] ;
+	$session   = $_REQUEST['session'] ;
+        $title     = $_REQUEST['title'] ;
+        //$wpuid_de  = $_REQUEST['wpuid_de'] ;
+        //$wpuid_com = $_REQUEST['wpuid_com'] ;
+
+        global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usertitle = %s WHERE id = %s ", $title, $id);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
+
+# update post tags on scan page
+function lhg_scan_update_tags_ajax() {
+
+	$pid       = $_REQUEST['postid'];
+	$id        = $_REQUEST['id'] ;
+	$session   = $_REQUEST['session'] ;
+        $tags      = $_REQUEST['tags'] ;
+        //$wpuid_de  = $_REQUEST['wpuid_de'] ;
+        //$wpuid_com = $_REQUEST['wpuid_com'] ;
+
+
+        # create string of tag ids
+        $tagstring = "";
+        foreach ($tags as $tag)  {
+                if ( $tagstring == "" ) $tagstring = $tag;
+                if ( $tagstring != "" )$tagstring = $tagstring.",$tag";
+        }
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usertags_ids = %s WHERE id = %s ", $tagstring, $id);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
 }
 
 
