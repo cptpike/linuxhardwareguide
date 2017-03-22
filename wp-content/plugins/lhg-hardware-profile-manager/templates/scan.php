@@ -1415,7 +1415,7 @@ print           '<script type="text/javascript">
                            <div class="pci-feedback" id="pci-feedback-'.$id.'">
                               <div id="details-hw-'.$id.'">Full identifier: '.$title.'</div>
 
-			       <div id="updatearea-'.$id.'">
+			       <div id="updatearea-old-'.$id.'">
                                 Please rate hardware: '.$article_created.'
        				Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:<br>
        				<textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.lhg_clean_scan_comment($comment).'</textarea><br>
@@ -1655,6 +1655,10 @@ print "<h2>".$txt_subscr_newhw."</h2>";
                 //print "Insert AJAX";
                 if ($show_public_profile != 1)
 		echo '
+
+		<script src="/wp-content/plugins/lhg-pricedb/jquery-plugins/chosen/chosen.jquery.min.js"></script>
+                <link rel="stylesheet" href="/wp-content/plugins/lhg-pricedb/jquery-plugins/chosen/chosen.css">
+
                 <script type="text/javascript">
                 /* <![CDATA[ */
 
@@ -1758,6 +1762,106 @@ print "<h2>".$txt_subscr_newhw."</h2>";
                                 });
 
 
+                                // set title
+				$(\'[name^="scan-comments-"]\').click(function(){
+
+                                	var button = this;
+                                	var id = $(button).attr(\'name\').substring(14);
+                                	var boxname = "#updatearea-".concat(id);
+                                	var urlinput = "#url-".concat(id);
+                                	var loadname = "button-load-".concat(id);
+                                	var postidname = "#postid-".concat(id);
+                                	var postid = $(postidname).val();
+                                	var box = $(boxname);
+
+	                                // "we are processing" indication
+        	                        var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
+                	                indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
+                                        $(box).css(\'background-color\',\'#dddddd\');
+                                        $(box).css(\'opacity\',\'0.4\');
+                                	$(button).after(indicator_html);
+
+
+	                                //prepare Ajax data:
+        	                        var session = "'.$sid.'";
+                	                var title = $("#hwtext-input-title-"+id).val();
+                        	        var data ={
+                                	        action: \'lhg_scan_update_title_ajax\',
+                                        	id: id,
+	                                        session: session,
+        	                                postid: postid,
+                	                        title: title
+                        	        };
+
+
+                                	//$(box).append("Debug: "+asinURL);
+
+
+
+	                                //load & show server output
+        	                        $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                        //
+        	                                //Debug:
+                	                        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
+                                        //
+                        	        });
+
+	                                //prevent default behavior
+        	                        return false;
+
+                                });
+
+                                // set tags
+				$(\'[name^="scan-comments-"]\').click(function(){
+
+                                	var button = this;
+                                	var id = $(button).attr(\'name\').substring(14);
+                                	var boxname = "#updatearea-".concat(id);
+                                	var urlinput = "#url-".concat(id);
+                                	var loadname = "button-load-".concat(id);
+                                	var postidname = "#postid-".concat(id);
+                                	var postid = $(postidname).val();
+                                	var box = $(boxname);
+
+	                                // "we are processing" indication
+        	                        //var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
+                	                //indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
+
+                        	        //$(box).css(\'background-color\',\'#dddddd\');
+                                	//$(button).after(indicator_html);
+
+
+	                                //prepare Ajax data:
+        	                        var session = "'.$sid.'";
+                	                var tags = $("#tag-select-box-"+id).val();
+                        	        var data ={
+                                	        action: \'lhg_scan_update_tags_ajax\',
+                                        	id: id,
+	                                        session: session,
+        	                                postid: postid,
+                	                        tags: tags
+                        	        };
+
+
+                                	//$(box).append("Debug: "+asinURL);
+
+
+	                                //load & show server output
+        	                        $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                        //
+        	                                //Debug:
+                	                        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
+                                        //
+                        	        });
+
+	                                //prevent default behavior
+        	                        return false;
+
+                                });
+
+
+
+
 
                                 // Show further scan details on request
 
@@ -1778,82 +1882,80 @@ print "<h2>".$txt_subscr_newhw."</h2>";
 
 
 
-
+                                // submit button pressed
 				$(\'[name^="scan-comments-"]\').click(function(){
 
-                                var button = this;
-                                var id = $(button).attr(\'name\').substring(14);
-                                var boxname = "#updatearea-".concat(id);
-                                var urlinput = "#url-".concat(id);
-                                var loadname = "button-load-".concat(id);
-                                var postidname = "#postid-".concat(id);
-                                var postid = $(postidname).val();
-                                var box = $(boxname);
+                                	var button = this;
+	                                var id = $(button).attr(\'name\').substring(14);
+        	                        var boxname = "#updatearea-".concat(id);
+                	                var urlinput = "#url-".concat(id);
+                        	        var loadname = "button-load-".concat(id);
+                                	var postidname = "#postid-".concat(id);
+	                                var postid = $(postidname).val();
+        	                        var title = $("#hwtext-input-title-"+id).val();
+                	                var box = $(boxname);
 
-                                // "we are processing" indication
-                                var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
-                                indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
+                        	        // "we are processing" indication
+                                	//var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
+	                                //indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
 
-                                $(box).css(\'background-color\',\'#dddddd\');
-                                $(button).after(indicator_html);
-
-
-                                //prepare Ajax data:
-                                var session = "'.$sid.'";
-                                var asinURL = $(urlinput).val();
-                                var comment = $("#comment-"+id).val();
-                                var data ={
-                                        action: \'lhg_scan_update_ajax\',
-                                        id: id,
-                                        session: session,
-                                        asinURL: asinURL,
-                                        postid: postid,
-                                        comment: comment
-                                };
+                	                //$(box).css(\'background-color\',\'#dddddd\');
+                        	        //$(button).after(indicator_html);
 
 
-                                //$(box).append("Debug: "+asinURL);
+                                	//prepare Ajax data:
+	                                var session = "'.$sid.'";
+        	                        var asinURL = $(urlinput).val();
+                	                var comment = $("#comment-"+id).val();
+                        	        var data ={
+                                	        action: \'lhg_scan_update_ajax\',
+                                        	id: id,
+	                                        session: session,
+        	                                asinURL: asinURL,
+                	                        postid: postid,
+                        	                title: title,
+                                	        comment: comment
+	                                };
 
 
-                                //load & show server output
-                                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+					$.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                        	var imageurl     = $(response).find("supplemental imgurl").text();
+	                                        var responsetext = $(response).find("supplemental text").text();
+        	                                var newtitle     = $(response).find("supplemental newtitle").text();
+                	                        var properties   = $(response).find("supplemental properties").text();
+                        	                //Debug:
+                                	        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
 
-                                        var imageurl     = $(response).find("supplemental imgurl").text();
-                                        var responsetext = $(response).find("supplemental text").text();
-                                        var newtitle     = $(response).find("supplemental newtitle").text();
-                                        var properties   = $(response).find("supplemental properties").text();
-
-
-                                        //Debug:
-                                        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
-
-                                        if (!imageurl.trim()){
-                                                //update image
-	                                        //$(box).append("Image empty");
-                                        }else{
-                                                // Image found - replace USB logo
-                                                var imageid = "#hwscan-usblogo-"+id;
-                                                $(imageid).attr("src",imageurl);
-                                                //$(box).append("Image not empty");
-
-                                        }
-                                        //return to normal state
-                                        $(box).css(\'background-color\',\'#ffffff\');
-                                        $(button).val("Update");
-                                        $(button).attr("class","hwscan-comment-button-light");
-                                        var indicatorid = "#button-load-".concat(id);
-                                        $(indicatorid).remove();
-                                        $("#properties-"+id).text(properties);
-                                        $("#title-"+id).text(newtitle);
-                                        $(\'#details-hw-\'+id).show("slow");
+                                        	if (!imageurl.trim()){
+                                                	//update image
+		                                        //$(box).append("Image empty");
+        	                                }else{
+                	                                // Image found - replace USB logo
+                        	                        var imageid = "#hwscan-usblogo-"+id;
+                                	                $(imageid).attr("src",imageurl);
+                                        	        //$(box).append("Image not empty");
+	                                        }
 
 
-                                });
+                                        	//return to normal state
+	                                        $(box).css(\'background-color\',\'#ffffff\');
+        	                                $(box).css(\'opacity\',\'1\');
 
-                                //prevent default behavior
-                                return false;
+                        	                $(button).val("Update");
+                                	        $(button).attr("class","hwscan-comment-button-light");
+                                        	var indicatorid = "#button-load-".concat(id);
+	                                        $(indicatorid).remove();
+        	                                //$("#properties-"+id).text(properties);
+                	                        // $("#title-"+id).text(newtitle);
+	                      	                //$(\'#details-hw-\'+id).show("slow");
+
+                                	});
+
+                                	//prevent default behavior
+	                               	return false;
 
                                 });
+
 
 
                                 //
@@ -1960,7 +2062,7 @@ print "<h2>".$txt_subscr_newhw."</h2>";
                 	                var postid = pid;
                         	        var wpuid_de = "'.$wpuid_de.'";
 	        			var wpuid_com = "'.$wpuid_com.'";
-                                        var editor = "'.get_current_user_id(),'";
+                                        var editor = "'.get_current_user_id().'";
         	                        var email = "";
                 	                var comment = $("#comment-"+id).val();
 
@@ -1989,6 +2091,80 @@ print "<h2>".$txt_subscr_newhw."</h2>";
 
         				return false;
                                 });
+
+
+                                //
+                                // update hardware title
+                                //
+
+			var titlechange = function() {
+
+	                                var clickedlink = this;
+        	                        var id = $(clickedlink).attr(\'id\').substring(18);
+                	                var pid = $(clickedlink).attr(\'name\').substring(7);
+
+                                        // show edit options
+                                        $(\'[id^="hwtext-input-title-\'+id+\'"]\').show();
+		                        $(\'[id^="hwtext-title-edit-\'+id+\'"]\').hide();
+		                        $(\'[id^="hwtext-title-save-\'+id+\'"]\').show();
+                		        $(\'[id^="hwtext-title-cancel-\'+id+\'"]\').show();
+                		        $(\'[id^="hwtext-title-\'+id+\'"]\').hide();
+
+
+	                                //prepare Ajax data:
+        	                        var session = "'.$sid.'";
+                	                var postid = pid;
+                        	        var wpuid_de = "'.$wpuid_de.'";
+	        			var wpuid_com = "'.$wpuid_com.'";
+        	                        var email = "";
+                	                var title = $("#hwtext-title-"+id).val();
+
+                                	var data ={
+                                        	action: \'lhg_scan_update_title_ajax\',
+	                                        session: session,
+        	                                title: title,
+                	                        wpuid_de: wpuid_de,
+                        	                wpuid_com: wpuid_com,
+	                                        postid: postid
+        	                        };
+
+
+                                	//load & show server output
+	                                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+
+        	                        	var return_comment     = $(response).find("supplemental return_comment").text();
+
+                                  	      	//Debug:
+                                                //$(clickedlink).after("<b>&nbsp;done</b>");
+                                                //$("#auto_search_ongoing").remove();
+                                        	//$(area).append(response);
+	                                });
+                                return false;
+                	};
+
+                        //$(\'[id^="hwtext-title-"]\').click(titlechange);
+                        $(\'[id^="hwtext-title-edit-"]\').click(titlechange);
+
+                        //hide edit possibilities at first run
+                        //$(\'[id^="hwtext-input-title-"]\').hide();
+                        //$(\'[id^="hwtext-title-save"]\').hide();
+                        //$(\'[id^="hwtext-title-cancel"]\').hide();
+
+                        // cancel the editing of title
+                        $(\'[id^="hwtext-title-cancel-"]\').click(function(){
+
+                        	var id = $(this).attr(\'id\').substring(20);
+
+	                        $(\'[id^="hwtext-title-\'+id+\'"]\').show();
+	                        $(\'[id^="hwtext-input-title-\'+id+\'"]\').hide();
+        	                $(\'[id^="hwtext-title-save-\'+id+\'"]\').hide();
+                	        $(\'[id^="hwtext-title-cancel-\'+id+\'"]\').hide();
+                	        $(\'[id^="hwtext-title-edit-\'+id+\'"]\').show();
+
+        			return false;
+                        });
+
+                        $(\'[id^="tag-select-box"]\').chosen();
 
 
                 });
@@ -2036,12 +2212,15 @@ print '
                 echo '<tr id="header">
 
 
-                <td id="title-colhw">'.$txt_subscr_foundhwid.'</td>
-                <td>';
-	        if ($show_public_profile != 1) print $txt_subscr_rate; #"Rate Hardware";
-                print '
-                </td>
-                <td id="col2" width="13%"><nobr>'.$txt_subscr_type.'</nobr></td>
+                <td id="title-colhw">'.$txt_subscr_foundhwid.'</td>';
+
+               // <td>';
+               // if ($show_public_profile != 1) print $txt_subscr_rate; #"Rate Hardware";
+               // print '
+               // </td>
+
+                echo
+                '<td id="col2" width="13%"><nobr>'.$txt_subscr_type.'</nobr></td>
 
                 <!-- td id="col4">'.$txt_subscr_modus.'</td -->
 
@@ -2228,23 +2407,68 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
 
                 if ($title == "") $title = "(No identifier found)";
 
+                $usertitle = lhg_scan_overview_get_user_title($id);
+                if ($usertitle != "") $title = $usertitle;
+
 		#$title = "Scantype: $scantype".$title;
                 print '<div class="subscribe-hwtext">';
 
                 # use full product name if available
                 if ($full_title != "") $title=$full_title;
-                print '   <div class="subscribe-hwtext-span"><b>'.$title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
+
+                #AJAX Work-in-progress indication box
+                print '<div id="updatearea-'.$id.'">';
+
+
+                print '   <div class="subscribe-hwtext-span">
+                        	<!-- div id="hwtext-title-'.$id.'" name="postid-'.$newPostID.'">'.$title.'</div -->
+
+
+                        <div class="hwscan-designation-name">Hardware name:</div>
+                                <input id="hwtext-input-title-'.$id.'" name="postid-'.$newPostID.'" value="'.$title.'" size="40" type="text"></input>
+                        ';
+
+                        //<span id="hwtext-title-edit-'.$id.'" name="postid-'.$newPostID.'"><a href="#">Edit</a></span>
+                        //<span id="hwtext-title-save-'.$id.'" name="postid-'.$newPostID.'"><a href="#">Save</a></span>
+                        //<span id="hwtext-title-cancel-'.$id.'" name="postid-'.$newPostID.'"><a href="#">Cancel</a></span>
+                        //
+                        // <span id="show-details-hw-'.$id.'"></span></div>';
+
+
+                // Tag selector
+                lhg_scan_tag_selector($id, $newPostID, $scantype);
+
 
                 if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
                 	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
                 	print '
-                        	<div id="details-hw-'.$id.'" class="details">
+                        	<!-- div id="details-hw-'.$id.'" class="details">
                     	    		<br>Properties: <span id="properties-'.$id.'">'.$meta_info.'</span>
                 	    		<br>Title: <span id="title-'.$id.'">'.$title_info.'</span>
-		        	</div>';
+		        	</div -->';
                 }
 
-                print '</div>';
+
+                print '<div class="hwscan-designation-rating">Rate Linux compatibility:</div>';
+
+
+		$newPostID = lhg_create_cpu_article($title, $sid, $id);
+
+		ob_start();
+		  $returnval .= the_ratings("div",$newPostID);
+		  $out1 = ob_get_contents();
+        	ob_end_clean();
+	        if (!strpos($out1,"onmouseout")>0) $out1 = "already rated";
+        	$out1 = str_replace("(No Ratings Yet)","",$out1);
+
+	        # only scanning person should be allowed to rate here!
+	        #if ($show_public_profile != 1)
+		#$article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
+                print "$out1";
+
+                print '</div>'; # subscribe-hwtext
+
+
 
 if ($show_public_profile != 1){
 	print '<form action="?" method="post" class="hwcomments">
@@ -2275,10 +2499,15 @@ if ($show_public_profile != 1){
  }
 
 
+print "</div>"; # end of AJAX indication box
+
 print '
-</td><td>
-'.$article_created.'
-                        </td>';
+</td>';
+
+// <td>
+//'.$article_created.'
+//                        </td>
+//';
 
                         //<td id=\"col4\">
                         //<span class='subscribe-column-2'>$deact<br>({$a_subscription->status})</span>
@@ -3547,6 +3776,7 @@ function lhg_clean_scan_comment ( $comment ) {
         return $modified_comment;
 
 }
+
 
 
 ?>
