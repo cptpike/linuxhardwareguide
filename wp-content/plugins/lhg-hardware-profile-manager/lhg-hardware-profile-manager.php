@@ -1,6 +1,7 @@
 <?php
 
 #require_once(plugin_dir_path(__FILE__)."../../themes/blue-and-grey/functions.php");
+require_once(plugin_dir_path(__FILE__)."lhg-scanresults.php");
 
 /*
 Plugin Name: LHG - Hardware Profile Manager
