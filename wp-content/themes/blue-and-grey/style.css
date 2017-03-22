@@ -18,8 +18,8 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 /* Reset
 ------------------------------------------- */
-* {margin: 0; padding: 0; color: #666; font-family: Arial,sans-serif; font-size: 100%;}
-body {min-width: 960px; font-size: 0.75em; line-height: 1.5em;}
+* {margin: 0; padding: 0; font-family: Arial,sans-serif; font-size: 100%;}
+body {min-width: 960px; font-size: 0.75em; line-height: 1.5em; color: #666}
 a, span, strong {font-size: 1em;}
 span {color: inherit;}
 a, a:visited {color: #2b8fc3; text-decoration: none;}
@@ -152,7 +152,7 @@ p.tags span.comments {background-position: 0 -72px;}
 
 .main ol, .main ul {margin: 1.5em 3em;}
 .main ul {margin: 1.5em 2.5em; list-style: none;}
-.main ul li {padding-left: 20px; background: url("images/sm-arrow.gif") 0 5px no-repeat;}
+// .main ul li {padding-left: 20px; background: url("images/sm-arrow.gif") 0 5px no-repeat;}
 
 .main form {padding: 15px; border: 1px solid #ddd; background: #f0f0f0 url("images/form-shadow.png") 0 0 no-repeat; background-size: 100%;}
 p.submit {margin-bottom: 0; text-align: center;}
@@ -589,7 +589,7 @@ form#post_list_form{
         vertical-align: middle;
         padding-top:8px;
         /* padding-bottom:13px; */
-        margin-left: 64px;
+        margin-left: 75px;
         }        
 .hwprofile-cite{
         padding-top: 10px;
@@ -2176,7 +2176,7 @@ form.usercomment_multi {
 form.hwcomments{
 	border: 0px;
         background: none;
-        margin-left: 80px;
+        margin-left: 60px;
 
 }
 
@@ -2943,3 +2943,33 @@ tr#quarterly-points-header-row {
         display: inline-block;
 }
 
+//.chosen-container ul li{
+//	background: none !important;
+//}
+
+
+.chosen-container li {
+	background: none;
+}
+
+.footer i {
+	color: #666;
+}
+
+.hwscan-designation-name {
+	border: 0px solid black;
+        width: 106px;
+        margin-bottom: -5px;
+        
+}
+
+.hwscan-designation-tags {
+	border: 0px solid black;
+	width: 106px;
+        margin-top: 7px;
+}
+
+.hwscan-designation-rating {
+	border: 0px solid black;
+        margin-top: 11px;
+}
