@@ -2139,8 +2139,8 @@ img#logoimg {
 }
 
 form.hwcomments textarea{
-	width: 288px;
-        height: 39px;
+	width: 500px;
+        height: 100px;
 }
 
 form.usercomment textarea{
@@ -2972,4 +2972,9 @@ tr#quarterly-points-header-row {
 .hwscan-designation-rating {
 	border: 0px solid black;
         margin-top: 11px;
+}
+
+.hwscan-designation-categories {
+        width: 160px;
+        margin-top: 12px;
 }
