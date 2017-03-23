@@ -61,6 +61,10 @@ add_action('wp_ajax_nopriv_lhg_scan_update_title_ajax', 'lhg_scan_update_title_a
 add_action('wp_ajax_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_ajax');
 
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
+
 # AJAX funcitonalities
 
 # create a new mainboard article. Return the post id.
@@ -639,12 +643,38 @@ function lhg_scan_update_tags_ajax() {
         $tagstring = "";
         foreach ($tags as $tag)  {
                 if ( $tagstring == "" ) $tagstring = $tag;
-                if ( $tagstring != "" )$tagstring = $tagstring.",$tag";
+                if ( $tagstring != "" ) $tagstring = $tagstring.",$tag";
         }
 
 	global $lhg_price_db;
 
 	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usertags_ids = %s WHERE id = %s ", $tagstring, $id);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
+
+# update post categories on scan page
+function lhg_scan_update_categories_ajax() {
+
+	$pid        = $_REQUEST['postid'];
+	$id         = $_REQUEST['id'] ;
+	$session    = $_REQUEST['session'] ;
+        $categories = $_REQUEST['categories'] ;
+        //$wpuid_de  = $_REQUEST['wpuid_de'] ;
+        //$wpuid_com = $_REQUEST['wpuid_com'] ;
+
+
+        # create string of tag ids
+        $catstring = "";
+        foreach ($categories as $cat)  {
+                if ( $catstring == "" ) $catstring = $cat;
+                if ( $catstring != "" ) $catstring = $catstring.",$cat";
+        }
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usercategories = %s WHERE id = %s ", $catstring, $id);
 	$result = $lhg_price_db->query($myquery);
 
         exit();
