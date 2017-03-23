@@ -1417,7 +1417,7 @@ print           '<script type="text/javascript">
 
 			       <div id="updatearea-old-'.$id.'">
                                 Please rate hardware: '.$article_created.'
-       				Help us adding this hardware to our database. Please identify this hardware and describe its Linux compatibility:<br>
+       				Please describe the Linux compatibility of this hardware (e.g. necessary configuration steps):<br>
        				<textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.lhg_clean_scan_comment($comment).'</textarea><br>
        				If possible, please leave an URL to a web page where the hardware is described (e.g. manufacturer`s data sheet or Amazon.com page).<br>URL:
        				<input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
@@ -1762,8 +1762,11 @@ print "<h2>".$txt_subscr_newhw."</h2>";
                                 });
 
 
-                                // set title
-				$(\'[name^="scan-comments-"]\').click(function(){
+                                //
+                                // store title provided by user
+                                //
+
+                                $(\'[name^="scan-comments-"]\').click(function(){
 
                                 	var button = this;
                                 	var id = $(button).attr(\'name\').substring(14);
@@ -1811,8 +1814,11 @@ print "<h2>".$txt_subscr_newhw."</h2>";
 
                                 });
 
-                                // set tags
-				$(\'[name^="scan-comments-"]\').click(function(){
+                                //
+                                // store tags provided by user
+                                //
+
+                                $(\'[name^="scan-comments-"]\').click(function(){
 
                                 	var button = this;
                                 	var id = $(button).attr(\'name\').substring(14);
@@ -1840,6 +1846,59 @@ print "<h2>".$txt_subscr_newhw."</h2>";
 	                                        session: session,
         	                                postid: postid,
                 	                        tags: tags
+                        	        };
+
+
+                                	//$(box).append("Debug: "+asinURL);
+
+
+	                                //load & show server output
+        	                        $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                        //
+        	                                //Debug:
+                	                        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
+                                        //
+                        	        });
+
+	                                //prevent default behavior
+        	                        return false;
+
+                                });
+
+
+
+                                //
+                                // store categories provided by user
+                                //
+
+				$(\'[name^="scan-comments-"]\').click(function(){
+
+                                	var button = this;
+                                	var id = $(button).attr(\'name\').substring(14);
+                                	var boxname = "#updatearea-".concat(id);
+                                	var urlinput = "#url-".concat(id);
+                                	var loadname = "button-load-".concat(id);
+                                	var postidname = "#postid-".concat(id);
+                                	var postid = $(postidname).val();
+                                	var box = $(boxname);
+
+	                                // "we are processing" indication
+        	                        //var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
+                	                //indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
+
+                        	        //$(box).css(\'background-color\',\'#dddddd\');
+                                	//$(button).after(indicator_html);
+
+
+	                                //prepare Ajax data:
+        	                        var session = "'.$sid.'";
+                	                var categories = $("#category-select-box-"+id).val();
+                        	        var data ={
+                                	        action: \'lhg_scan_update_categories_ajax\',
+                                        	id: id,
+	                                        session: session,
+        	                                postid: postid,
+                	                        categories: categories
                         	        };
 
 
@@ -2165,6 +2224,7 @@ print "<h2>".$txt_subscr_newhw."</h2>";
                         });
 
                         $(\'[id^="tag-select-box"]\').chosen();
+                        $(\'[id^="category-select-box"]\').chosen();
 
 
                 });
@@ -2208,30 +2268,12 @@ print '
                 </script>';
 
 
-                echo '<table id="registration">';
-                echo '<tr id="header">
-
-
-                <td id="title-colhw">'.$txt_subscr_foundhwid.'</td>';
-
-               // <td>';
-               // if ($show_public_profile != 1) print $txt_subscr_rate; #"Rate Hardware";
-               // print '
-               // </td>
-
-                echo
-                '<td id="col2" width="13%"><nobr>'.$txt_subscr_type.'</nobr></td>
-
-                <!-- td id="col4">'.$txt_subscr_modus.'</td -->
-
-                <!-- td id="col2">'.$txt_subscr_regist_date.'</td -->
-
-
-
-
-                </tr>';
                 $mainboard_array="";
                 foreach($unidentified_hw as $a_identified_hw){
+
+
+
+
 
                         $skip = 0;
                         #List UN-identified hw components
@@ -2301,6 +2343,48 @@ print '
         		$imgurl = lhg_get_imgurl( $sid, $id);
                         //print "IMGurl: $imgurl<br>";
         	        if ($imgurl != "") $logo = "<img src='".$imgurl."' class='hwscan-usblogo".$csspub."' id='hwscan-usblogo-".$id."' title='Logo'>";
+
+
+
+
+                # start area for unrecognized hardware
+                #
+
+                if ( ($usbid != "") && ($scantype != "mainboard") ) {
+                            $ID_title = "USB Device: $usbid";
+	        }
+                if ($pciid != "") {
+                            $ID_title = "PCI Device: $pciid";
+	        }
+                if ($scantype == "cpu"){
+                            $ID_title = "CPU";
+	        }
+                if ($scantype == "drive") {
+                              $ID_title = "Drive";
+	        }
+
+                echo '<table id="registration">';
+                echo '<tr id="header">
+
+
+                <td id="title-colhw">'.$ID_title.'</td>';
+
+               // <td>';
+               // if ($show_public_profile != 1) print $txt_subscr_rate; #"Rate Hardware";
+               // print '
+               // </td>
+
+                echo
+                '<td id="col2" width="13%"><nobr>'.'</nobr></td>
+
+                <!-- td id="col4">'.$txt_subscr_modus.'</td -->
+
+                <!-- td id="col2">'.$txt_subscr_regist_date.'</td -->
+
+
+
+
+                </tr>';
 
 
 
@@ -2435,18 +2519,25 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
                         // <span id="show-details-hw-'.$id.'"></span></div>';
 
 
+                //
                 // Tag selector
+                //
                 lhg_scan_tag_selector($id, $newPostID, $scantype);
 
 
-                if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
-                	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
-                	print '
-                        	<!-- div id="details-hw-'.$id.'" class="details">
-                    	    		<br>Properties: <span id="properties-'.$id.'">'.$meta_info.'</span>
-                	    		<br>Title: <span id="title-'.$id.'">'.$title_info.'</span>
-		        	</div -->';
-                }
+                //
+                // Category selector
+                //
+                lhg_scan_category_selector($id, $newPostID, $scantype);
+
+                //if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
+                //	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
+                //	print '
+                //        	<!-- div id="details-hw-'.$id.'" class="details">
+                //    	    		<br>Properties: <span id="properties-'.$id.'">'.$meta_info.'</span>
+                //	    		<br>Title: <span id="title-'.$id.'">'.$title_info.'</span>
+		//        	</div -->';
+                //}
 
 
                 print '<div class="hwscan-designation-rating">Rate Linux compatibility:</div>';
@@ -2524,8 +2615,8 @@ print '
                         if ( ($usbid != "") && ($scantype != "mainboard") ) {
                         echo "
                         <td id=\"col4\">
-                          <span class='subscribe-column-2'>
-                            USB Device: $usbid";
+                          <span class='subscribe-column-2'>";
+                            // USB Device: $usbid";
 
                             if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
@@ -2539,8 +2630,9 @@ print '
                         if ($pciid != "")
                         echo "
                         <td id=\"col4\">
-                          <span class='subscribe-column-2'>
-                            PCI Device: $pciid
+                          <span class='subscribe-column-2'>";
+                            // PCI Device: $pciid
+                        echo "
                           </span>
                         </td>";
 
@@ -2548,8 +2640,8 @@ print '
 
                         echo "
                         <td id=\"col4\">
-                          <span class='subscribe-column-2'>
-                            CPU";
+                          <span class='subscribe-column-2'>";
+                            // CPU";
 
                             if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
@@ -2567,8 +2659,8 @@ print '
                         if ($scantype == "drive") {
                           echo "
                           <td id=\"col4\">
-                            <span class='subscribe-column-2'>
-                              Drive";
+                            <span class='subscribe-column-2'>";
+                              //Drive";
 
                               if  ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
                                 print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
@@ -2604,10 +2696,12 @@ print '
 
 
                         echo "</tr>\n";
+
+                        echo "</table>";
+
 		}
 		} // Skip if not to be shown component
 
-                echo "</table>";
 
 
                 #var_dump ($mainboard_array);
