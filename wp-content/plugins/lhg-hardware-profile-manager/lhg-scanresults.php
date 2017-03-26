@@ -115,6 +115,90 @@ function lhg_scan_category_selector ( $_id, $_newPostID, $_scantype ) {
 
 }
 
+function lhg_scan_set_asin ( $_id, $_newPostID, $_scantype, $_sid ) {
+
+
+        // get stored ASIN
+
+	$key = "amazon-product-single-asin";
+
+	#error_log("ASIN? $_newPostID $key --- ".get_post_meta($_newPostID, $key, TRUE) );
+
+        if( get_post_meta($_newPostID, $key, TRUE) ) { //if the custom field already has a value
+  		$old_asin = get_post_meta($_newPostID, $key, TRUE);
+        	#error_log("Stored ASIN: $old_asin");
+
+	} 
+
+
+
+        print '<br><div class="hwscan-asin-setting">Set Amazon.com ID (ASIN). Format: B0xxxxxxxx:</div>';
+        print '<input id="hwtext-input-asin-'.$_id.'" name="postid-'.$_newPostID.'" value="'.$old_asin.'" size="15" type="text"></input>';
+
+        // ToDo: add auto selector
+
+
+
+        // JQuery code to update ASIN
+	print '
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+
+	jQuery(document).ready( function($) {
+
+        	// submit button pressed
+		$(\'[name^="scan-comments-"]\').click(function(){
+
+        		var button = this;
+		        var id = $(button).attr(\'name\').substring(14);
+        		var boxname = "#updatearea-".concat(id);
+                	var urlinput = "#url-".concat(id);
+	                var loadname = "button-load-".concat(id);
+        	        var postidname = "#postid-".concat(id);
+	        	var postid = $(postidname).val();
+	        	var asin = $("#hwtext-input-asin-"+id).val();
+        	        var box = $(boxname);
+
+                	// "we are processing" indication
+	                //var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
+		        //indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
+
+	                //$(box).css(\'background-color\',\'#dddddd\');
+        	        //$(button).after(indicator_html);
+
+
+	                //prepare Ajax data:
+		        var session = "'.$_sid.'";
+                	var data ={
+                		action: \'lhg_scan_update_asin_ajax\',
+	                        id: id,
+		                session: session,
+                		postid: postid,
+                        	asin: asin,
+		        };
+
+                        // send AJAX request
+	                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+	        	        var return_comment     = $(response).find("supplemental return_comment").text();
+	                });
+
+        		return false;
+
+	        });
+
+        });
+
+
+
+/*]]> */
+</script>
+';
+
+}
+
+
 function lhg_scan_overview_get_user_title($_id) {
 
 	global $lhg_price_db;
