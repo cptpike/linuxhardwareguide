@@ -65,6 +65,10 @@ add_action('wp_ajax_nopriv_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_aja
 add_action('wp_ajax_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
 
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
+
 # AJAX funcitonalities
 
 # create a new mainboard article. Return the post id.
@@ -667,6 +671,7 @@ function lhg_scan_update_categories_ajax() {
 
         # create string of tag ids
         $catstring = "";
+        if ($categories != "")
         foreach ($categories as $cat)  {
                 if ( $catstring == "" ) $catstring = $cat;
                 if ( $catstring != "" ) $catstring = $catstring.",$cat";
@@ -676,6 +681,36 @@ function lhg_scan_update_categories_ajax() {
 
 	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usercategories = %s WHERE id = %s ", $catstring, $id);
 	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
+
+
+# update asin ID 
+function lhg_scan_update_asin_ajax() {
+
+	$pid        = $_REQUEST['postid'];
+	$id         = $_REQUEST['id'] ;
+	$session    = $_REQUEST['session'] ;
+        $asin 	    = $_REQUEST['asin'] ;
+	$key = "amazon-product-single-asin";
+
+        #error_log("Update ASIN: $pid, $id, $session, $asin");
+        #error_log("Before stored value($pid) = ".get_post_meta($pid, $key, TRUE));
+
+        if ($asin == "") exit();
+
+	# And Store asin in WPDB
+  	$value = $asin;
+	if( metadata_exists('post', $pid, $key) ) { //if the custom field already has a value
+  		update_post_meta($pid, $key, $value);
+                #error_log( "Updated ASIN ($pid) to $value");
+	} else { //if the custom field doesn't have a value
+  		add_post_meta($pid, $key, $value);
+                #error_log("Added ASIN: $value");
+	}
+
+        #error_log("Stored value($pid) = ".get_post_meta($pid, $key, TRUE)." == $asin ?");
 
         exit();
 }
