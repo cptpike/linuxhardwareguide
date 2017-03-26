@@ -2287,6 +2287,7 @@ print '
                         $id=( $a_identified_hw->id );
                         $scantype=( $a_identified_hw->scantype );
 
+                        $original_title = $title;
 
 
                         # Skip certain entries
@@ -2367,7 +2368,7 @@ print '
                 echo '<tr id="header">
 
 
-                <td id="title-colhw">'.$ID_title.'</td>';
+                <td id="title-colhw">'.$ID_title.', '.$original_title.'</td>';
 
                // <td>';
                // if ($show_public_profile != 1) print $txt_subscr_rate; #"Rate Hardware";
@@ -2540,9 +2541,11 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
                 //}
 
 
+
+                //
+                // Rating
+                //
                 print '<div class="hwscan-designation-rating">Rate Linux compatibility:</div>';
-
-
 		$newPostID = lhg_create_cpu_article($title, $sid, $id);
 
 		ob_start();
@@ -2551,14 +2554,19 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
         	ob_end_clean();
 	        if (!strpos($out1,"onmouseout")>0) $out1 = "already rated";
         	$out1 = str_replace("(No Ratings Yet)","",$out1);
-
 	        # only scanning person should be allowed to rate here!
 	        #if ($show_public_profile != 1)
 		#$article_created = $txt_subscr_pleaserate.": <br><nobr>$out1</nobr>";
                 print "$out1";
 
-                print '</div>'; # subscribe-hwtext
 
+                //
+                // ASIN
+                //
+                lhg_scan_set_asin( $id, $newPostID, $scantype, $sid);
+
+
+                print '</div>'; # subscribe-hwtext
 
 
 if ($show_public_profile != 1){
