@@ -69,6 +69,10 @@ add_action('wp_ajax_nopriv_lhg_scan_update_categories_ajax', 'lhg_scan_update_ca
 add_action('wp_ajax_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
 
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_designation_ajax', 'lhg_scan_update_designation_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_designation_ajax', 'lhg_scan_update_designation_ajax');
+
 # AJAX funcitonalities
 
 # create a new mainboard article. Return the post id.
@@ -711,6 +715,22 @@ function lhg_scan_update_asin_ajax() {
 	}
 
         #error_log("Stored value($pid) = ".get_post_meta($pid, $key, TRUE)." == $asin ?");
+
+        exit();
+}
+
+# update scan designation
+function lhg_scan_update_designation_ajax() {
+
+	$sid         = $_REQUEST['sid'] ;
+	$designation = $_REQUEST['input'] ;
+
+        if ($designation == "") exit();
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET designation = %s WHERE sid = %s ", $designation, $sid);
+	$result = $lhg_price_db->query($myquery);
 
         exit();
 }
