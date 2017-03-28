@@ -199,6 +199,79 @@ function lhg_scan_set_asin ( $_id, $_newPostID, $_scantype, $_sid ) {
 }
 
 
+function lhg_scan_set_designation ( $_sid ) {
+
+
+        // get stored designation
+
+        $old_designation = lhg_scan_overview_get_scan_designation( $_sid );
+
+
+        print '<div class="hwscan-designation-setting">Rename your scan for easier tracking (optional)</div>';
+        print '<input id="hwtext-input-scan-designation" name="hwtext-input-scan-designation" value="'.$old_designation.'" size="30" type="text"></input>';
+	print '<input type="submit" id="hwscan-designation-button" name="hwscan-designation-button" value="Update" class="hwscan-designation-button" />';
+
+        // ToDo: add auto selector
+
+
+
+        // JQuery code to update designation
+
+print '
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+	jQuery(document).ready( function($) {
+
+        	// submit button pressed
+		$(\'[name^="hwscan-designation-button"]\').click(function(){
+
+        		var button = this;
+                	var input = $("#hwtext-input-scan-designation").val();
+        	        var box = $("#hwscan-designation-cell");
+
+                	// "we are processing" indication
+	                var indicator_html = \'<img class="scan-load-button" id="button-load-designation" src="/wp-uploads/2015/11/loading-circle.gif">\';
+
+	                $(box).css(\'background-color\',\'#dddddd\');
+        	        $(button).after(indicator_html);
+
+
+	                //prepare Ajax data:
+		        var sid = "'.$_sid.'";
+                	var data ={
+                		action: \'lhg_scan_update_designation_ajax\',
+	                        sid: sid,
+		                input: input,
+		        };
+
+                        // send AJAX request
+	                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+	        	        var return_comment     = $(response).find("supplemental return_comment").text();
+
+                                $(box).css(\'background-color\',\'#ffffff\');
+        	        	$("#button-load-designation").remove();
+
+	                });
+
+
+
+        		return false;
+
+	        });
+
+        });
+
+
+
+/*]]> */
+</script>
+';
+
+}
+
+
 function lhg_scan_overview_get_user_title($_id) {
 
 	global $lhg_price_db;
@@ -228,5 +301,25 @@ function lhg_scan_overview_get_user_tags($_id) {
 
         return $usertags;
 }
+
+function lhg_scan_overview_get_scan_designation($_sid) {
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("SELECT designation FROM `lhgscansessions` WHERE sid = %s", $_sid);
+	$designation = $lhg_price_db->get_var($myquery);
+
+        # return default, if empty
+        if ($designation == "") {
+        	$myquery = $lhg_price_db->prepare("SELECT scandate FROM `lhgscansessions` WHERE sid = %s", $_sid);
+		$designation_utime = $lhg_price_db->get_var($myquery);
+                $designation = "My scan at ".gmdate("Y-m-d, H:i:s", $designation_utime);
+
+
+	}
+
+        return $designation;
+}
+
 
 ?>
