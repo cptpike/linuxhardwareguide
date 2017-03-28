@@ -256,16 +256,38 @@ if (
 
 } else {
 
+
+#
+#  Scan Overview table at top of scan page
+#
+echo '<table id="registration" class="scanoverview-table">';
+echo '  <tr id="header">';
+echo '    <td id="title-colhw">Scan Overview</td>';
+echo '    <td id="title-colhw"></td>';
+echo '  </tr>';
+
+
+
+// <br>&nbsp;<br>
+//<h2>Contact information</h2>
+
+
+print '	 <tr>
+	   <td><div class="scan-overview-left-text">Email:</td>';
+
 print '
-<br>&nbsp;<br>
-<h2>Contact information</h2>
-<form action="?" method="post">
-       Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:<br>
-       <b>Email</b>: <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
+<td id="hwscan-email-cell">
+Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:
+<form action="?" method="post" class="hwscan-email-form">
+       <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
        <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
 </form>
-<br>
+
 ';
+
+print '   </td>
+        </tr>
+      ';
 
 }
 
@@ -280,6 +302,8 @@ echo '
 				$(\'#email-submit\').click(function(){
 
                                 var button = this;
+                                $("#hwscan-email-cell").css(\'background-color\',\'#dddddd\');
+
 
                                 // "we are processing" indication
                                 var indicator_html = \'<img class="scan-load-button" id="button-load-known-hardware-comment" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
@@ -308,6 +332,8 @@ echo '
                                         $(button).attr("class", "hwscan-comment-button-light");
                                         var indicatorid = "#button-load-known-hardware-comment";
                                         $(indicatorid).remove();
+                                        $("#hwscan-email-cell").css(\'background-color\',\'#ffffff\');
+
 
                                 });
 
@@ -371,11 +397,18 @@ echo '
                 #get and check session ID
                 #echo "Session ID: $sid <br>";
 
+
+/*
                 echo '<table id="registration" class="scanoverview-table">';
                 echo '<tr id="header">
 
 
-                <td id="title-colhw">Scan</td>';
+                <td id="title-colhw">Scan Overview</td>
+                <td> </td>
+
+
+                ';
+
 
                 #if ($userknown == 1)
                 #echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
@@ -405,7 +438,7 @@ echo '
 
 
 	print                       " </td>";
-
+*/
 
 
         if ($uploader_guid != "") {
@@ -428,11 +461,12 @@ echo '
 		if ( ($lang != "de") && ($user->wpuid != 0) ) $user_output .= '</a>';
 		$user_output .='          </div></div>';
 
-
+/*
 	        echo "
                         <td id=\"col-hw\">
 			".$user_output."
                         </td>";
+*/
         } else {
                 # nothing shown if user unknown
         }
@@ -446,14 +480,15 @@ echo '
         if ($status == "complete") $status_txt = "Completed";
 
         if ($editmode != 1) {
-                   echo "
+                   /* echo "
                         <td id=\"col4\">
                         <span class='subscribe-column-2'>$status_txt</span>
                         </td>";
+                        */
 	 } else {
                    #in editmode it is possible to change the status
-                   echo "
-                        <td id=\"col4\">";
+                   //echo "
+                   //     <td id=\"col4\">";
 
                    echo '<form action="?" method="post" class="scanpage-change-status">';
 
@@ -525,10 +560,11 @@ echo '
 
 
 
-                    echo "</td>";
+                    //echo "</td>";
 
          }
 
+        /*
         echo "
                         <td id=\"col4\">
                         <span class='subscribe-column-2'>$distribution</span>
@@ -539,7 +575,7 @@ echo '
                         <td id=\"col4\">
                         <span class='subscribe-column-2'>$kversion</span>
                         </td>";
-
+        */
 
                         #$registration_date=$a_subscription->dt;
                         #list ($registration_date, $registration_time) = explode(" ",$registration_date);
@@ -562,7 +598,7 @@ echo '
 			#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 			$num_identified_hw = $lhg_price_db->get_var($myquery);
 
-                        echo "
+	/*              echo "
                         <td id=\"col2\">
                         <span class='subscribe-column-1'><center>".$txt_subscr_identified.": ".$num_identified_hw." <br> ".$txt_subscr_unknown.": $num_unidentified_hw  </center></span>
                         </td>";
@@ -572,7 +608,7 @@ echo '
                         echo "</tr>\n";
 
                 echo "</table>";
-
+        */
 
 if ($editmode == 1)
 if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
@@ -580,6 +616,63 @@ if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
 	if ($show_public_profile != 1) print "<br>&nbsp;<br>See overview of the <a href=./uid-".$uid.">".$num_uid." hardware scans of this user</a>.";
 }
 
+
+	print "
+        <tabe>
+           <tr id='hwscan-designation-row'>
+             	<td><div class=\"scan-overview-left-text\">Scan Designation:</div></td>
+             	<td id='hwscan-designation-cell'>";
+
+        lhg_scan_set_designation($sid);
+
+
+        print "
+                </td>
+           </tr>
+
+           <tr>
+                <td><div class=\"scan-overview-left-text\">Scan Date:</div></td>
+                <td>$scandate_txt</td>
+           </tr>
+
+           <tr>
+           	<td><div class=\"scan-overview-left-text\">Status:</div></td>
+                <td>$status_txt</td>
+           </tr>
+
+           <tr>
+                <td><div class=\"scan-overview-left-text\">$txt_scan_distribution:</div></td>
+                <td valign=\"middle\"><img src='$logo' width='40' style='vertical-align:middle' > $distribution</td>
+           </tr>
+
+           <tr>
+               <td><div class=\"scan-overview-left-text\">$txt_subscr_kernelversion:</div></td>
+               <td>$kversion</td>
+           </tr>";
+
+
+        if ($uploader_guid != "") print "<tr><td><div class=\"scan-overview-left-text\">$txt_username:</div></td> <td>$user_output</td></tr>";
+
+        print "
+                <tr>
+                  <td><div class=\"scan-overview-left-text\">$txt_subscr_hwcomp:</div></td>
+                  <td>
+                	$txt_subscr_identified: $num_identified_hw<br>
+	                $txt_subscr_unknown: $num_unidentified_hw
+                  </td>
+                </tr>
+                ";
+
+        print "</table>";
+
+
+
+
+
+
+echo '	  </td>';
+echo '	</tr>';
+echo '</table>';
 
 
 # Add user feedback exchange
