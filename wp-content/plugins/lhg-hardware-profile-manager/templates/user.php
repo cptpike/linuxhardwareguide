@@ -293,8 +293,9 @@ echo "$message<br>
 	print " <p>
         	<h2>My Hardware Scans</h2>";
                 print "<ul>";
-                foreach ($scanarray as $scanid){
+                foreach (array_reverse( $scanarray ) as $scanid){
 
+                        $designation = lhg_scan_overview_get_scan_designation( $scanid );
 
                         if ($lang != de) $results = $lhg_price_db->get_results("SELECT * FROM `lhgscansessions` WHERE sid = '$scanid'");
                         if ($lang == de) $results = $lhg_price_db->get_results("SELECT * FROM `lhgscansessions` WHERE sid = '$scanid'");
@@ -308,7 +309,7 @@ echo "$message<br>
 
                         #ToDo: show scan time, distribution, status
                         #ToDO: do not break language subdirectory
-                        print '<li><a href="http://www.linux-hardware-guide.com/hardware-profile/scan-'.$scanid.'">'.$scanid.'</a> ('.$date.' - '.$distri.' - '.$kernel.")";
+                        print '<li><a href="http://www.linux-hardware-guide.com/hardware-profile/scan-'.$scanid.'">'.$designation.'</a> ('.$distri.' - '.$kernel.' - '.$date.')';
 		}
                 print "</ul>";
 	}
