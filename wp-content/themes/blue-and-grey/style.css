@@ -2978,3 +2978,20 @@ tr#quarterly-points-header-row {
         width: 160px;
         margin-top: 12px;
 }
+
+.scan-overview-left-text {
+	font-weight: bold;
+	padding-left: 10px;
+        margin-top: 4px;
+        margin-bottom: 4px;
+}
+
+.main .hwscan-email-form {
+	background: none;
+        border: 0px;
+        padding: 0px;
+}
+
+.hwscan-designation-button {
+	margin-left: 3px;
+}
