@@ -184,7 +184,10 @@ $result = $lhg_price_db->get_var($sql);
 #print "<br>";
 
 # show rescan link if an "author"
-if (current_user_can('publish_posts') ) {
+if ($editmode == 1) {
+        $editbox_top = "Editor Tools:<br>";
+
+	#if (current_user_can('publish_posts') ) {
 
 	if ( ($_SERVER['SERVER_ADDR'] == "192.168.56.12") or ($_SERVER['SERVER_ADDR'] == "192.168.56.13") )
 	$rescan_url = "library.linux-hardware-guide.com";
@@ -192,7 +195,9 @@ if (current_user_can('publish_posts') ) {
 	if ( ($_SERVER['SERVER_ADDR'] == "192.168.3.112") or ($_SERVER['SERVER_ADDR'] == "192.168.3.113") )
 	$rescan_url = "192.168.3.115";
 
-        if ($show_public_profile != 1) print '<br><a href="http://'.$rescan_url.'/rescan.php?sid='.$sid.'">Start rescan!</a><br>';
+        $editbox_top .= '<a href="http://'.$rescan_url.'/rescan.php?sid='.$sid.'">Start rescan!</a><br>';
+	#	}
+        #print "</div>";
 }
 
 #if ($show_public_profile != 1) print '<b>Thank you for using our Linux-Hardware-Guide scanning software</b> (see <a href="https://github.com/paralib5/lhg_scanner">GitHub</a> for more details).<br>
@@ -237,12 +242,21 @@ echo '
 
                 /*]]> */
                 </script>
-
-';
+	';
 }
 
-
 $uploader_guid = lhg_get_scan_uploader_guid( $sid );
+
+#
+#  Scan Overview table at top of scan page
+#
+echo '<table id="registration" class="scanoverview-table">';
+echo '  <tr id="header">';
+echo '    <td id="title-colhw">Scan Overview</td>';
+echo '    <td id="title-colhw"></td>';
+echo '  </tr>';
+
+
 
 if (
 	($show_public_profile == 1) or   
@@ -256,39 +270,17 @@ if (
 
 } else {
 
-
-#
-#  Scan Overview table at top of scan page
-#
-echo '<table id="registration" class="scanoverview-table">';
-echo '  <tr id="header">';
-echo '    <td id="title-colhw">Scan Overview</td>';
-echo '    <td id="title-colhw"></td>';
-echo '  </tr>';
-
-
-
-// <br>&nbsp;<br>
-//<h2>Contact information</h2>
-
-
-print '	 <tr>
-	   <td><div class="scan-overview-left-text">Email:</td>';
-
-print '
-<td id="hwscan-email-cell">
-Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:
-<form action="?" method="post" class="hwscan-email-form">
-       <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
-       <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
-</form>
-
-';
-
-print '   </td>
-        </tr>
-      ';
-
+	print '	 <tr>
+		   <td><div class="scan-overview-left-text">Email:</td>
+		   <td id="hwscan-email-cell">
+			Please leave us your email address in order to contact you in case of questions regarding your hardware scan results:
+			<form action="?" method="post" class="hwscan-email-form">
+			       <input name="email" id="email-input" type="text" size="30" maxlength="50" value="'.$email.'">
+			       <input type="submit" id="email-submit" name="email-login" value="'.$buttontext.'" class="hwscan-email-button-'.$buttontext.'" />
+			</form>
+		   </td>
+	        </tr>
+	      ';
 }
 
 echo '
@@ -490,7 +482,9 @@ echo '
                    //echo "
                    //     <td id=\"col4\">";
 
-                   echo '<form action="?" method="post" class="scanpage-change-status">';
+                   $editbox_top .= '<div>
+                   Change scan status:
+                   <form action="?" method="post" class="scanpage-change-status">';
 
                         $statusSelector = '<select id="scanpage-status-selector" class="scanpage-status-selector" name="status-'.$sid.'">';
 	                $statusSelector .= ( ($status == "new")or ($status == "duplicate"))? '<option value="new" selected>New</option>' : '<option value="new">New</option>';
@@ -499,13 +493,13 @@ echo '
 	                $statusSelector .= ($status == "feedback")? '<option value="feedback" selected>Feedback needed</option>' : '<option value="feedback">Feedback needed</option>';
         	        $statusSelector .= '</select>';
 
-                    echo $statusSelector;
-                    echo '<input type="submit" id="status-submit" name="status-submit" value="update" class="status-update-button" />
-			  </form>';
+                    $editbox_top .= $statusSelector;
+                    $editbox_top .= '<input type="submit" id="status-submit" name="status-submit" value="update" class="status-update-button" />
+			  </form></div>';
 
                     $uid = get_current_user_id();
                     if ($uid == "") $uid = 0;
-                    echo '
+                    $editbox_top .= '
 	                <script type="text/javascript">
         	        /* <![CDATA[ */
 
@@ -618,12 +612,11 @@ if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
 
 
 	print "
-        <tabe>
            <tr id='hwscan-designation-row'>
-             	<td><div class=\"scan-overview-left-text\">Scan Designation:</div></td>
+             	<td width='200px'><div class=\"scan-overview-left-text\">Scan Designation:</div></td>
              	<td id='hwscan-designation-cell'>";
 
-        lhg_scan_set_designation($sid);
+        lhg_scan_set_designation($sid, $show_public_profile);
 
 
         print "
@@ -663,16 +656,28 @@ if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
                 </tr>
                 ";
 
-        print "</table>";
+#        print "</table>";
 
 
 
 
 
 
-echo '	  </td>';
-echo '	</tr>';
+#echo '	  </td>';
+#echo '	</tr>';
 echo '</table>';
+
+#
+# Show editbox at top of page
+#
+if ($editmode == 1) {
+        print '<div class="hwscan-edit-box">';
+
+        print $editbox_top;
+
+        print '</div>';
+}
+
 
 
 # Add user feedback exchange
@@ -687,6 +692,7 @@ lhg_feedback_area( $sid );
 #
 
 if (count($identified_hw) > 0) {
+
 
 echo "<h2>".$txt_subscr_knownhw."</h2>";
 
@@ -1303,7 +1309,9 @@ if (count($unidentified_hw_pci) > 0) {
                 $mb_recognized = 1;
 		if (    ($clean_mb_name == "")
                      or ($clean_mb_name == " ") ){
-                	print "<h2>Mainboard not recognized. Please provide name</h2>";
+
+                     	if ($show_public_profile != 1) print "<h2>Mainboard not recognized. Please provide name</h2>";
+                     	if ($show_public_profile == 1) print "<h2>Mainboard not recognized. </h2>";
                         $mb_recognized = 0;
                 }else{
 			print "<h2>".$txt_subscr_new." ".$mb_or_laptop.": ".$clean_mb_name."</h2>";
@@ -2480,6 +2488,11 @@ print '
 
                 </tr>';
 
+		# skip the rest if this is the public hw overview
+		if ($show_public_profile == 1) {
+		        print "</table>";
+		        continue;
+		}
 
 
 $buttontype = "green";
