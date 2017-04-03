@@ -199,12 +199,17 @@ function lhg_scan_set_asin ( $_id, $_newPostID, $_scantype, $_sid ) {
 }
 
 
-function lhg_scan_set_designation ( $_sid ) {
+function lhg_scan_set_designation ( $_sid, $_show_public_profile ) {
 
 
         // get stored designation
 
         $old_designation = lhg_scan_overview_get_scan_designation( $_sid );
+
+        if ($_show_public_profile == 1) {
+        	print "$old_designation<br>";
+                return;
+	}
 
 
         print '<div class="hwscan-designation-setting">Rename your scan for easier tracking (optional)</div>';
