@@ -2704,7 +2704,6 @@ tr#quarterly-points-header-row {
 	width: 207px;
 	background: none !important;
         padding: 0px !important;
-        float:left;
         border: 0px !important;
 }
 
@@ -2994,4 +2993,10 @@ tr#quarterly-points-header-row {
 
 .hwscan-designation-button {
 	margin-left: 3px;
+}
+
+.hwscan-edit-box {
+	border: 3px solid #aabcf0;
+	background: #ece598;
+        padding: 6px;
 }
