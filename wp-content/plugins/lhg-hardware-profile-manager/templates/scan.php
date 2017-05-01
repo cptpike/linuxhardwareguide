@@ -153,7 +153,8 @@ $myquery = $lhg_price_db->prepare("SELECT id, postid FROM `lhghwscans` WHERE sid
 $identified_hw = $lhg_price_db->get_results($myquery);
 #var_dump( $identified_hw );
 
-$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype , product_name FROM `lhghwscans` WHERE sid = %s AND postid = 0 AND pciid = ''", $sid);
+$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype , product_name FROM `lhghwscans` WHERE sid = %s AND postid = 0 ", $sid);
+#$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype , product_name FROM `lhghwscans` WHERE sid = %s AND postid = 0 AND pciid = ''", $sid);
 #$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 $unidentified_hw = $lhg_price_db->get_results($myquery);
 #var_dump( $unidentified_hw );
@@ -162,6 +163,10 @@ $myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , u
 #$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 $unidentified_hw_pci = $lhg_price_db->get_results($myquery);
 #var_dump( $unidentified_hw_pci );
+
+$myquery = $lhg_price_db->prepare("SELECT id, postid, usbid, pciid, idstring , usercomment , url , scantype , product_name FROM `lhghwscans` WHERE sid = %s AND postid = 0 AND usbid <> ''", $sid);
+#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
+$unidentified_hw_usb = $lhg_price_db->get_results($myquery);
 
 
 
@@ -383,56 +388,6 @@ echo '
         $wpuid_com = $user->wpuid;
 
 
-
-#	echo "<h2>".$txt_subscr_scanoverview.":</h2>";
-
-                #get and check session ID
-                #echo "Session ID: $sid <br>";
-
-
-/*
-                echo '<table id="registration" class="scanoverview-table">';
-                echo '<tr id="header">
-
-
-                <td id="title-colhw">Scan Overview</td>
-                <td> </td>
-
-
-                ';
-
-
-                #if ($userknown == 1)
-                #echo '<td id="hwscan-col3" width="13%"><nobr>Add HW to your profile</nobr></td>';
-
-        if ($uploader_guid != "") {
-                echo '<td id="hwscan-col2" width="8%">';
-                echo $txt_username.'</td>';
-        } 
-
-                echo '<td id="hwscan-col2" width="8%">Status</td>';
-                echo '
-                <td id="hwscan-col2" width="25%">'.$txt_scan_distribution.'</td>
-                <td id="hwscan-col2" width="20%">'.$txt_subscr_kernelversion.'</td>
-                <td id="hwscan-col2" width="13%">'.$txt_subscr_hwcomp.'</td>
-
-
-                </tr>';
-
-        echo "<tr id=\"regcont\">";
-
-        echo "
-        	<td id=\"col-hw\">
-
-                        ".'<div class="scan-overview-distri-logo"><img src="'.$logo.'" width="40" ></div>
-
-                        <div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">&nbsp;'.$scandate_txt.' </div></div>';
-
-
-	print                       " </td>";
-*/
-
-
         if ($uploader_guid != "") {
                 $user_output="";
 
@@ -453,12 +408,6 @@ echo '
 		if ( ($lang != "de") && ($user->wpuid != 0) ) $user_output .= '</a>';
 		$user_output .='          </div></div>';
 
-/*
-	        echo "
-                        <td id=\"col-hw\">
-			".$user_output."
-                        </td>";
-*/
         } else {
                 # nothing shown if user unknown
         }
@@ -656,16 +605,8 @@ if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
                 </tr>
                 ";
 
-#        print "</table>";
-
-
-
-
-
-
-#echo '	  </td>';
-#echo '	</tr>';
 echo '</table>';
+
 
 #
 # Show editbox at top of page
@@ -1158,6 +1099,8 @@ if (count($multi_identified_hw) > 0) {
 			$title_part2=str_replace(")","",trim($s[1]));
                         if (strlen($title_part2) > 1) $title_part2 .= "<br>";
 
+                        print "<br>TODO: Get title stored by user (mb_usertitle)<br>";
+
                         $img_attr = array(
 					#'src'	=> $src,
 					'class'	=> "hwscan-image image55",
@@ -1290,6 +1233,7 @@ print                       " </td>";
 #
 #
 
+
 if (count($unidentified_hw_pci) > 0) {
 
 
@@ -1319,8 +1263,11 @@ if (count($unidentified_hw_pci) > 0) {
 
 
 	        #print '<div id="mbname">Identified name: '.$clean_mb_name."<span id='details-mb' class='details-link'></span></div>";
-	        if ($show_public_profile != 1)
-		        print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
+
+
+
+	        #if ($show_public_profile != 1)
+		#        print '<div id="hidden-details-mb">Full identifier: '.$mb_name.'</div>';
 
 
 		$mb_usercomment = lhg_get_mb_usercomment($sid);
@@ -1330,7 +1277,7 @@ if (count($unidentified_hw_pci) > 0) {
 		if ($mb_usercomment != "") $buttontype = "light";
 		if ($mb_usercomment != "") $buttontext = "Update";
 
-	        $newPostID_mb = lhg_create_mainboard_article($mb_name, $sid);
+	        $newPostID_mb = lhg_create_mainboard_article( $mb_name, $sid, "mb" );
 
 	        // creating rating stars
 		ob_start();
@@ -1346,7 +1293,39 @@ if (count($unidentified_hw_pci) > 0) {
 
 
 		if ($show_public_profile != 1) {
-			echo ' <form action="?" method="post" class="mb-usercomment">
+
+
+	                #
+        	        # Select Laptop / Mainboard
+                	#
+
+                        print '<form action="?" method="post" class="mb-usercomment">';
+
+			print "
+			<div class='scan-select-laptop'>
+				The scanned system is a
+				<select>
+					<option>Laptop</option>
+					<option>Mainboard</option>
+					<option>Other</option>
+				</select>       
+			</div>
+			";
+
+                        # mainboards are no object of the scan results, therefore id=0 is used as placeholder
+                         $id = 0;
+
+
+                        print '
+                        <div class="hwscan-designation-name">Hardware name:</div>
+                                <input id="hwtext-input-title-mb" name="postid-'.$newPostID_mb.'" value="'.$title.'" size="40" type="text"></input>
+                        ';
+
+                        lhg_scan_tag_selector ( $id, $newPostID_mb, "mainboard", $sid );
+                        lhg_scan_set_asin ( $id, $newPostID_mb, "mainboard", $sid );
+
+			echo '
+                        <br>
 		       Please rate the '.$mb_or_laptop.': '.$article_created.'';
 
 		       if ($mb_recongized == 1) echo 'Let us know if the '.$mb_or_laptop.' was recognized incorrectly and how it is supported under Linux:<br>';
@@ -1359,9 +1338,6 @@ if (count($unidentified_hw_pci) > 0) {
 		       <input type="submit" id="mb-submit" name="email-login" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />';
                        }
 
-	       if (current_user_can('publish_posts') && ($show_public_profile != 1) && ($editmode == 1) ) {
-        	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit&scansid='.$sid.'">finalize article</a>)';
-	       }
 
 	       print '</form>';
 	}else{
@@ -1432,8 +1408,14 @@ print           '<script type="text/javascript">
 	} // end create MB article
 
 
+        #
+        # Show PCI components
+        #
+        lhg_pci_selector_jquery($sid);
+
+        #print "<br>PCI components:";
         print "<table id='mainboard-scan-table'>
-                 <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>".$txt_subscr_foundhwid."</td><td class='pciid-column'>PCI ID</td></tr>";
+                 <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>".$txt_subscr_foundhwid." PCI</td><td class='pciid-column'>PCI ID</td></tr>";
 
         # list of IDs that should be hidden in overview
         $hidearray = array();
@@ -1513,7 +1495,7 @@ print           '<script type="text/javascript">
                           </fieldset>
                         </td>
                         <td><div class="pci-title"><b>'.$short_pci_title.'</b><span id="show-details-hw-'.$id.'"></span></div>
-                           <div class="pci-feedback" id="pci-feedback-'.$id.'">
+                           <!-- div class="pci-feedback" id="pci-feedback-'.$id.'">
                               <div id="details-hw-'.$id.'">Full identifier: '.$title.'</div>
 
 			       <div id="updatearea-old-'.$id.'">
@@ -1524,7 +1506,7 @@ print           '<script type="text/javascript">
        				<input id="url-'.$id.'" name="url-'.$id.'" type="text" value="'.$url.'" size="40" maxlenght="290">
        				<input id="postid-'.$id.'" name="postid-'.$id.'" type="hidden" value="'.$newPostID.'">
 			       </div>
-       			       <br><input type="submit" name="scan-comments-'.$id.'" id="scan-comments-'.$id.'" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" />';
+       			       <br><input type="submit" name="scan-comments-'.$id.'" id="scan-comments-'.$id.'" value="'.$buttontext.'" class="hwscan-comment-button-'.$buttontype.'" / -->';
 	} else {
                 print '
                         <td class="pci-column-onboard pci-column-onboard-radiob">';
@@ -1537,9 +1519,9 @@ print           '<script type="text/javascript">
        }
 
 
-	       if (current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-        	   print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_pci.'&action=edit&scansid='.$sid.'">finalize article</a>)';
-	       }
+	       //if (current_user_can('publish_posts') && ($show_public_profile != 1) ) {
+               //    print '&nbsp;&nbsp;&nbsp;(<a href="/wp-admin/post.php?post='.$newPostID_pci.'&action=edit&scansid='.$sid.'">finalize article</a>)';
+	       //}
 
                print '
                            </div>
@@ -1549,14 +1531,102 @@ print           '<script type="text/javascript">
                         </tr>';
         }
         print "</table>";
-        print '<div id="mainboard-show-more"></div>';
+        //print '<div id="mainboard-show-more"></div>';
+
+
+
+        #
+        # List all USB components
+        #
+        lhg_usb_selector_jquery($sid);
+        #print "<br>USB components:";
+        print "<table id='mainboard-scan-table'>
+                 <tr id='mainboard-header'><td class='pci-column-onboard'>On-board?</td><td>".$txt_subscr_foundhwid." USB</td><td class='pci-column'>USB ID</td></tr>";
+        foreach($unidentified_hw_usb as $a_identified_hw){
+
+                #error_log("Num: ".count($unidentified_hw_pci));
+
+        	$skip = 0;
+                #List UN-identified hw components
+		$title = ($a_identified_hw->idstring);
+		$usbid = ($a_identified_hw->usbid);
+		$pciid = ($a_identified_hw->pciid);
+                $art_image=get_the_post_thumbnail( $a_identified_hw->postid, array(55,55) );
+                $comment=( $a_identified_hw->usercomment );
+                $url=( $a_identified_hw->url );
+                $id=( $a_identified_hw->id );
+                $scantype=( $a_identified_hw->scantype );
+
+                $default_n = 'checked="checked"';
+                $default_y = "";
+                $buttontype = "green";
+		$buttontext = $txt_submit; #"Submit";
+                $showme = lhg_show_scanned_component( $title , $id, $pciid );
+                $short_pci_title = lhg_clean_pci_title( $title );
+                $is_onboard = lhg_pci_component_is_onboard( $title, $sid, $id, $pciid);
+
+                print '
+                	<tr '.$tr_class.'>';
+
+                print '
+                      <form action="?" method="post" class="hwcomments">
+                        <td class="pci-column-onboard pci-column-onboard-radiob">';
+
+                #if ($default_y != "") print $txt_yes;
+                #if ($default_n != "") print $txt_no;
+
+                print '
+                          <fieldset>
+                             '.$txt_yes.' <input type="radio" id="usb-radio-y-'.$id.'" name="on-board" value="y" '.$default_y.' />
+                             <input type="radio" id="usb-radio-n-'.$id.'" name="on-board" value="n" '.$default_n.' /> '.$txt_no.'
+                          </fieldset>
+                          ';
+
+                print '
+                        </td>
+                        </form>
+
+                        <td><div class="pci-title"><b>'.$title.'</b><span id="show-details-hw-'.$id.'"></span></div>';
+                print '</td>';
+
+                print '<td>';
+                print $usbid;
+                print '</td>';
+
+        }
+        print "</table>";
+
+        #
+        # Editbox Mainboard/Laptop
+        #
+
+	if ($editmode == 1) {
+                lhg_editor_tools_mainboard_jquery( $sid );
+
+        	$editbox_top = "Editor Tools Mainboard:<br>";
+
+		#if (current_user_can('publish_posts') ) {
+                #$editbox_top .= "finalize article";
+        	$editbox_top .= '&nbsp;&nbsp;&nbsp;<a href="./" id="publish-mb-'.$id.'">publish article</a>';
+        	$editbox_top .= '&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit&scansid='.$sid.'">edit article</a>';
+
+                print '<div class="hwscan-edit-box">';
+	        print $editbox_top;
+	        print '</div>';
+
+
+        }
+
+
+	lhg_mainboard_jquery($sid);
+
 
 	# not needed any longer due to pci backend selector
         #if (current_user_can('publish_posts') && ($show_public_profile != 1) ) {
         #	   print '&nbsp;&nbsp;&nbsp;(<a href id="update-pcilist">Update PCI lists</a>)';
         #}
 
-        if ($show_public_profile != 1)  {
+        if (1 == 2)  {
 	echo '
                 <script type="text/javascript">
                 /* <![CDATA[ */
@@ -1648,6 +1718,8 @@ print           '<script type="text/javascript">
                                 	if ($(this).is(":checked")) {
 	                                    //$("#updatearea-"+id).hide();
 	                                    $("#pci-feedback-"+id).hide();
+	                                    $("#registration-"+id).hide();
+
         	                            //$("#scan-comments-"+id).hide();
                 	                }
 
@@ -1900,57 +1972,6 @@ print "<h2>".$txt_subscr_newhw."</h2>";
 
                                 	//$(box).append("Debug: "+asinURL);
 
-
-
-	                                //load & show server output
-        	                        $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
-                                        //
-        	                                //Debug:
-                	                        //$(box).append("Response: <br>IMG: "+imageurl+" <br>text: "+responsetext);
-                                        //
-                        	        });
-
-	                                //prevent default behavior
-        	                        return false;
-
-                                });
-
-                                //
-                                // store tags provided by user
-                                //
-
-                                $(\'[name^="scan-comments-"]\').click(function(){
-
-                                	var button = this;
-                                	var id = $(button).attr(\'name\').substring(14);
-                                	var boxname = "#updatearea-".concat(id);
-                                	var urlinput = "#url-".concat(id);
-                                	var loadname = "button-load-".concat(id);
-                                	var postidname = "#postid-".concat(id);
-                                	var postid = $(postidname).val();
-                                	var box = $(boxname);
-
-	                                // "we are processing" indication
-        	                        //var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
-                	                //indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
-
-                        	        //$(box).css(\'background-color\',\'#dddddd\');
-                                	//$(button).after(indicator_html);
-
-
-	                                //prepare Ajax data:
-        	                        var session = "'.$sid.'";
-                	                var tags = $("#tag-select-box-"+id).val();
-                        	        var data ={
-                                	        action: \'lhg_scan_update_tags_ajax\',
-                                        	id: id,
-	                                        session: session,
-        	                                postid: postid,
-                	                        tags: tags
-                        	        };
-
-
-                                	//$(box).append("Debug: "+asinURL);
 
 
 	                                //load & show server output
@@ -2335,6 +2356,8 @@ print "<h2>".$txt_subscr_newhw."</h2>";
                 /*]]> */
                 </script>';
 
+lhg_scan_set_tags_jquery( $sid );
+
 
 print '
 <!-- Add an optional button to open the popup -->
@@ -2465,7 +2488,12 @@ print '
                               $ID_title = "Drive";
 	        }
 
-                echo '<table id="registration">';
+
+                #$idextension = "none";
+                #if ($usbid != "") $idextension = $usbid;
+                #if ($pciid != "") $idextension = $pciid;
+
+                echo '<table id="registration-'.$id.'">';
                 echo '<tr id="header">
 
 
@@ -2610,11 +2638,30 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
                 #AJAX Work-in-progress indication box
                 print '<div id="updatearea-'.$id.'">';
 
-
                 print '   <div class="subscribe-hwtext-span">
-                        	<!-- div id="hwtext-title-'.$id.'" name="postid-'.$newPostID.'">'.$title.'</div -->
+                        	<!-- div id="hwtext-title-'.$id.'" name="postid-'.$newPostID.'">'.$title.'</div -->';
+
+                //
+                // On board?
+                //
+
+                #if ($scantype == "usb") {
+                #        print '<div class="hwscan-designation-name">On-board?</div>';
+                #        print '
+                #        	<fieldset>'
+                #                  .$txt_yes.'
+                #                  <input type="radio" id="radio-y-'.$id.'" name="on-board" value="y" '.$default_y.' />
+                #             	  <input type="radio" id="radio-n-'.$id.'" name="on-board" value="n" '.$default_n.' /> '
+                #                  .$txt_no.'
+                #          	</fieldset>';
+	        #}
 
 
+
+                //
+                // Hardware name
+                //
+                        print '
                         <div class="hwscan-designation-name">Hardware name:</div>
                                 <input id="hwtext-input-title-'.$id.'" name="postid-'.$newPostID.'" value="'.$title.'" size="40" type="text"></input>
                         ';
@@ -2629,13 +2676,13 @@ if ( ($usbid != "") && ($scantype != "mainboard") ){
                 //
                 // Tag selector
                 //
-                lhg_scan_tag_selector($id, $newPostID, $scantype);
+                lhg_scan_tag_selector( $id, $newPostID, $scantype, $sid );
 
 
                 //
                 // Category selector
                 //
-                lhg_scan_category_selector($id, $newPostID, $scantype);
+                lhg_scan_category_selector( $id, $newPostID, $scantype );
 
                 //if ( ($scantype == "cpu") or ($scantype == "usb") or ($scantype == "drive") ) {
                 //	#print '   <div id="details-hw-'.$id.'" class="details">Full identifier: '.$otitle.'
@@ -2685,11 +2732,9 @@ if ($show_public_profile != 1){
 	print '<br>
        <textarea id="comment-'.$id.'" name="comment-'.$id.'" cols="10" rows="3">'.lhg_clean_scan_comment($comment).'</textarea>';
 
-       if ($editmode == 1) {
+       #if ($editmode == 1) {
         #processingoptions for user comments
-       	 print '<div class="scan-commentoptions"><a href="#" id="transform-to-comment-'.$id.'" name="postid-'.$newPostID.'">transform to public comment</a><br>
-         	<a href="#" id="add-comment-'.$id.'" name="postid-'.$newPostID.'">add comment to article</a></div>';
-       }
+       #}
 
        print '<br>';
 
@@ -2732,10 +2777,10 @@ print '
                           <span class='subscribe-column-2'>";
                             // USB Device: $usbid";
 
-                            if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
-                                print '<br>Rating: '.lhg_get_rating_value($newPostID);
-	                    }
+                            #if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
+                            #    print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
+                            #    print '<br>Rating: '.lhg_get_rating_value($newPostID);
+	                    #}
                         echo "
                           </span>
                         </td>";
@@ -2757,11 +2802,11 @@ print '
                           <span class='subscribe-column-2'>";
                             // CPU";
 
-                            if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
-                                print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
-                                print '<br>Rating: '.lhg_get_rating_value($newPostID);
-	                    }
+                            #if ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
+                            #    print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
+                            #    print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
+                            #    print '<br>Rating: '.lhg_get_rating_value($newPostID);
+	                    #}
                          echo "
                           </span>
                         </td>";
@@ -2776,11 +2821,11 @@ print '
                             <span class='subscribe-column-2'>";
                               //Drive";
 
-                              if  ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
-                                print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
-                                print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
-                                print '<br>Rating: '.lhg_get_rating_value($newPostID);
-	                      }
+                              #if  ( current_user_can('publish_posts') && ($show_public_profile != 1) ) {
+                              #  print '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
+                              #  print '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
+                              #  print '<br>Rating: '.lhg_get_rating_value($newPostID);
+	                      #}
 
                           echo "
                             </span>
@@ -2810,6 +2855,31 @@ print '
 
 
                         echo "</tr>\n";
+
+
+        # editbox for articles
+	if ($editmode == 1) {
+        	$editbox_top = "Editor Tools:<br>";
+
+		#if (current_user_can('publish_posts') ) {
+                #$editbox_top .= "finalize article";
+        	#$editbox_top .= '&nbsp;&nbsp;&nbsp;<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit&scansid='.$sid.'">finalize article</a>';
+
+                $editbox_top .= '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
+                $editbox_top .= '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
+                $editbox_top .= '<br><div class="scan-commentoptions"><a href="#" id="transform-to-comment-'.$id.'" name="postid-'.$newPostID.'">transform to public comment</a>';
+         	$editbox_top .= '<br><a href="#" id="add-comment-'.$id.'" name="postid-'.$newPostID.'">add comment to article</a></div>';
+                $editbox_top .= '<br>User rating: '.lhg_get_rating_value($newPostID);
+
+
+                print '<tr><td><div class="hwscan-edit-box">';
+	        print $editbox_top;
+	        print '</div></td></tr>';
+
+
+        }
+
+
 
                         echo "</table>";
 
