@@ -438,7 +438,8 @@ function cp_getAllQuarterlyPoints_transverse( $startdate, $enddate ){
         #print "<br>ID: <br>";
         #var_dump($founduser_uid);
 
-        array_multisort($founduser_points, SORT_DESC, SORT_NUMERIC, $founduser_guid);
+        if ( $founduser_points != "" )
+        array_multisort( $founduser_points, SORT_DESC, SORT_NUMERIC, $founduser_guid );
 
         #print "<br>USERP sorted: <br>";
         #var_dump($founduser_points);
