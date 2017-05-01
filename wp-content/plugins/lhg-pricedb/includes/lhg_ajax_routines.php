@@ -73,6 +73,14 @@ add_action('wp_ajax_nopriv_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_aja
 add_action('wp_ajax_lhg_scan_update_designation_ajax', 'lhg_scan_update_designation_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_designation_ajax', 'lhg_scan_update_designation_ajax');
 
+# publish mainboard article
+add_action('wp_ajax_lhg_scan_publish_mb_article_ajax', 'lhg_scan_publish_mb_article_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_publish_mb_article_ajax', 'lhg_scan_publish_mb_article_ajax');
+
+# change mainboard title
+add_action('wp_ajax_lhg_scan_update_mb_title_ajax', 'lhg_scan_update_mb_title_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_mb_title_ajax', 'lhg_scan_update_mb_title_ajax');
+
 # AJAX funcitonalities
 
 # create a new mainboard article. Return the post id.
@@ -656,9 +664,16 @@ function lhg_scan_update_tags_ajax() {
 
 	global $lhg_price_db;
 
-	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usertags_ids = %s WHERE id = %s ", $tagstring, $id);
-	$result = $lhg_price_db->query($myquery);
+        #error_log("tags ajax: $id $pid $session $tagstring");
 
+        if ($id == "mb") {
+                # store mainboard data
+		$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET mb_usertags_ids = %s WHERE sid = %s ", $tagstring, $session );
+		$result = $lhg_price_db->query($myquery);
+	}else{
+		$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usertags_ids = %s WHERE id = %s ", $tagstring, $id);
+		$result = $lhg_price_db->query($myquery);
+        }
         exit();
 }
 
@@ -699,7 +714,7 @@ function lhg_scan_update_asin_ajax() {
         $asin 	    = $_REQUEST['asin'] ;
 	$key = "amazon-product-single-asin";
 
-        #error_log("Update ASIN: $pid, $id, $session, $asin");
+        #error_log("Update ASIN -> PID $pid, ID $id, Session: $session, ASIN: $asin");
         #error_log("Before stored value($pid) = ".get_post_meta($pid, $key, TRUE));
 
         if ($asin == "") exit();
@@ -708,10 +723,10 @@ function lhg_scan_update_asin_ajax() {
   	$value = $asin;
 	if( metadata_exists('post', $pid, $key) ) { //if the custom field already has a value
   		update_post_meta($pid, $key, $value);
-                #error_log( "Updated ASIN ($pid) to $value");
+                #error_log( "Updated ASIN (PID $pid) to $value");
 	} else { //if the custom field doesn't have a value
   		add_post_meta($pid, $key, $value);
-                #error_log("Added ASIN: $value");
+                #error_log("Added ASIN: (PID $pid) to $value");
 	}
 
         #error_log("Stored value($pid) = ".get_post_meta($pid, $key, TRUE)." == $asin ?");
@@ -735,6 +750,50 @@ function lhg_scan_update_designation_ajax() {
         exit();
 }
 
+function lhg_scan_publish_mb_article_ajax() {
+
+	$sid         = $_REQUEST['sid'] ;
+	$id	     = $_REQUEST['id'] ;
+	$idarray_pci = $_REQUEST['idarray_pci'] ;
+	$idarray_usb = $_REQUEST['idarray_usb'] ;
+
+        $idstring_pci = "";
+        if ($idarray_pci != "")
+        foreach ($idarray_pci as $idx)  {
+                if ( $idstring_pci != "" ) $idstring_pci .= $idstring.",$idx";
+                if ( $idstring_pci == "" ) $idstring_pci = $idx;
+        }
+
+        $idstring_usb = "";
+        if ($idarray_usb != "")
+        foreach ($idarray_usb as $idx)  {
+                if ( $idstring_usb != "" ) $idstring_usb .= $idstring.",$idx";
+                if ( $idstring_usb == "" ) $idstring_usb = $idx;
+        }
+
+
+        #error_log("AJAX: SID: $sid -- ID: $id -- ALL_PCI: $idstring_pci -- ALL_USB: $idstring_usb");
+
+        exit();
+}
+
+# update mainboard designation
+function lhg_scan_update_mb_title_ajax() {
+
+	$sid         = $_REQUEST['session'] ;
+	$designation = $_REQUEST['title'] ;
+
+        error_log("Update MB title: $designation");
+
+        if ($designation == "") exit();
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET mb_usertitle = %s WHERE sid = %s ", $designation, $sid);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
 
 
 ?>
