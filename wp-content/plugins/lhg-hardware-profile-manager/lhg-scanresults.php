@@ -1,13 +1,28 @@
 <?php
 
-function lhg_scan_tag_selector ( $_id, $_newPostID, $scantype ) {
+function lhg_scan_tag_selector ( $_id, $_newPostID, $_scantype, $_sid ) {
+
+
 
 	$tags = get_tags(array('get'=>'all'));
         #var_dump($tags);
 
         # check if user defined tags exist
-        $usertags = lhg_scan_overview_get_user_tags($_id);
-        $all_tagids = split(",", $usertags);
+	if ( $_scantype == "mainboard" ) {
+        	$_id = "mb";
+	} else {
+
+        }
+
+        #error_log("Tag selector: $_id $_sid");
+        #error_log( "ID: $_id Type: $_scantype" );
+
+        $usertags = lhg_scan_overview_get_user_tags( $_id, $_sid );
+
+        #error_log( "tags: $usertags" );
+
+	$all_tagids = split( ",", $usertags );
+        #var_dump($all_tagids);
 
 
         if ($usertags == "") {
@@ -25,7 +40,7 @@ function lhg_scan_tag_selector ( $_id, $_newPostID, $scantype ) {
 
 
         	#error_log("Post Title: ".get_the_title( $_newPostID ));
-	        #error_log("Title tags: ".
+	        #error_log("Scan: ".§scantype." ID: ". $_id);
         	#var_dump($title_tagids);
 
 	        foreach ($title_tagids as $title_tagid)  {
@@ -40,16 +55,21 @@ function lhg_scan_tag_selector ( $_id, $_newPostID, $scantype ) {
         <select id="tag-select-box-'.$_id.'" data-placeholder="Select hardware tags" multiple class="chosen-select" style="width: 80%;">';
 
         foreach ($tags as $tag){
-                $article_tag = 0;
-                #error_log("checking $tag->id");
-                if ( in_array($tag->term_id, $all_tagids) ) {
-                	$article_tag = 1;
-                        #print "Found $tag->name<br>";
-		}
 
-                print '<option value="'.$tag->term_id.'"';
-                if ($article_tag == 1) print ' selected';
-                print '>'.$tag->name.'</option>';
+                #if ($tag->term_id == 482) error_log("ID: $_id TagID: 482");
+
+                #if ($tag != ""){
+                	$article_tag = 0;
+                	#if ($_id == "mb") error_log("checking $tag->term_id");
+                	if ( in_array($tag->term_id, $all_tagids) ) {
+                		$article_tag = 1;
+	                        #if ($_id == "mb") print "Found $tag->name<br>";
+			}
+
+                	print '<option value="'.$tag->term_id.'"';
+                	if ($article_tag == 1) print ' selected';
+	                print '>'.$tag->name.'</option>';
+ 	       #}
 	}
 
  	print '
@@ -124,13 +144,18 @@ function lhg_scan_set_asin ( $_id, $_newPostID, $_scantype, $_sid ) {
 
 	#error_log("ASIN? $_newPostID $key --- ".get_post_meta($_newPostID, $key, TRUE) );
 
-        if( get_post_meta($_newPostID, $key, TRUE) ) { //if the custom field already has a value
-  		$old_asin = get_post_meta($_newPostID, $key, TRUE);
-        	#error_log("Stored ASIN: $old_asin");
+        if( get_post_meta( $_newPostID, $key, TRUE ) ) { //if the custom field already has a value
+  		$old_asin = get_post_meta( $_newPostID, $key, TRUE );
+        	#error_log( "Stored Type: $_scantype ASIN: $old_asin PID: $_newPostID" );
+	}
 
-	} 
-
-
+        # set standard ID for mainboards (no dediacted id available)
+        if ($_scantype == "mainboard") {
+        	$_id = "mb";
+                $test = get_post_meta( $_newPostID, $key );
+                #var_dump($test);
+        	#error_log( "Stored ASIN: ".get_post_meta( $_newPostID, $key, TRUE )." == $old_asin PID: <$_newPostID>" );
+        }
 
         print '<br><div class="hwscan-asin-setting">Set Amazon.com ID (ASIN). Format: B0xxxxxxxx:</div>';
         print '<input id="hwtext-input-asin-'.$_id.'" name="postid-'.$_newPostID.'" value="'.$old_asin.'" size="15" type="text"></input>';
@@ -140,61 +165,7 @@ function lhg_scan_set_asin ( $_id, $_newPostID, $_scantype, $_sid ) {
 
 
         // JQuery code to update ASIN
-	print '
-
-<script type="text/javascript">
-/* <![CDATA[ */
-
-
-	jQuery(document).ready( function($) {
-
-        	// submit button pressed
-		$(\'[name^="scan-comments-"]\').click(function(){
-
-        		var button = this;
-		        var id = $(button).attr(\'name\').substring(14);
-        		var boxname = "#updatearea-".concat(id);
-                	var urlinput = "#url-".concat(id);
-	                var loadname = "button-load-".concat(id);
-        	        var postidname = "#postid-".concat(id);
-	        	var postid = $(postidname).val();
-	        	var asin = $("#hwtext-input-asin-"+id).val();
-        	        var box = $(boxname);
-
-                	// "we are processing" indication
-	                //var indicator_html = \'<img class="scan-load-button" id="button-load-\'.concat(id);
-		        //indicator_html = indicator_html.concat(\'" src="/wp-uploads/2015/11/loading-circle.gif">\');
-
-	                //$(box).css(\'background-color\',\'#dddddd\');
-        	        //$(button).after(indicator_html);
-
-
-	                //prepare Ajax data:
-		        var session = "'.$_sid.'";
-                	var data ={
-                		action: \'lhg_scan_update_asin_ajax\',
-	                        id: id,
-		                session: session,
-                		postid: postid,
-                        	asin: asin,
-		        };
-
-                        // send AJAX request
-	                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
-	        	        var return_comment     = $(response).find("supplemental return_comment").text();
-	                });
-
-        		return false;
-
-	        });
-
-        });
-
-
-
-/*]]> */
-</script>
-';
+	lhg_scan_set_asin_jquery ( $_sid );
 
 }
 
@@ -218,63 +189,12 @@ function lhg_scan_set_designation ( $_sid, $_show_public_profile ) {
 
         // ToDo: add auto selector
 
+        lhg_scan_set_designation_jquery( $_sid );
 
-
-        // JQuery code to update designation
-
-print '
-
-<script type="text/javascript">
-/* <![CDATA[ */
-
-	jQuery(document).ready( function($) {
-
-        	// submit button pressed
-		$(\'[name^="hwscan-designation-button"]\').click(function(){
-
-        		var button = this;
-                	var input = $("#hwtext-input-scan-designation").val();
-        	        var box = $("#hwscan-designation-cell");
-
-                	// "we are processing" indication
-	                var indicator_html = \'<img class="scan-load-button" id="button-load-designation" src="/wp-uploads/2015/11/loading-circle.gif">\';
-
-	                $(box).css(\'background-color\',\'#dddddd\');
-        	        $(button).after(indicator_html);
-
-
-	                //prepare Ajax data:
-		        var sid = "'.$_sid.'";
-                	var data ={
-                		action: \'lhg_scan_update_designation_ajax\',
-	                        sid: sid,
-		                input: input,
-		        };
-
-                        // send AJAX request
-	                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
-	        	        var return_comment     = $(response).find("supplemental return_comment").text();
-
-                                $(box).css(\'background-color\',\'#ffffff\');
-        	        	$("#button-load-designation").remove();
-
-	                });
-
-
-
-        		return false;
-
-	        });
-
-        });
-
-
-
-/*]]> */
-</script>
-';
 
 }
+
+
 
 
 function lhg_scan_overview_get_user_title($_id) {
@@ -297,12 +217,19 @@ function lhg_scan_overview_get_user_categories($_id) {
         return $usercategories;
 }
 
-function lhg_scan_overview_get_user_tags($_id) {
+function lhg_scan_overview_get_user_tags( $_id, $_sid ) {
 
 	global $lhg_price_db;
 
-	$myquery = $lhg_price_db->prepare("SELECT usertags_ids FROM `lhghwscans` WHERE id = %s", $_id);
-	$usertags = $lhg_price_db->get_var($myquery);
+        if ( $_id == "mb" ) {
+                # mainboard tags needed
+		$myquery = $lhg_price_db->prepare("SELECT mb_usertags_ids FROM `lhgscansessions` WHERE sid = %s", $_sid);
+		$usertags = $lhg_price_db->get_var($myquery);
+	        #error_log( "ID $_id SID: $_sid Tags: $usertags" );
+ 	}else{
+		$myquery = $lhg_price_db->prepare("SELECT usertags_ids FROM `lhghwscans` WHERE id = %s", $_id);
+		$usertags = $lhg_price_db->get_var($myquery);
+        }
 
         return $usertags;
 }
