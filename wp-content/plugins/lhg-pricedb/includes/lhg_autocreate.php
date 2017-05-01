@@ -417,6 +417,8 @@ $article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" versi
   # set Amazon ID
   $key = "amazon-product-single-asin";
   $value = $amzid;
+
+  if ($amzid != "")
   if(get_post_meta($newPostID, $key, FALSE)) { //if the custom field already has a value
   	update_post_meta($newPostID, $key, $value);
   } else { //if the custom field doesn't have a value
@@ -1928,6 +1930,7 @@ function lhg_clean_mainboard_name ( $title  ) {
 
 
         # make title beautiful
+        $title = str_replace("PIONEER","Pioneer", $title);
         $title = str_replace("ZOTAC","Zotac", $title);
         $title = str_replace("FUJITSU","Fujitsu", $title);
         $title = str_replace("SAMSUNG ELECTRONICS CO., LTD.","Samsung", $title);
