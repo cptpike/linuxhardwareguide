@@ -334,6 +334,7 @@ function lhg_return_donation_targets() {
         list($donation_target_sums, $donation_target_users)  = lhg_return_donation_results(false, false);
 
         $j=0;
+        if ($donation_target_sums != "")
         foreach ($donation_target_sums as $key => $points){
 
                 $donation_targets[$j] = $donation[$key]["Name"];
@@ -379,7 +380,8 @@ function lhg_return_donation_results($startdate, $enddate) {
         #print "<br>";
 
         $i=0;
-	foreach($list_guid as $guid){
+        if ($list_guid != "")
+        foreach($list_guid as $guid){
                 # Skip anonymously submitted posts
                 if ($uid != 12378){
 
