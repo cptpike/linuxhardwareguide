@@ -1246,8 +1246,17 @@ if (count($unidentified_hw_pci) > 0) {
         	if ($laptop_prob > 0.8) $mb_or_laptop = "Laptop";
 	        if ($laptop_prob <= 0.8) $mb_or_laptop = "Mainboard";
 
+
+
+                # check if MB name was provided by user via frontend
+                # or get it from scan data, if not
+                $user_mb_title = lhg_scan_overview_get_user_mb_title( $sid );
 	        $mb_name = lhg_get_mainboard_name( $sid );
         	$clean_mb_name = lhg_clean_mainboard_name( $mb_name );
+                error_log("MB name: $clean_mb_name -- $mb_name -- $user_mb_title");
+                if ($user_mb_title != "") $clean_mb_name = $user_mb_title;
+
+
 
                 #error_log("T: <$clean_mb_name>");
                 $mb_recognized = 1;
@@ -1318,7 +1327,7 @@ if (count($unidentified_hw_pci) > 0) {
 
                         print '
                         <div class="hwscan-designation-name">Hardware name:</div>
-                                <input id="hwtext-input-title-mb" name="postid-'.$newPostID_mb.'" value="'.$title.'" size="40" type="text"></input>
+                                <input id="hwtext-input-title-mb" name="postid-'.$newPostID_mb.'" value="'.$clean_mb_name.'" size="40" type="text"></input>
                         ';
 
                         lhg_scan_tag_selector ( $id, $newPostID_mb, "mainboard", $sid );
