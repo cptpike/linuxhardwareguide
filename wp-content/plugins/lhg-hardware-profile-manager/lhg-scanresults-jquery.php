@@ -394,7 +394,7 @@ function lhg_mainboard_jquery($_sid) {
 
 
                                 //prepare Ajax data:
-                                var session = "'.$sid.'";
+                                var session = "'.$_sid.'";
                                 var comment = $("#mb-usercomment").val();
                                 var mb_url = $("#url-mb").val();
                                 var data ={
@@ -439,7 +439,7 @@ function lhg_mainboard_jquery($_sid) {
 
 
 	                                //prepare Ajax data:
-        	                        var session = "'.$sid.'";
+        	                        var session = "'.$_sid.'";
                                         var title = $("#hwtext-input-title-mb").val();
                         	        var data ={
                                 	        action: \'lhg_scan_update_mb_title_ajax\',
@@ -468,7 +468,7 @@ function lhg_mainboard_jquery($_sid) {
 
 
 	                                //prepare Ajax data:
-        	                        var session = "'.$sid.'";
+        	                        var session = "'.$_sid.'";
                 	                var laptop_prob = "";
                         	        var data ={
                                 	        action: \'lhg_scan_update_mb_laptop_status_ajax\',
