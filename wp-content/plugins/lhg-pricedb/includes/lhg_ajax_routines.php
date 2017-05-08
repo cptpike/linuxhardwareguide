@@ -783,7 +783,7 @@ function lhg_scan_update_mb_title_ajax() {
 	$sid         = $_REQUEST['session'] ;
 	$designation = $_REQUEST['title'] ;
 
-        error_log("Update MB title: $designation");
+        #error_log("Update MB title: $designation SID: $sid");
 
         if ($designation == "") exit();
 
