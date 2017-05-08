@@ -207,6 +207,16 @@ function lhg_scan_overview_get_user_title($_id) {
         return $usertitle;
 }
 
+function lhg_scan_overview_get_user_mb_title($_sid) {
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("SELECT mb_usertitle FROM `lhgscansessions` WHERE sid = %s", $_sid);
+	$usertitle = $lhg_price_db->get_var($myquery);
+
+        return $usertitle;
+}
+
 function lhg_scan_overview_get_user_categories($_id) {
 
 	global $lhg_price_db;
