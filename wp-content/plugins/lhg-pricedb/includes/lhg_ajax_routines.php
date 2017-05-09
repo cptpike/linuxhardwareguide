@@ -81,6 +81,10 @@ add_action('wp_ajax_nopriv_lhg_scan_publish_mb_article_ajax', 'lhg_scan_publish_
 add_action('wp_ajax_lhg_scan_update_mb_title_ajax', 'lhg_scan_update_mb_title_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_mb_title_ajax', 'lhg_scan_update_mb_title_ajax');
 
+# change mainboard type
+add_action('wp_ajax_lhg_scan_update_mb_type_ajax', 'lhg_scan_update_mb_type_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_mb_type_ajax', 'lhg_scan_update_mb_type_ajax');
+
 # AJAX funcitonalities
 
 # create a new mainboard article. Return the post id.
@@ -795,5 +799,22 @@ function lhg_scan_update_mb_title_ajax() {
         exit();
 }
 
+# update mainboard type
+function lhg_scan_update_mb_type_ajax() {
+
+	$sid         = $_REQUEST['sid'] ;
+	$val	     = $_REQUEST['val'] ;
+
+        #error_log("Update MB type: $val SID: $sid");
+
+        if ($val == "") exit();
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET mb_type_user = %s WHERE sid = %s ", $val, $sid);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
 
 ?>
