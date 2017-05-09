@@ -1308,16 +1308,36 @@ if (count($unidentified_hw_pci) > 0) {
         	        # Select Laptop / Mainboard
                 	#
 
+                        lhg_scan_set_mb_type_jquery ( $sid );
+                        $user_type = lhg_scan_overview_get_mb_type ( $sid );
+
                         print '<form action="?" method="post" class="mb-usercomment">';
 
 			print "
 			<div class='scan-select-laptop'>
 				The scanned system is a
-				<select>
-					<option>Laptop</option>
-					<option>Mainboard</option>
-					<option>Other</option>
-				</select>       
+				<select name='scan-selector-mb-type'>";
+
+					if ($user_type == "laptop") {
+                                        	print "<option value='laptop' selected>Laptop</option>";
+                                        }else{
+                                        	print "<option value='laptop'>Laptop</option>";
+                                        }
+
+					if ($user_type == "mainboard") {
+                                        	print "<option value='mainboard' selected>Mainboard</option>";
+                                        }else{
+                                        	print "<option value='mainboard'>Mainboard</option>";
+                                        }
+
+					if ($user_type == "other") {
+                                        	print "<option value='other' selected>Other</option>";
+                                        }else{
+                                        	print "<option value='other'>Other</option>";
+                                        }
+
+                        print "
+				</select>
 			</div>
 			";
 
