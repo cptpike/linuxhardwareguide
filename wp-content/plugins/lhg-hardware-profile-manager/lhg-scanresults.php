@@ -263,5 +263,15 @@ function lhg_scan_overview_get_scan_designation($_sid) {
         return $designation;
 }
 
+function lhg_scan_overview_get_mb_type($_sid) {
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("SELECT mb_type_user FROM `lhgscansessions` WHERE sid = %s", $_sid);
+	$type = $lhg_price_db->get_var($myquery);
+
+        return $type;
+}
+
 
 ?>
