@@ -560,4 +560,50 @@ print '
 ';
 }
 
+function lhg_scan_set_mb_type_jquery( $_sid ) {
+
+        // JQuery code to update designation
+
+	print '
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+	jQuery(document).ready( function($) {
+
+        	// submit button pressed
+		$(\'select[name^="scan-selector-mb-type"]\').change(function(){
+
+                	var val = $(this).val();
+
+	                //prepare Ajax data:
+		        var sid = "'.$_sid.'";
+                	var data ={
+                		action: \'lhg_scan_update_mb_type_ajax\',
+	                        sid: sid,
+		                val: val,
+		        };
+
+                        // send AJAX request
+	                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+	        	        var return_comment     = $(response).find("supplemental return_comment").text();
+
+	                });
+
+
+
+        		return false;
+
+	        });
+
+        });
+
+
+
+/*]]> */
+</script>
+';
+}
+
+
 ?>
