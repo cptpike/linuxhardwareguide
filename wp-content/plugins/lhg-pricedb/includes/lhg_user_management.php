@@ -1127,7 +1127,7 @@ function lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args) {
         global $post;
 
         if ( lhg_uid_is_manufacturer($user_id) ) {
-                #error_log("Manufactruer");
+                error_log("Manufactruer");
                 #error_log (" PID: ".get_the_ID() );
                 #error_log (" post: ".$post->ID );
 
@@ -1150,7 +1150,7 @@ function lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args) {
 		}
 
         } else {
-                #error_log("No manufactruer");
+                error_log("No manufactruer");
                 return false;
         }
 
@@ -1167,7 +1167,11 @@ function lhg_check_if_manufacturer_can_edit( $user_id, $post_id ) {
 	if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_tags_de FROM `lhgtransverse_users` WHERE wpuid_de = %s", $user_id);
 	$taglist = $lhg_price_db->get_var($myquery);
 
-        # check if article tags
+	if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_categories_com FROM `lhgtransverse_users` WHERE wpuid = %s", $user_id);
+	if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_categories_de FROM `lhgtransverse_users` WHERE wpuid_de = %s", $user_id);
+	$categorylist = $lhg_price_db->get_var($myquery);
+
+        # check if article has tags
         $tagarray = explode(",",$taglist);
 
 
@@ -1177,6 +1181,20 @@ function lhg_check_if_manufacturer_can_edit( $user_id, $post_id ) {
 	        foreach ($posttags as $posttag){
                 	#error_log ("UTag: $usertag = $posttag ?");
                         if ($usertag == $posttag) return true; #corresponding manufacturer found
+		}
+	}
+
+        # check if article is in category list
+        $categoryarray = explode(",",$categorylist);
+        #error_log("Category check: $categorylist");
+
+
+        $postcategories = wp_get_post_tags($post_id, array('fields' => 'ids') );
+
+        foreach ($categoryarray as $usercategory){
+	        foreach ($postcategories as $postcategory){
+                	#error_log ("CTag: $usercategory = $postcategory ?");
+                        if ($usercategory == $postcategory) return true; #corresponding manufacturer found
 		}
 	}
         return false; # article does not belong to manufacturer
