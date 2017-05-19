@@ -332,6 +332,7 @@ Original Version: 2.0.2
 	//Single Product API Call - Returns One Product Data
 	function getSingleAmazonProduct($asin='',$extratext='',$extrabutton=0){
 
+
 		global $public_key, $private_key, $aws_partner_id,$aws_partner_locale,$amazonhiddenmsg,$amazonerrormsg,$apippopennewwindow,$apippnewwindowhtml;
 		global $appip_text_lgimage;
 		global $appip_text_listprice; 
@@ -392,6 +393,8 @@ Original Version: 2.0.2
 		$data = str_getcsv($asin.",".$asinlist, ",");
 
                 #var_dump($data);
+                #error_log("ASIN:".print_r( $data, true ) );
+
 
                 #
                 # check if DB entries for asins already exist -> create if necessary
@@ -451,7 +454,7 @@ Original Version: 2.0.2
                                 #$result = FormatASINResult($pxml,$post->ID);
 				$newPrice = lhg_db_get_lowest_amazon_price($post->ID, $region);
                                 
-                        	#print "<br>New Price: $newPrice - $asin, $region";
+                        	#error_log( "<br>New Price: $newPrice - $asin, $region" );
 
                         #if ($newPrice != "" and $newPrice != 0) break;
 
@@ -1397,7 +1400,7 @@ function awsImageGrabber($imgurl, $class=""){
 
   function aws_prodinpost_filter_content($text){
 
-                //echo "Hier3";
+                #error_log( "Hier3" );
 	  	global $post,$apipphookcontent;
 	  	$ActiveProdPostAWS = get_post_meta($post->ID,'amazon-product-isactive',true);
 	  	$singleProdPostAWS = get_post_meta($post->ID,'amazon-product-single-asin',true);
@@ -1412,6 +1415,7 @@ function awsImageGrabber($imgurl, $class=""){
 
 		//replace short tag here
 		   if ( stristr( $text, '[AMAZONPRODUCT' )) {
+                   error_log("Search A");
 				//$search = "@(?:<p>)*\s*\[AMAZONPRODUCT\s*=\s*(\w+|^\+|,)\]\s*(?:</p>)*@i"; //need to change to allow commas in regex
 				$search = "@(?:<p>)*\s*\[AMAZONPRODUCT\s*=\s*(.+|^\+)\]\s*(?:</p>)*@i"; 
 				if	(preg_match_all($search, $text, $matches)) {
@@ -1461,26 +1465,38 @@ function awsImageGrabber($imgurl, $class=""){
 				  	}
 				 }
 			}else{
+
                         //echo "Hier4";
                         //$counter++;
                         //echo "-".$counter."-";
 			    if(($apipphookcontent==true && $apippContentHookOverride!='3') || $apippContentHookOverride=='' || $apipphookcontent==''){ //if options say to show it, show it
-				  	if($singleProdPostAWS!='' && $ActiveProdPostAWS!=''){
-				  		if($AWSPostLoc=='2'){
-				  			//Post Content is the description
-				  			$theproduct = getSingleAmazonProduct($singleProdPostAWS,$text);
-				  		}elseif($AWSPostLoc=='3'){
-				  			//Post Content before product
-				  			$theproduct = $text.'<br />'.getSingleAmazonProduct($singleProdPostAWS,'');
-				  		}else{
-				  			//Post Content after product - default
-				  			//$theproduct = getSingleAmazonProduct($singleProdPostAWS,'').'Test<br />'.$text;
-				  			$theproduct = getSingleAmazonProduct($singleProdPostAWS,'').$text;
-				  		}
-				  		return $theproduct;
-				  	} else {
-				  		return $text;
-				  	}
+				  	#if($singleProdPostAWS!='' && $ActiveProdPostAWS!=''){
+				  	#	if($AWSPostLoc=='2'){
+                                        #        	error_log("Search C2");
+                                        #
+                                        #                //Post Content is the description
+				  	#		$theproduct = getSingleAmazonProduct($singleProdPostAWS,$text);
+				  	#	}elseif($AWSPostLoc=='3'){
+                                        #        	error_log("Search C3");
+                                        #
+				  	#		//Post Content before product
+				  	#		$theproduct = $text.'<br />'.getSingleAmazonProduct($singleProdPostAWS,'');
+				  	#	}else{
+                                        #        	error_log("Search C4");
+                                        #
+				  	#		//Post Content after product - default
+				  	#		//$theproduct = getSingleAmazonProduct($singleProdPostAWS,'').'Test<br />'.$text;
+				  	#		$theproduct = getSingleAmazonProduct($singleProdPostAWS,'').$text;
+				  	#	}
+				  	#	return $theproduct;
+				  	#} else {
+                                        #	error_log("Search C5");
+
+                                                $theproduct = getSingleAmazonProduct($singleProdPostAWS,'').$text;
+                                                return $theproduct;
+
+				  	#	return $text;
+				  	#}
 				 }
 			}
 		 return $text;
