@@ -4,6 +4,7 @@ add_shortcode( 'lhg_hplip', 'lhg_hplip_shortcode');
 add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
 add_shortcode( 'lhg_mainboard_intro', 'lhg_mainboard_intro_shortcode');
 add_shortcode( 'lhg_mainboard_lspci', 'lhg_mainboard_lspci_shortcode');
+add_shortcode( 'lhg_mainboard_usb', 'lhg_mainboard_usb_shortcode');
 add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
 add_shortcode( 'lhg_donation_history', 'lhg_donation_history');
@@ -273,7 +274,7 @@ function lhg_mainboard_lspci_shortcode($attr, $content) {
 
 '<h3>Hardware Overview</h3>
 <p>
-The following hardware components are part of the '.$mainboard_name.' and are supported by the listed kernel drivers:
+The following PCI components are part of the '.$mainboard_name.' and are supported by the listed kernel drivers:
 </p>
 <pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
 
@@ -301,6 +302,61 @@ Die folgenden Hardware-Komponenten sind beim '.$mainboard_name.' verbaut. Diese 
 
 #Strange things happen with out lspci output. Somehow, newlines are replaced by <br> if text is transferred as $content
 foreach ($lspci_lines as $line) {
+        $output .= str_replace("<br />","\n",$line);
+}
+
+$output .= '</pre>';
+
+
+        return $output;
+}
+
+
+function lhg_mainboard_usb_shortcode($attr, $content) {
+        global $lang;
+        global $region;
+
+	$title=translate_title(get_the_title());
+	$title_orig=get_the_title();
+	$s=explode("(",$title);
+	$mainboard_name=trim($s[0]);
+	$mainboard_properties=trim($s[1]);
+
+        $lsusb_lines = explode("\n",$content);
+
+        $output =
+
+'
+<p>
+Furthermore, the mainboard is equipped with following onboard USB devices:
+</p>
+<pre class="brush: plain; title: lsusb; notranslate" title="lsusb">';
+
+
+
+	if ($region == "fr") {
+        $output =
+
+'
+<p>
+En outre, la carte mère est équipée des dispositifs USB embarqués suivant:
+</p>
+<pre class="brush: plain; title: lsusb; notranslate" title="lsusb">';
+
+	} elseif ($lang == "de") {
+        $output =
+
+'
+<p>
+Zus&auml;tzlich sind die folgenden USB-Komponenten auf dem Mainboard vorhanden:
+</p>
+<pre class="brush: plain; title: lsusb; notranslate" title="lsusb">';
+	}
+
+
+
+#Strange things happen with out lspci output. Somehow, newlines are replaced by <br> if text is transferred as $content
+foreach ($lsusb_lines as $line) {
         $output .= str_replace("<br />","\n",$line);
 }
 
