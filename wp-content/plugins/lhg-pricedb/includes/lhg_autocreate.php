@@ -3281,5 +3281,400 @@ function lhg_create_comment_by_json_request( $data ) {
         exit;
 }
 
+# publish article based on scan overview selections (AJAX initiated)
+function lhg_scan_publish_mainboard_article( $_sid, $_postid, $_asin_mb, $_title_mb, $_idarray_pci, $_idarray_usb, $_idarray_tags, $_type ) {
+
+  global $lhg_price_db;
+  global $lang;
+
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
+ # $laptop_probability = lhg_scan_is_laptop( $sid );
+ #
+ # // if mainboard
+ # if ($laptop_probability < 0.8) {
+ #       $category = 472;
+ #       $taglist = array( 472 );
+ # } else { #or if laptop
+ #       $category = 470;
+ #       $taglist = array( 470 );
+ #       $taglist = array( 450 );
+ # }
+
+ # # Download only once for speed improvement
+ # global $lspci_content_from_library;
+ # global $dmesg_content_from_library;
+ # global $lsb_content_from_library;
+ # global $version_content_from_library;
+ #
+ #
+ # if ( $lspci_content_from_library == "" ) {
+ #       $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
+ # 	$lspci_content_from_library = file_get_contents($url);
+ # }
+ #
+ # if ( $dmesg_content_from_library == "" ) {
+ #         $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+ #         $dmesg_content_from_library = file_get_contents($url);
+ # }
+ #
+ # if ( $lsb_content_from_library == "" ) {
+ #         $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsb_release.txt";
+ #         $lsb_content_from_library = file_get_contents($url);
+ # }
+ #
+ # if ( $version_content_from_library == "" ) {
+ #         $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=version.txt";
+ #      	  $version_content_from_library = file_get_contents($url);
+ # }
+
+#$lspci = explode("\n\n",$lspci_content_from_library);
+##print "<br>Dump:".var_dump($lspci)."<br>";
+#$lspci0 = $lspci[0];
+#$lspci0 = str_replace("\n\n","",$lspci0);
+#
+#
+#	# create filtered and unfiltered list of all PCI IDs as array $pci_array_all
+#	$lspci_array = explode("\n",$lspci_content_from_library);
+#        $pcilist = array();
+#
+#        foreach ($lspci_array as $line) {
+#                #print "L $i:".$line."<br>";
+#                $pciid_found = preg_match("/\[....:....\]/",$line,$matches);
+#                $subsystem_found = preg_match("/Subsystem/",$line,$matches2);
+#                #print preg_match("/\[....:....\]/",$line,$matches)." - ".var_dump($matches)."<br>";
+#
+#                $clean_pciid = $matches[0];
+#                $clean_pciid = str_replace("[","",$clean_pciid);
+#                $clean_pciid = str_replace("]","",$clean_pciid);
+#                # PCI ID found, but no Subsystem ID
+#                if ( ( $pciid_found == 1 ) && ( $subsystem_found == 0) ) array_push($pcilist, $clean_pciid);
+#        }
+#        $pci_array_all = $pcilist;
+
+
+
+
+
+	# get distribution name from scan data base
+	$sql = "SELECT distribution FROM `lhgscansessions` WHERE sid = \"".$_sid."\"";
+    	$result = $lhg_price_db->get_results($sql);
+        $result0 = $result[0];
+        $distribution = $result0->distribution;
+
+	# get kernel version of scan 
+	$sql = "SELECT kversion FROM `lhgscansessions` WHERE sid = \"".$_sid."\"";
+    	$result = $lhg_price_db->get_results($sql);
+        $result0 = $result[0];
+        $version = $result0->kversion;
+
+	# get DMI output of scan
+	$sql = "SELECT dmi FROM `lhgscansessions` WHERE sid = \"".$_sid."\"";
+    	$result = $lhg_price_db->get_results($sql);
+        $result0 = $result[0];
+        $dmi_line = $result0->dmi;
+
+        # set categories
+        if ($_type == "laptop") $categories = array( 470 );
+        if ($_type == "mainbord") $categories = array( 472 );
+        if ($_type == "ultrabook") $categories = array( 470, 562 );
+        if ($_type == "pc-system") $categories = array( 469 );
+        if ($_type == "low-power-pc") $categories = array( 469, 471 );
+        if ($_type == "other") $categories = "";
+
+	#create PCI list
+        $lspci_list = "";
+        $pci_array = array();
+        $subid_array = array();
+	foreach ($_idarray_pci as $pciid) {
+
+                $sql = "SELECT pciid, idstring, pciid_subsystem, idstring_subsystem FROM `lhghwscans` WHERE sid = \"".$_sid."\" AND id = \"".$pciid."\"";
+    		$result = $lhg_price_db->get_results($sql);
+                #error_log( "SID: $_sid ID: $pciid -> ".print_r($result, true) );
+	        $result0 = $result[0];
+        	$pciid_result = $result0->idstring;
+                $lspci_list .= $pciid_result;
+                #if ($result0->pciid_subsystem != "")    $lspci_list .= "\n".$result0->pciid_subsystem;
+                if ($result0->idstring_subsystem != "") $lspci_list .= $result0->idstring_subsystem;
+                #$lspci_list .= "\n";
+                #error_log("PCIID: $pciid -> $result0->pciid"." ".$pciid_result ."\n".$result0->pciid_subsystem." ".$result0->idstring_subsystem);
+                array_push($pci_array, $result0->pciid);
+                array_push($subid_array, $result0->pciid_subsystem);
+	}
+
+
+	#create USB list
+        $usb_list = "";
+        $usb_array = array();
+        if ($_idarray_usb != "")
+	foreach ($_idarray_usb as $usbid) {
+
+                $sql = "SELECT idstring, usbid FROM `lhghwscans` WHERE sid = \"".$_sid."\" AND id = \"".$usbid."\"";
+    		$result = $lhg_price_db->get_results($sql);
+	        $result0 = $result[0];
+        	$usbid_result = $result0->idstring;
+                $lsusb_list .= $result0->usbid." ".$usbid_result ."\n" ;
+		array_push($usb_array, $result0->usbid);
+
+
+	}
+
+        #create tag array
+        $tagstring = lhg_convert_tag_array_to_string( $_idarray_tags );
+
+        #error_log("ToDo: Tags to be transferred to taxonomies");
+
+
+
+$article = "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" version=\"".trim($version)."\" dmi_output=\"".trim($dmi_line)."\"]
+
+[lhg_mainboard_lspci]
+".trim($lspci_list)."
+[/lhg_mainboard_lspci]
+";
+
+if ($lsusb_list != "")
+$article .= "
+[lhg_mainboard_usb]
+".trim($lsusb_list)."
+[/lhg_mainboard_usb]
+";
+
+$title="<!--:us-->".$_title_mb."<!--:-->";
+
+	$myPost = array(
+			'ID' => $_postid,
+			'post_status' => 'publish',
+                        'post_content' => "<!--:us-->".$article."<!--:-->",
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $title,
+			'post_category' => $categories,
+                        'tags_input' => $tagstring
+		);
+
+  	wp_update_post( $myPost );
+
+        # create entry in lhgtransverse_posts
+        $identifier = join(",",$pci_array);
+	if ($_type == "laptop") {
+	        $identifier = lhg_get_mainboard_fingerprint( $sid );
+	        lhg_create_new_DB_entry_post ( $_postid, "laptop", $identifier );
+
+                $sql = "UPDATE lhgtransverse_posts SET `categories_com` = \"%s\" WHERE postid_com = %s";
+		$safe_sql = $lhg_price_db->prepare($sql, "notebook", $_postid);
+		$result = $lhg_price_db->query($safe_sql);
+
+	} else {
+	        $identifier = lhg_get_mainboard_fingerprint( $sid );
+		lhg_create_new_DB_entry_post ( $_postid, "mainboard", $identifier );
+
+                $sql = "UPDATE lhgtransverse_posts SET `categories_com` = \"%s\" WHERE postid_com = %s";
+		$safe_sql = $lhg_price_db->prepare($sql, "mainboards", $_postid);
+		$result = $lhg_price_db->query($safe_sql);
+	}
+
+
+	# set Amazon ID
+  	$key = "amazon-product-single-asin";
+	$value = $_asin_mb;
+  	if(get_post_meta($_postid, $key, FALSE)) { //if the custom field already has a value
+  		update_post_meta($_postid, $key, $value);
+	} else { //if the custom field doesn't have a value
+  		add_post_meta($_postid, $key, $value);
+	}
+
+        # store PCI IDs
+        lhg_set_pciids( $_postid, $pci_array );
+
+        # store PCI IDs
+        lhg_set_subids( $_postid, $subid_array );
+
+        # store USB IDs
+        lhg_set_usbids( $_postid, $usb_array );
+
+
+
+
+exit;
+
+
+
+#############
+#############
+# OLD STUFF
+
+
+  # ToDo: should be created based on lspci and dmesg output
+
+  $new_taglist = lhg_taglist_by_title( $title );
+  $taglist = array_merge( $taglist, $new_taglist );
+  $tagstring = lhg_convert_tag_array_to_string( $taglist );
+
+
+
+  #print "Article creation started";
+
+  #print "<br>Title: $title <br> ScanID: $sid<br>";
+
+        $title="<!--:us-->".$title."<!--:-->";
+
+	$myPost = array(
+			'post_status' => 'draft',
+                        'post_content' => "<!--:us-->".$article."<!--:-->",
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $title,
+			'post_category' => array($category),
+                        'tags_input' => $tagstring,
+		);
+        global $wpdb;
+	#$post_if = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title'");
+        #print "PI: ".$post_if;
+
+	$post_if2 = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title' AND post_status = 'draft' ");
+        #print "PI2: ".$post_if2;
+
+        $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+        $created_id = $lhg_price_db->get_var($sql);
+
+
+  if ( ($post_if2 > 0) or ($created_id != 0) ) {
+  	#print "Title exists";
+        if ($created_id != 0) $newPostID = $created_id;
+        if ($created_id == 0) $newPostID = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_title like '$title' AND post_status = 'draft' ");
+
+	# store created_id for already existing articles
+	if ($created_id == 0)  {
+                $sql = "UPDATE `lhghwscans` SET created_postid = \"".$newPostID."\" WHERE id = \"".$id."\" ";
+        	$result = $lhg_price_db->query($sql);
+        }
+
+  }else{
+  	//-- Create the new post
+        #print "new article";
+  	$newPostID = wp_insert_post($myPost);
+        $sql = "UPDATE `lhghwscans` SET created_postid = \"".$newPostID."\" WHERE id = \"".$id."\" ";
+        $result = $lhg_price_db->query($sql);
+  }
+  #print "<br>done<br>";
+
+  # ToDo: store MB in DB
+  # ToDo: store MB in DB
+
+  # Store scan info in DB
+  #
+  # get CPU identifier
+  #$pos = strpos($cpu0, "model name");
+  #$pos_end = strpos( substr($cpu0,$pos) , "\n");
+  #$pos_colon = strpos( substr($cpu0,$pos) , ":");
+  #print "POS: $pos - $pos_colon - $pos_end<br>";
+  #print substr($cpu0,$pos+$pos_colon+2, $pos_end-$pos_colon-2)."<br>";
+  #$cpu_identifier = substr($cpu0,$pos+$pos_colon+2, $pos_end-$pos_colon-2);
+
+
+  if ($laptop_probability > 0.8) {
+        # store all pci ids
+        $identifier = lhg_get_mainboard_fingerprint( $sid );
+        lhg_create_new_DB_entry_post ( $newPostID, "laptop", $identifier );
+
+  } else {
+        # store all pci ids
+        # ToDo: filter pciids not onboard!
+        $identifier = lhg_get_mainboard_fingerprint( $sid );
+        #$identifier = implode(",",$pci_array_all);
+	lhg_create_new_DB_entry_post ( $newPostID, "mainboard", $identifier );
+  }
+
+  # get Amazon ID, if available
+  $amzid = lhg_get_AMZ_ID_from_scan ( $sid, "mainboard", "" );
+  #print "AMZID CPU: $amzid";
+
+  # set Amazon ID
+  $key = "amazon-product-single-asin";
+  $value = $amzid;
+
+  if ($amzid != "")
+  if(get_post_meta($newPostID, $key, FALSE)) { //if the custom field already has a value
+  	update_post_meta($newPostID, $key, $value);
+  } else { //if the custom field doesn't have a value
+  	add_post_meta($newPostID, $key, $value);
+  }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
+
+  return $newPostID;
+
+
+}
+
+function lhg_set_usbids( $_postid, $_usbids ){
+        # set USB IDs for existing article
+        # expects array of USB IDs
+
+        global $lhg_price_db;
+        global $lang;
+
+        if ($lang == "de") {
+                error_log("Routine lhg_set_usbids only valid for .com server");
+                exit;
+        }
+
+        $usbstring = join(",", $_usbids);
+        $sql = "UPDATE lhgtransverse_posts SET `usbids` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $usbstring, $_postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        #error_log("set USB IDs for $_postid to $usbstring");
+
+}
+
+function lhg_set_pciids( $_postid, $_pciids ){
+        # set PCI IDs for existing article
+        # expects array of PCI IDs
+
+        global $lhg_price_db;
+        global $lang;
+
+        if ($lang == "de") {
+                error_log("Routine lhg_set_pciids only valid for .com server");
+                exit;
+        }
+
+        $pcistring = join(",", $_pciids);
+        $sql = "UPDATE lhgtransverse_posts SET `pciids` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $pcistring, $_postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        #error_log("set PCI IDs for $_postid to $pcistring");
+
+}
+
+function lhg_set_subids( $_postid, $_subids ){
+        # set PCI IDs for existing article
+        # expects array of PCI IDs
+
+        global $lhg_price_db;
+        global $lang;
+
+        if ($lang == "de") {
+                error_log("Routine lhg_set_subids only valid for .com server");
+                exit;
+        }
+
+        $substring = join(",", $_subids);
+        $sql = "UPDATE lhgtransverse_posts SET `subids` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $substring, $_postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        #error_log("set PCI IDs for $_postid to $pcistring");
+
+}
+
 
 ?>
