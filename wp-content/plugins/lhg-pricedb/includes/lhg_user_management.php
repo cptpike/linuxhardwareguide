@@ -1127,7 +1127,7 @@ function lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args) {
         global $post;
 
         if ( lhg_uid_is_manufacturer($user_id) ) {
-                error_log("Manufactruer");
+                #error_log("Manufactruer");
                 #error_log (" PID: ".get_the_ID() );
                 #error_log (" post: ".$post->ID );
 
@@ -1150,7 +1150,7 @@ function lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args) {
 		}
 
         } else {
-                error_log("No manufactruer");
+                #error_log("No manufactruer");
                 return false;
         }
 
