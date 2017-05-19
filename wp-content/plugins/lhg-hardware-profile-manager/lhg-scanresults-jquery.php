@@ -498,7 +498,7 @@ function lhg_mainboard_jquery($_sid) {
 }
 
 
-function lhg_editor_tools_mainboard_jquery($_sid) {
+function lhg_editor_tools_mainboard_jquery( $_sid, $_postid ) {
 
 print '
 
@@ -519,8 +519,14 @@ print '
 	                //$(box).css(\'background-color\',\'#dddddd\');
         	        $(this).after(indicator_html);
 
-                        var PCI_IDs = [];
-                        var USB_IDs = [];
+                        var PCI_IDs  = [];
+                        var USB_IDs  = [];
+                        var asin_mb  = $("#hwtext-input-asin-mb").val();
+                        var title_mb = $("#hwtext-input-title-mb").val();
+                	var tags = $("#tag-select-box-mb").val();
+                	var type = $("#scan-selector-mb-type").val();
+                        var postid = "'.$_postid.'";
+
 			$("[id^=radio-y-]").filter(":checked").each(function(){ PCI_IDs.push(this.id.substring(8)); });
 			$("[id^=usb-radio-y-]").filter(":checked").each(function(){ USB_IDs.push(this.id.substring(12)); });
                 	//var idarray = $("[id^=radio-y-]").attr("id");
@@ -534,6 +540,11 @@ print '
 		                id: id,
                                 idarray_pci: PCI_IDs,
                                 idarray_usb: USB_IDs,
+                                asin_mb: asin_mb,
+                                title_mb: title_mb,
+                                postid: postid,
+                                type: type,
+                                idarray_tags: tags
 		        };
 
                         // send AJAX request
@@ -545,7 +556,8 @@ print '
 
 	                });
 
-
+                        // also save all possible modifications by clicking the submit button (quick & dirty solution)
+                        $("#mb-submit").click();
 
         		return false;
 
