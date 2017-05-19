@@ -756,27 +756,43 @@ function lhg_scan_update_designation_ajax() {
 
 function lhg_scan_publish_mb_article_ajax() {
 
-	$sid         = $_REQUEST['sid'] ;
-	$id	     = $_REQUEST['id'] ;
-	$idarray_pci = $_REQUEST['idarray_pci'] ;
-	$idarray_usb = $_REQUEST['idarray_usb'] ;
+	$sid          = $_REQUEST['sid'] ;
+	$id	      = $_REQUEST['id'] ;
+	$title_mb     = $_REQUEST['title_mb'] ;
+	$asin_mb      = $_REQUEST['asin_mb'] ;
+	$idarray_pci  = $_REQUEST['idarray_pci'] ;
+	$idarray_usb  = $_REQUEST['idarray_usb'] ;
+	$idarray_tags = $_REQUEST['idarray_tags'] ;
+	$postid       = $_REQUEST['postid'] ;
+	$type         = $_REQUEST['type'] ;
 
         $idstring_pci = "";
         if ($idarray_pci != "")
         foreach ($idarray_pci as $idx)  {
-                if ( $idstring_pci != "" ) $idstring_pci .= $idstring.",$idx";
+                if ( $idstring_pci != "" ) $idstring_pci .= $idstring_pci.",$idx";
                 if ( $idstring_pci == "" ) $idstring_pci = $idx;
         }
 
         $idstring_usb = "";
         if ($idarray_usb != "")
         foreach ($idarray_usb as $idx)  {
-                if ( $idstring_usb != "" ) $idstring_usb .= $idstring.",$idx";
+                if ( $idstring_usb != "" ) $idstring_usb .= $idstring_usb.",$idx";
                 if ( $idstring_usb == "" ) $idstring_usb = $idx;
         }
 
+        $idstring_tags = "";
+        if ($idarray_tags != "")
+        foreach ($idarray_tags as $idx)  {
+                if ( $idstring_tags != "" ) $idstring_tags .= $idstring_tags.",$idx";
+                if ( $idstring_tags == "" ) $idstring_tags = $idx;
+        }
 
-        #error_log("AJAX: SID: $sid -- ID: $id -- ALL_PCI: $idstring_pci -- ALL_USB: $idstring_usb");
+
+        #error_log("AJAX: SID: $sid -- ID: $id -- ALL_PCI: $idstring_pci -- ALL_USB: $idstring_usb -- Tags: $idstring_tags -- ASIN: $asin_mb -- title: $title_mb");
+        #error_log("AJAX: SID: $sid -- ID: $id -- ASIN: $asin_mb -- title: $title_mb");
+
+        lhg_scan_publish_mainboard_article( $sid, $postid, $asin_mb, $title_mb, $idarray_pci, $idarray_usb, $idarray_tags, $type );
+
 
         exit();
 }
