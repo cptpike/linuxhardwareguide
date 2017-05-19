@@ -1099,7 +1099,7 @@ if (count($multi_identified_hw) > 0) {
 			$title_part2=str_replace(")","",trim($s[1]));
                         if (strlen($title_part2) > 1) $title_part2 .= "<br>";
 
-                        print "<br>TODO: Get title stored by user (mb_usertitle)<br>";
+                        error_log("TODO: Get title stored by user (mb_usertitle)");
 
                         $img_attr = array(
 					#'src'	=> $src,
@@ -1253,7 +1253,7 @@ if (count($unidentified_hw_pci) > 0) {
                 $user_mb_title = lhg_scan_overview_get_user_mb_title( $sid );
 	        $mb_name = lhg_get_mainboard_name( $sid );
         	$clean_mb_name = lhg_clean_mainboard_name( $mb_name );
-                error_log("MB name: $clean_mb_name -- $mb_name -- $user_mb_title");
+                #error_log("MB name: $clean_mb_name -- $mb_name -- $user_mb_title");
                 if ($user_mb_title != "") $clean_mb_name = $user_mb_title;
 
 
@@ -1316,7 +1316,7 @@ if (count($unidentified_hw_pci) > 0) {
 			print "
 			<div class='scan-select-laptop'>
 				The scanned system is a
-				<select name='scan-selector-mb-type'>";
+				<select id='scan-selector-mb-type' name='scan-selector-mb-type'>";
 
 					if ($user_type == "laptop") {
                                         	print "<option value='laptop' selected>Laptop</option>";
@@ -1324,10 +1324,28 @@ if (count($unidentified_hw_pci) > 0) {
                                         	print "<option value='laptop'>Laptop</option>";
                                         }
 
+					if ($user_type == "ultrabook") {
+                                        	print "<option value='ultrabook' selected>Ultrabook</option>";
+                                        }else{
+                                        	print "<option value='ultrabook'>Ultrabook</option>";
+                                        }
+
 					if ($user_type == "mainboard") {
                                         	print "<option value='mainboard' selected>Mainboard</option>";
                                         }else{
                                         	print "<option value='mainboard'>Mainboard</option>";
+                                        }
+
+					if ($user_type == "pc-system") {
+                                        	print "<option value='pc-system' selected>PC System</option>";
+                                        }else{
+                                        	print "<option value='pc-system'>Laptop</option>";
+                                        }
+
+					if ($user_type == "low-power-pc") {
+                                        	print "<option value='low-power-pc' selected>Low-Power PC</option>";
+                                        }else{
+                                        	print "<option value='low-power-pc'>Low-Power PC</option>";
                                         }
 
 					if ($user_type == "other") {
@@ -1347,7 +1365,7 @@ if (count($unidentified_hw_pci) > 0) {
 
                         print '
                         <div class="hwscan-designation-name">Hardware name:</div>
-                                <input id="hwtext-input-title-mb" name="postid-'.$newPostID_mb.'" value="'.$clean_mb_name.'" size="40" type="text"></input>
+                                <input id="hwtext-input-title-mb" name="postid-'.$newPostID_mb.'" value="'.trim($clean_mb_name).'" size="40" type="text"></input>
                         ';
 
                         lhg_scan_tag_selector ( $id, $newPostID_mb, "mainboard", $sid );
@@ -1630,7 +1648,7 @@ print           '<script type="text/javascript">
         #
 
 	if ($editmode == 1) {
-                lhg_editor_tools_mainboard_jquery( $sid );
+                lhg_editor_tools_mainboard_jquery( $sid, $newPostID_mb );
 
         	$editbox_top = "Editor Tools Mainboard:<br>";
 
