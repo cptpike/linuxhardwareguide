@@ -185,6 +185,14 @@ function lhg_create_mainboard_article ($title, $sid, $id ) {
   $created_id = $lhg_price_db->get_var($sql);
   if ($created_id != 0) return $created_id;
 
+  # check 1b:
+  #see if article was already created based on article ID
+  $sql = "SELECT mb_postid FROM `lhgscansessions` WHERE sid = \"".$sid."\" ";
+  $created_id = $lhg_price_db->get_var($sql);
+  #error_log("Found PostID: $created_id");
+  if ($created_id != 0) return $created_id;
+
+
   # check 2:
   # see if article was already created based on title
   $otitle = $title;
@@ -207,55 +215,55 @@ function lhg_create_mainboard_article ($title, $sid, $id ) {
   }
 
   # Download only once for speed improvement
-  global $lspci_content_from_library;
-  global $dmesg_content_from_library;
-  global $lsb_content_from_library;
-  global $version_content_from_library;
+  #global $lspci_content_from_library;
+  #global $dmesg_content_from_library;
+  #global $lsb_content_from_library;
+  #global $version_content_from_library;
 
 
-  if ( $lspci_content_from_library == "" ) {
-	$url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
-  	$lspci_content_from_library = file_get_contents($url);
-  }
+  #if ( $lspci_content_from_library == "" ) {
+  #      $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
+  #	$lspci_content_from_library = file_get_contents($url);
+  #}
+  #
+  #if ( $dmesg_content_from_library == "" ) {
+  #        $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+  #        $dmesg_content_from_library = file_get_contents($url);
+  #}
+  #
+  #if ( $lsb_content_from_library == "" ) {
+  #        $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsb_release.txt";
+  #        $lsb_content_from_library = file_get_contents($url);
+  #}
+  #
+  #if ( $version_content_from_library == "" ) {
+  #        $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=version.txt";
+  #     	  $version_content_from_library = file_get_contents($url);
+  #}
 
-  if ( $dmesg_content_from_library == "" ) {
-	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
-	  $dmesg_content_from_library = file_get_contents($url);
-  }
-
-  if ( $lsb_content_from_library == "" ) {
-	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsb_release.txt";
-	  $lsb_content_from_library = file_get_contents($url);
-  }
-
-  if ( $version_content_from_library == "" ) {
-	  $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=version.txt";
-       	  $version_content_from_library = file_get_contents($url);
-  }
-
-$lspci = explode("\n\n",$lspci_content_from_library);
-#print "<br>Dump:".var_dump($lspci)."<br>";
-$lspci0 = $lspci[0];
-$lspci0 = str_replace("\n\n","",$lspci0);
+#$lspci = explode("\n\n",$lspci_content_from_library);
+##print "<br>Dump:".var_dump($lspci)."<br>";
+#$lspci0 = $lspci[0];
+#$lspci0 = str_replace("\n\n","",$lspci0);
 
 
-	# create filtered and unfiltered list of all PCI IDs as array $pci_array_all
-	$lspci_array = explode("\n",$lspci_content_from_library);
-        $pcilist = array();
-
-        foreach ($lspci_array as $line) {
-                #print "L $i:".$line."<br>";
-                $pciid_found = preg_match("/\[....:....\]/",$line,$matches);
-                $subsystem_found = preg_match("/Subsystem/",$line,$matches2);
-                #print preg_match("/\[....:....\]/",$line,$matches)." - ".var_dump($matches)."<br>";
-
-                $clean_pciid = $matches[0];
-                $clean_pciid = str_replace("[","",$clean_pciid);
-                $clean_pciid = str_replace("]","",$clean_pciid);
-                # PCI ID found, but no Subsystem ID
-                if ( ( $pciid_found == 1 ) && ( $subsystem_found == 0) ) array_push($pcilist, $clean_pciid);
-        }
-        $pci_array_all = $pcilist;
+#	# create filtered and unfiltered list of all PCI IDs as array $pci_array_all
+#	$lspci_array = explode("\n",$lspci_content_from_library);
+#        $pcilist = array();
+#
+#        foreach ($lspci_array as $line) {
+#                #print "L $i:".$line."<br>";
+#                $pciid_found = preg_match("/\[....:....\]/",$line,$matches);
+#                $subsystem_found = preg_match("/Subsystem/",$line,$matches2);
+#                #print preg_match("/\[....:....\]/",$line,$matches)." - ".var_dump($matches)."<br>";
+#
+#                $clean_pciid = $matches[0];
+#                $clean_pciid = str_replace("[","",$clean_pciid);
+#                $clean_pciid = str_replace("]","",$clean_pciid);
+#                # PCI ID found, but no Subsystem ID
+#                if ( ( $pciid_found == 1 ) && ( $subsystem_found == 0) ) array_push($pcilist, $clean_pciid);
+#        }
+#        $pci_array_all = $pcilist;
 
 
 
@@ -265,20 +273,20 @@ $lspci0 = str_replace("\n\n","",$lspci0);
 #print "URL: $url<br>";
 #print "cont: <pre>".$cpu0."</pre>";
 
-  # DMI entry
-  $dmesg_content_array = split("\n",$dmesg_content_from_library);
-  $dmi_array = preg_grep("/DMI: /",$dmesg_content_array);
-  $dmi_line = implode("\n",$dmi_array);
-  $dmi_line = str_replace("[    0.000000]","",$dmi_line);
-
-  # Distribution
-  $lsb_content_array = split("\n",$lsb_content_from_library);
-  $lsb_array = preg_grep("/Description/",$lsb_content_array);
-  $distribution = implode(" ",$lsb_array);
-  $distribution = str_replace("Description:","",$distribution);
-  while (preg_match("/  /",$distribution)){
-        $distribution = str_replace("  "," ",$distribution);
-  }
+#  # DMI entry
+#  $dmesg_content_array = split("\n",$dmesg_content_from_library);
+#  $dmi_array = preg_grep("/DMI: /",$dmesg_content_array);
+#  $dmi_line = implode("\n",$dmi_array);
+#  $dmi_line = str_replace("[    0.000000]","",$dmi_line);
+#
+#  # Distribution
+#  $lsb_content_array = split("\n",$lsb_content_from_library);
+#  $lsb_array = preg_grep("/Description/",$lsb_content_array);
+#  $distribution = implode(" ",$lsb_array);
+#  $distribution = str_replace("Description:","",$distribution);
+#  while (preg_match("/  /",$distribution)){
+#        $distribution = str_replace("  "," ",$distribution);
+#  }
   if (trim($distribution) == "") {
         # get distribution name from scan data base
 	$sql = "SELECT distribution FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
@@ -291,12 +299,12 @@ $lspci0 = str_replace("\n\n","",$lspci0);
 
 
 
-  # Kernel version
-  $version_content_array = split("\n",$version_content_from_library);
-  $version_array = preg_grep("/Linux version/",$version_content_array);
-  $version_line = $version_array[0];
-  $version_line = str_replace("Linux version ","",$version_line);
-  list($version, $null) = split(" ",$version_line);
+#  # Kernel version
+#  $version_content_array = split("\n",$version_content_from_library);
+#  $version_array = preg_grep("/Linux version/",$version_content_array);
+#  $version_line = $version_array[0];
+#  $version_line = str_replace("Linux version ","",$version_line);
+#  list($version, $null) = split(" ",$version_line);
 
   #$article =  'The '.$title." ";
 
@@ -318,12 +326,12 @@ $lspci0 = str_replace("\n\n","",$lspci0);
 #';
 
 
-$article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" version=\"".trim($version)."\" dmi_output=\"".trim($dmi_line)."\"]
-
-[lhg_mainboard_lspci]
-".trim($lspci0)."
-[/lhg_mainboard_lspci]
-";
+#$article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" version=\"".trim($version)."\" dmi_output=\"".trim($dmi_line)."\"]
+#
+#[lhg_mainboard_lspci]
+#".trim($lspci0)."
+#[/lhg_mainboard_lspci]
+#";
 
 #print $article;
 
@@ -373,6 +381,10 @@ $article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" versi
 	if ($created_id == 0)  {
                 $sql = "UPDATE `lhghwscans` SET created_postid = \"".$newPostID."\" WHERE id = \"".$id."\" ";
         	$result = $lhg_price_db->query($sql);
+
+                $sql = "UPDATE `lhgscansessions` SET mb_postid = \"".$newPostID."\" WHERE sid = \"".$sid."\" ";
+        	$result = $lhg_price_db->query($sql);
+
         }
 
   }else{
@@ -381,6 +393,11 @@ $article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" versi
   	$newPostID = wp_insert_post($myPost);
         $sql = "UPDATE `lhghwscans` SET created_postid = \"".$newPostID."\" WHERE id = \"".$id."\" ";
         $result = $lhg_price_db->query($sql);
+
+        $sql = "UPDATE `lhgscansessions` SET mb_postid = \"".$newPostID."\" WHERE sid = \"".$sid."\" ";
+        $result = $lhg_price_db->query($sql);
+
+
   }
   #print "<br>done<br>";
 
@@ -3145,12 +3162,12 @@ function lhg_create_article_translation_content( $postid, $postid_server ) {
 # translate content
 function lhg_create_article_translation_amazonid( $postid, $asin ) {
 
+        #error_log("ASIN defined: $asin for $postid ");
+
 
         # use AMAZON ID that was transmitted by JSON request
         #if ($asin != "") return;
 
-        #error_log("AID: ".$amazon_id);
-        #error_log("data: ".json_encode($data) );
 
         # create post meta data
         update_post_meta($postid, 'amazon-product-single-asin', $asin );
@@ -3161,6 +3178,23 @@ function lhg_create_article_translation_amazonid( $postid, $asin ) {
         update_post_meta($postid, 'amazon-product-newwindow', 3 );
 
         if ($lang == "de") lhg_amazon_create_db_entry( "de", $translated_postid, $amazon_id );
+
+        return;
+               $output = lhg_aws_get_price($asin,"com");
+                 list($image_url_com, $product_url_com, $price_com , $product_title, $label, $brand, $image_url_com2, $image_url_com3 , $image_url_com4, $image_url_com5 ) = split(";;",$output);
+
+                 $product_title = str_replace("Title: ","", $product_title);
+
+               $output = lhg_aws_get_price($asin,"fr");
+                 list($image_url_fr, $product_url_fr, $price_fr) = split(";;",$output);
+
+               $output = lhg_aws_get_price($asin,"de");
+                 list($image_url_de, $product_url_de, $price_de) = split(";;",$output);
+
+                 $image_url_com   = str_replace("Image: ","", $image_url_com);
+                 $image_url_com2   = str_replace("Image2: ","", $image_url_com2);
+                 $image_url_com3   = str_replace("Image3: ","", $image_url_com3);
+
 
         return;
 }
@@ -3377,6 +3411,8 @@ function lhg_scan_publish_mainboard_article( $_sid, $_postid, $_asin_mb, $_title
     	$result = $lhg_price_db->get_results($sql);
         $result0 = $result[0];
         $dmi_line = $result0->dmi;
+        # Clean DMI string
+        $dmi_line=str_replace("[    0.000000] ","",$dmi_line);
 
         # set categories
         if ($_type == "laptop") $categories = array( 470 );
