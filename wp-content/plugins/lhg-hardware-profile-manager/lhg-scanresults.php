@@ -155,17 +155,23 @@ function lhg_scan_set_asin ( $_id, $_newPostID, $_scantype, $_sid ) {
                 $test = get_post_meta( $_newPostID, $key );
                 #var_dump($test);
         	#error_log( "Stored ASIN: ".get_post_meta( $_newPostID, $key, TRUE )." == $old_asin PID: <$_newPostID>" );
+
+	        // JQuery code to update ASIN
+		lhg_scan_set_mb_asin_jquery ( $_sid, $_newPostID );
+
+
+        }else{
+	        // JQuery code to update ASIN
+		lhg_scan_set_asin_jquery ( $_sid );
         }
 
         print '<br><div class="hwscan-asin-setting">Set Amazon.com ID (ASIN). Format: B0xxxxxxxx:</div>';
-        print '<input id="hwtext-input-asin-'.$_id.'" name="postid-'.$_newPostID.'" value="'.$old_asin.'" size="15" type="text"></input>';
+        print '<input id="hwtext-input-asin-'.$_id.'" name="postid-'.$_newPostID.'" value="'.$old_asin.'" size="15" type="text"></input><span id="asin-status"></span>';
 
         // ToDo: add auto selector
 
 
 
-        // JQuery code to update ASIN
-	lhg_scan_set_asin_jquery ( $_sid );
 
 }
 
