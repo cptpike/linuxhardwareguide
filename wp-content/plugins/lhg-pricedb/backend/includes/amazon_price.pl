@@ -144,8 +144,32 @@ $AssociateTag = $aws_partner_id;
       
       if ( ref($medium_image_tmp) eq 'ARRAY' ) {
           #print "IS AN ARRAY!";
-          $medium_image = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[0]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
-
+          # The last element contains the main image. Therefore, we have to look at all images
+          $medium_image1 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[0]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image2 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[1]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image3 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[2]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image4 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[3]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image5 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[4]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image6 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[5]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image7 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[6]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          $medium_image8 = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->[7]->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
+          
+          if (defined($medium_image8)) {
+              $medium_image = $medium_image8;
+          }elsif (defined($medium_image7)) {
+              $medium_image = $medium_image7;
+          }elsif (defined($medium_image6)) {
+              $medium_image = $medium_image6;
+          }elsif (defined($medium_image5)) {
+              $medium_image = $medium_image5;
+          }elsif (defined($medium_image4)) {
+              $medium_image = $medium_image4;
+          }elsif (defined($medium_image3)) {
+              $medium_image = $medium_image3;
+          }elsif (defined($medium_image2)) {
+              $medium_image = $medium_image2;
+          } 
+          
       } else {
           #print "IS NOT AN ARRAY!";      
           $medium_image = ( $xmloutput->{ 'Items' }->{ 'Item' }->{ 'ImageSets' }->{ 'ImageSet' }->{MediumImage}->{URL} ); # ->{ 'MediumImage' } ); #->{ 'URL' } );
@@ -167,9 +191,21 @@ $AssociateTag = $aws_partner_id;
       # print Dumper($medium_image->[0]);
       # print Dumper($medium_image->{MediumImage}->{URL});
       #print "\nOutput: \n";
-      print "Image: $medium_image;;URL: $url;;Price: $lowestNewPrice;;Title: $title;;Label: $label;;Brand: $brand";
+      print "Image: $medium_image;;URL: $url;;Price: $lowestNewPrice;;Title: $title;;Label: $label;;Brand: $brand;;";
       
-          
+      if ( defined($medium_image1)) { print "Image2: $medium_image1;;"; }
+      if ( defined($medium_image2)) { print "Image3: $medium_image2;;"; }
+      if ( defined($medium_image3)) { print "Image4: $medium_image3;;"; }
+      if ( defined($medium_image4)) { print "Image5: $medium_image4;;"; }
+      if ( defined($medium_image5)) { print "Image6: $medium_image5;;"; }
+      if ( defined($medium_image6)) { print "Image7: $medium_image6;;"; }
+      if ( defined($medium_image7)) { print "Image8: $medium_image7;;"; }
+      if ( defined($medium_image8)) { print "Image8: $medium_image8;;"; }
+      
+      #    Image3: $medium_image3;;
+      #    Image4: $medium_image4;;
+      #    Image5: $medium_image5;;";
+      
           #print "Image: ".join(" - ", @medium_image);
           #}
 
