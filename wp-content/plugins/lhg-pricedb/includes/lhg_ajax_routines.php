@@ -65,9 +65,13 @@ add_action('wp_ajax_nopriv_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_aja
 add_action('wp_ajax_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
 
-# modify tags of post in scan overview
+# modify ASIN of post in scan overview
 add_action('wp_ajax_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
 add_action('wp_ajax_nopriv_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
+
+# modify mainboard ASIN of post in scan overview
+add_action('wp_ajax_lhg_scan_mb_live_update_asin_ajax', 'lhg_scan_mb_live_update_asin_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_mb_live_update_asin_ajax', 'lhg_scan_mb_live_update_asin_ajax');
 
 # modify tags of post in scan overview
 add_action('wp_ajax_lhg_scan_update_designation_ajax', 'lhg_scan_update_designation_ajax');
@@ -471,6 +475,8 @@ function lhg_scan_onboardn_ajax() {
 	$session = $_REQUEST['session'] ;
 	$id = $_REQUEST['id'] ;
 
+        #error_log("Not onboard - ID: $id");
+
         global $lhg_price_db;
 	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET onboard = %s WHERE sid = %s and id = %s ", "no", $session, $id);
 	$result = $lhg_price_db->query($myquery);
@@ -832,5 +838,110 @@ function lhg_scan_update_mb_type_ajax() {
 
         exit();
 }
+
+# update asin of mainboard ID
+function lhg_scan_mb_live_update_asin_ajax() {
+
+	$pid        = $_REQUEST['postid'];
+	#$id         = $_REQUEST['id'] ;
+	$session    = $_REQUEST['session'] ;
+        $asin 	    = $_REQUEST['asin'] ;
+	$key = "amazon-product-single-asin";
+
+        #error_log("Update ASIN -> PID $pid, ID $id, Session: $session, ASIN: $asin");
+        #error_log("Before stored value($pid) = ".get_post_meta($pid, $key, TRUE));
+
+        if ($asin == "") exit();
+
+	# And Store asin in WPDB
+  	$value = $asin;
+	if( metadata_exists('post', $pid, $key) ) { //if the custom field already has a value
+  		update_post_meta($pid, $key, $value);
+                #error_log( "Updated ASIN (PID $pid) to $value");
+	} else { //if the custom field doesn't have a value
+  		add_post_meta($pid, $key, $value);
+                #error_log("Added ASIN: (PID $pid) to $value");
+	}
+
+        #
+        # return ASIN information to frontend
+        #
+        #error_log("ASIN: $asin for PID: $pid");
+
+
+        $output = lhg_aws_get_price($asin,"com");
+        list($image_url_com, $product_url_com, $price_com , $product_title, $label, $brand, $image_url_com2, $image_url_com3 , $image_url_com4, $image_url_com5 ) = split(";;",$output);
+        $product_title = str_replace("Title: ","", $product_title);
+        $image_url_com   = str_replace("Image: ","", $image_url_com);
+        $image_url_com2   = str_replace("Image2: ","", $image_url_com2);
+        $image_url_com3   = str_replace("Image3: ","", $image_url_com3);
+        $product_url_com = str_replace("URL: ","", $product_url_com);
+
+
+        #error_log("ImgURL: $image_url_com");
+
+
+        if ($image_url_com == "") {
+        	$scaled_image_url = "/wp-uploads/2013/03/noimage130.jpg";
+        }else{
+
+                #if ( !has_post_thumbnail( $pid ) ) {
+	        	$scaled_image_url = lhg_create_article_image( $image_url_com, $product_title );
+        	        $si_filename = str_replace("/wp-uploads/","",$scaled_image_url);
+
+
+                	$file = "/var/www/wordpress".$scaled_image_url;
+                        #print "PID: $pid";
+                        #print "<br>Store Thumbnail!";
+                        #print "<br>SIURL: $scaled_image_url";
+
+                        $wp_filetype = wp_check_filetype($file, null );
+
+                        $attachment = array(
+                                   'post_mime_type' => $wp_filetype['type'],
+                                   'post_title' => sanitize_title($product_title),
+                                   'post_content' => '',
+                                   'post_status' => 'inherit'
+                        );
+
+                        #  var_dump($attachment);
+
+                        $attach_id = wp_insert_attachment( $attachment, $si_filename, $pid );
+                        #print "AID: ".$attach_id;
+                        require_once(ABSPATH . 'wp-admin/includes/image.php');
+                        $attach_data = wp_generate_attachment_metadata( $attach_id, $si_filename );
+                        wp_update_attachment_metadata( $attach_id, $attach_data );
+                        set_post_thumbnail( $pid, $attach_id );
+
+                #}else{
+                #        # post already has a thumbnail. Keep it.
+                #        #error_log("Thumbnail already available");
+                #        $scaled_image_url = get_the_post_thumbnail( $pid );
+                #}
+
+
+        }
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+        	         'imgurl' => "$image_url_com",
+        	         'imgurl2' => "$image_url_com2",
+        	         'imgurl3' => "$image_url_com3",
+        	         'product_title' => "$product_title",
+        	         'product_url' => "$product_url_com",
+        	         'postimg_url' => "$scaled_image_url"
+                ),
+                ) );
+        $response->send();
+
+
+
+        #error_log("Stored value($pid) = ".get_post_meta($pid, $key, TRUE)." == $asin ?");
+
+        exit();
+}
+
 
 ?>
