@@ -1311,11 +1311,13 @@ if (count($unidentified_hw_pci) > 0) {
                         lhg_scan_set_mb_type_jquery ( $sid );
                         $user_type = lhg_scan_overview_get_mb_type ( $sid );
 
+                        $mb_thumbnail = get_the_post_thumbnail( $newPostID_mb );
+
                         print '<form action="?" method="post" class="mb-usercomment">';
 
 			print "
 			<div class='scan-select-laptop'>
-				The scanned system is a
+				The scanned system is a <span id='lhg-scan-mb-thumbnail' class='hwscan-mb-thumbnail'>".$mb_thumbnail."</span>
 				<select id='scan-selector-mb-type' name='scan-selector-mb-type'>";
 
 					if ($user_type == "laptop") {
@@ -1368,11 +1370,12 @@ if (count($unidentified_hw_pci) > 0) {
                                 <input id="hwtext-input-title-mb" name="postid-'.$newPostID_mb.'" value="'.trim($clean_mb_name).'" size="40" type="text"></input>
                         ';
 
-                        lhg_scan_tag_selector ( $id, $newPostID_mb, "mainboard", $sid );
+                        print "<br>";
                         lhg_scan_set_asin ( $id, $newPostID_mb, "mainboard", $sid );
+                        lhg_scan_tag_selector ( $id, $newPostID_mb, "mainboard", $sid );
 
 			echo '
-                        <br>
+                        <br><br>
 		       Please rate the '.$mb_or_laptop.': '.$article_created.'';
 
 		       if ($mb_recongized == 1) echo 'Let us know if the '.$mb_or_laptop.' was recognized incorrectly and how it is supported under Linux:<br>';
@@ -1610,7 +1613,11 @@ print           '<script type="text/javascript">
 		$buttontext = $txt_submit; #"Submit";
                 $showme = lhg_show_scanned_component( $title , $id, $pciid );
                 $short_pci_title = lhg_clean_pci_title( $title );
-                $is_onboard = lhg_pci_component_is_onboard( $title, $sid, $id, $pciid);
+                #$is_onboard = lhg_pci_component_is_onboard( $title, $sid, $id, $pciid);
+                $is_onboard = lhg_usb_component_is_onboard( $title, $sid, $id, $usbid);
+
+                if ($is_onboard == "yes")  {  $default_y = 'checked'; $default_n = '';	}
+                if ($is_onboard == "no") {    $default_y = ''; $default_n = 'checked'; $showme = true; }
 
                 print '
                 	<tr '.$tr_class.'>';
@@ -3747,6 +3754,26 @@ function lhg_pci_component_is_onboard ( $title, $sid, $id, $pciid  ) {
         	if (is_int(strpos($title,"USB controller ") ) && is_int(strpos($title,"Intel Corporation") )) $onboardstatus = "yes";
                 #print "11<br>";
         }
+
+  	return $onboardstatus;
+ 
+}
+
+function lhg_usb_component_is_onboard ( $title, $sid, $id, $usbid  ) {
+
+        # ToDo: default = onboard (should be smarter)
+        $onboardstatus = "yes";
+
+        # check DB if something was defined by user
+        global $lhg_price_db;
+        $sql = "SELECT onboard FROM `lhghwscans` WHERE id = %s";
+  	$safe_sql = $lhg_price_db->prepare($sql, $id);
+  	$DB_onboard = $lhg_price_db->get_var($safe_sql);
+
+        #error_log("ID: $id -> Status: $DB_onboard");
+
+        if ($DB_onboard == "yes") {$onboardstatus = "yes"; return $onboardstatus; }
+        if ($DB_onboard == "no") {$onboardstatus = "no"; return $onboardstatus; }
 
   	return $onboardstatus;
  
