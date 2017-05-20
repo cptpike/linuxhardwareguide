@@ -154,6 +154,26 @@ function lhg_scan_set_asin_jquery ( $_sid ) {
         		return false;
 
 	        });
+        });
+
+
+
+/*]]> */
+</script>
+';
+
+}
+
+function lhg_scan_set_mb_asin_jquery ( $_sid, $_pid ) {
+        # ASIN handler for mainboard entry
+
+	print '
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+
+	jQuery(document).ready( function($) {
 
 
         	// mainboard submit button pressed
@@ -168,6 +188,7 @@ function lhg_scan_set_asin_jquery ( $_sid ) {
 
 	                //prepare Ajax data:
 		        var session = "'.$_sid.'";
+		        var postid = "'.$_pid.'";
                 	var data ={
                 		action: \'lhg_scan_update_asin_ajax\',
 	                        id: id,
@@ -182,6 +203,56 @@ function lhg_scan_set_asin_jquery ( $_sid ) {
 	                });
 
         		return false;
+
+	        });
+
+
+                // Auto-update of ASIN
+		$("#hwtext-input-asin-mb").on("input", function() {
+
+
+	                //prepare Ajax data:
+		        var session = "'.$_sid.'";
+		        var postid = "'.$_pid.'";
+	        	var asin = $("#hwtext-input-asin-mb").val();
+
+                        if (asin.length != 10) {
+				$("#asin-status").html("&nbsp; Incorrect ASIN length "+asin.length);
+                                return false;
+                        }
+                        else if (asin.substring(0,2) != "B0"){
+				$("#asin-status").html("&nbsp; Incorrect ASIN start "+asin.substring(0,2));
+                                return false;
+                        }else{
+				$("#asin-status").html("&nbsp;<img class=\"scan-load-button\" id=\"button-load-mb-asin\" src=\"/wp-uploads/2015/11/loading-circle.gif\">&nbsp;Checking ASIN...");
+                        }
+
+                        var data ={
+                		action: \'lhg_scan_mb_live_update_asin_ajax\',
+		                session: session,
+                        	asin: asin,
+                                postid: postid
+		        };
+
+
+                        // send AJAX request
+	                $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+	        	        var return_image       = $(response).find("supplemental postimg_url").text();
+	        	        var return_amz_image   = $(response).find("supplemental imgurl").text();
+
+
+                                if (return_image.substring(0,3) == "/wp") {
+                                        return_image = "<img src=\""+return_image+"\" class=\"hwscan-image-thumbnail-found\">";
+                                }
+
+				$("#lhg-scan-mb-thumbnail").html(return_image);
+				$("#asin-status").html("");
+
+	                });
+
+
+
+                        return false;
 
 	        });
 
@@ -272,7 +343,7 @@ print '
 	        //prepare Ajax data:
         	var session = "'.$_sid.'";
 		var data ={
-        		action: \'lhg_scan_usb_onboardn_ajax\',
+        		action: \'lhg_scan_onboardn_ajax\',
                 	id: id,
 	                session: session
                 };
@@ -289,7 +360,7 @@ print '
                 //prepare Ajax data:
                 var session = "'.$_sid.'";
 	        var data ={
-                	action: \'lhg_scan_usb_onboardy_ajax\',
+                	action: \'lhg_scan_onboardy_ajax\',
                         id: id,
                         session: session
                 };
@@ -318,7 +389,7 @@ print '
 	jQuery(document).ready( function($) {
 
 
-        // USB radio button actions
+        // PCI radio button actions
         $("[id^=radio-n-]").click(function() {
         	var id = $(this).attr(\'id\').substring(8);
 	        $("#registration-"+id).show("slow");
@@ -326,7 +397,7 @@ print '
 	        //prepare Ajax data:
         	var session = "'.$_sid.'";
 		var data ={
-        		action: \'lhg_scan_pci_onboardn_ajax\',
+        		action: \'lhg_scan_onboardn_ajax\',
                 	id: id,
 	                session: session
                 };
@@ -343,7 +414,7 @@ print '
                 //prepare Ajax data:
                 var session = "'.$_sid.'";
 	        var data ={
-                	action: \'lhg_scan_pci_onboardy_ajax\',
+                	action: \'lhg_scan_onboardy_ajax\',
                         id: id,
                         session: session
                 };
