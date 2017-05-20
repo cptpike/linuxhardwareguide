@@ -3000,3 +3000,7 @@ tr#quarterly-points-header-row {
 	background: #ece598;
         padding: 6px;
 }
+
+.hwscan-mb-thumbnail {
+	float: right;
+}
