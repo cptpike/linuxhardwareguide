@@ -4,11 +4,15 @@ add_shortcode( 'lhg_hplip', 'lhg_hplip_shortcode');
 add_shortcode( 'lhg_drive_intro', 'lhg_drive_intro_shortcode');
 add_shortcode( 'lhg_mainboard_intro', 'lhg_mainboard_intro_shortcode');
 add_shortcode( 'lhg_mainboard_lspci', 'lhg_mainboard_lspci_shortcode');
+add_shortcode( 'lhg_mainboard_usb', 'lhg_mainboard_usb_shortcode');
 add_shortcode( 'lhg_donation_table', 'lhg_donation_table_shortcode');
 add_shortcode( 'lhg_donation_list', 'lhg_donation_list_shortcode');
+add_shortcode( 'lhg_donation_history', 'lhg_donation_history');
 add_shortcode( 'lhg_scancommand', 'lhg_scancommand_shortcode');
 add_shortcode( 'lhg_donation_testing', 'lhg_donation_testing');
 add_shortcode( 'lhg_scan_overview', 'lhg_scan_overview_shortcode');
+add_shortcode( 'lhg_graphicscard', 'lhg_graphicscard_shortcode');
+add_shortcode( 'lhg_hardware_scans_points', 'lhg_hardware_scans_points_shortcode');
 
 function lhg_drive_intro_shortcode($attr) {
         global $lang;
@@ -58,6 +62,13 @@ function lhg_drive_intro_shortcode($attr) {
         	$drive_type_it = "un flash drive USB";
 		$genus_de = "male";
 
+	}elseif ( (strpos($title_orig,"Flash Drive") > 0 )  ) {
+	        $drive_type = "flash drive";
+        	$drive_type_de = "ein Memorystick";
+        	$drive_type_fr = "un lecteur flash";
+        	$drive_type_es = "una unidad flash";
+        	$drive_type_it = "un flash drive";
+		$genus_de = "male";
 	}
 
         if (strpos($title_orig,"SSD,") > 0 ) {
@@ -117,13 +128,30 @@ function lhg_mainboard_intro_shortcode($attr) {
 	$mainboard_name=trim($s[0]);
 	$mainboard_properties=trim($s[1]);
 
-        # Mainboard type
-        if ( strpos($mainboard_properties,"Laptop") > 0 ) $type = "laptop";
-        if ( strpos($mainboard_properties,"Desktop") > 0 ) $type = "desktop PC";
-        if ( $type != "" ) $typetext = "is a $type and ";
+        # Mainboard /Laptop type
+        if ( strpos(" ".$mainboard_properties,"Laptop") > 0 ) $type = "Laptop";
+        if ( strpos(" ".$mainboard_properties,"Notebook") > 0 ) $type = "Laptop";
+        if ( strpos(" ".$mainboard_properties,"Netbook") > 0 ) $type = "Netbook";
+        if ( strpos(" ".$mainboard_properties,"Ultrabook") > 0 ) $type = "Ultrabook";
+        if ( strpos(" ".$mainboard_properties,"Mainboard") > 0 ) $type = "Mainboard";
+
+        # Laptop screen size
+        if (preg_match("/([0-9][0-9].[0-9] Inch|[0-9][0-9].[0-9]Inch|[0-9][0-9] Inch|[0-9][0-9]Inch)/i",$mainboard_properties,$match) == 1 ) {
+                $inch = strtolower($match[0]);
+	}
+
+        if ( strpos(" ".$mainboard_properties," ATX") > 0 ) $mb_type = "ATX";
+        if ( strpos(" ".$mainboard_properties,"Mini ATX") > 0 ) $mb_type = "mini ATX";
+        if ( strpos(" ".$mainboard_properties,"Mini-ATX") > 0 ) $mb_type = "mini ATX";
+        if ($mb_type != "") $type = $my_type." ".$type;
+
+
+        if ( strpos($mainboard_properties,"Desktop") > 0 ) $type = "Desktop PC";
+        if ( ($type != "") ) $typetext = "is a $type and ";
+        if ( ($type != "") && ($inch != "") ) $typetext = "is a $inch $type and ";
+
 
         $output = "<p>The ".$mainboard_name.' '. $typetext.' was successfully tested ';
-
         if ( $attr['dmi_output'] != "")
         	$output .= 'in configuration</p>
 <pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
@@ -131,9 +159,101 @@ function lhg_mainboard_intro_shortcode($attr) {
 </pre>
 <p>';
 
-	$output .= 'under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'
+	$output .= 'under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']).'.
 </p>
 ';
+
+
+        # German text version
+        if ( ($type != "") && ($inch != "") ) $typetext_de = "ist ein $inch $type ";
+        $typetext_de = str_replace("inch","Zoll",$typetext_de);
+        $output_de = "<p>Das ".$mainboard_name.' '. $typetext_de.' welches erfolgreich ';
+        if ( $attr['dmi_output'] != "")
+        	$output_de .= 'in der Konfiguration</p>
+<pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
+'.$attr['dmi_output'].'
+</pre>
+<p>';
+
+	$output_de .= 'unter '.trim($attr['distribution']).' mit einem Linux-Kernel der Version '.trim($attr['version']).' getestet wurde.
+</p>
+';
+
+
+        # French text version
+
+        if ( ($type == "Laptop") or ($type == "Netbook") or ($type == "Ultrabook") ) {
+                $type_fr = $type;
+                $type_fr = str_replace("Laptop","L'ordinateur portable",$type_fr);
+                $type_fr = str_replace("Netbook","Le Netbook",$type_fr);
+                $type_fr = str_replace("Ultrabook","L'Ultrabook",$type_fr);
+	        $output_fr = "<p>".$type_fr.' '.$mainboard_name.' a &eacute;t&eacute; test&egrave; avec succ&egrave;s ';
+	}elseif( $type == "Mainboard") {
+
+        }else{
+                error_log("lhg_mainboard_intro: Product type unknown (".$title.")");
+	}
+
+        if ( $attr['dmi_output'] != "")
+        	$output_fr .= 'dans la configuration</p>
+<pre class="brush: plain; title: dmesg | grep DMI; notranslate" title="dmesg | grep DMI">
+'.$attr['dmi_output'].'
+</pre>
+<p>';
+
+	$output_fr .= 'avec un noyau Linux de version '.trim($attr['version']).' sous la distribution '.trim($attr['distribution']).'.
+</p>
+';
+
+
+
+
+	if ($lang == "de") $output = $output_de;
+	if ($region == "fr") $output = $output_fr;
+	#if ($region == "es") $output = $output_es;
+	#if ($region == "it") $output = $output_it;
+
+        return $output;
+}
+
+function lhg_graphicscard_shortcode($attr) {
+
+        # possible attributes
+        # $attr['distribution'] - distribution name
+        # $attr['version'] - kernel version
+        # $attr['xserver'] - X.org server version
+        # $attr['nvidia_module'] - nvidia module version
+        global $lang;
+        global $region;
+
+	$title=translate_title(get_the_title());
+	$title_orig=get_the_title();
+	$s=explode("(",$title);
+	$graphicscard_name=trim($s[0]);
+	$graphicscard_properties=trim($s[1]);
+
+        $pid = get_the_ID();
+
+
+        $output = "<p>The ".$graphicscard_name.' was successfully tested
+        under '.trim($attr['distribution']).' with Linux kernel version '.trim($attr['version']);
+
+        if ( $attr['xserver'] != "")
+                $output .= ' and an X-Server of version '.trim($attr['xserver']);
+
+        $output .= ". ";
+
+        if ( $attr['nvidia_module'] != "")
+        	$output .= 'The graphics card was used together with the propriatary NVidia Linux driver in version '. trim($attr['nvidia_module']).'.';
+
+        global $lhg_price_db;
+        if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransverse_posts` WHERE postid_de = %s", $pid);
+        if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT pciids FROM `lhgtransverse_posts` WHERE postid_com = %s", $pid);
+	$pciids = $lhg_price_db->get_var($myquery);
+
+        if ($pciids != "")
+                $output .= "The card can be identified by the following PCI IDs:";
+
         return $output;
 }
 
@@ -154,9 +274,31 @@ function lhg_mainboard_lspci_shortcode($attr, $content) {
 
 '<h3>Hardware Overview</h3>
 <p>
-The following hardware components are part of the '.$mainboard_name.' and are supported by the listed kernel drivers:
+The following PCI components are part of the '.$mainboard_name.' and are supported by the listed kernel drivers:
 </p>
 <pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
+
+
+
+	if ($region == "fr") {
+        $output =
+
+'<h3>Présentation du matériel</h3>
+<p>
+Les composants matériels suivants font partie de la '.$mainboard_name.' et sont pris en charge par les pilotes du noyau énumérés:
+</p>
+<pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
+	} elseif ($lang == "de") {
+        $output =
+
+'<h3>Hardware-&Uuml;bersicht</h3>
+<p>
+Die folgenden Hardware-Komponenten sind beim '.$mainboard_name.' verbaut. Diese werden durch die aufgef&uuml;hrten Kernel-Treiber unter Linux unterst&uuml;tzt:
+</p>
+<pre class="brush: plain; title: lspci -nnk; notranslate" title="lspci -nnk">';
+	}
+
+
 
 #Strange things happen with out lspci output. Somehow, newlines are replaced by <br> if text is transferred as $content
 foreach ($lspci_lines as $line) {
@@ -164,6 +306,63 @@ foreach ($lspci_lines as $line) {
 }
 
 $output .= '</pre>';
+
+
+        return $output;
+}
+
+
+function lhg_mainboard_usb_shortcode($attr, $content) {
+        global $lang;
+        global $region;
+
+	$title=translate_title(get_the_title());
+	$title_orig=get_the_title();
+	$s=explode("(",$title);
+	$mainboard_name=trim($s[0]);
+	$mainboard_properties=trim($s[1]);
+
+        $lsusb_lines = explode("\n",$content);
+
+        $output =
+
+'
+<p>
+Furthermore, the mainboard is equipped with following onboard USB devices:
+</p>
+<pre class="brush: plain; title: lsusb; notranslate" title="lsusb">';
+
+
+
+	if ($region == "fr") {
+        $output =
+
+'
+<p>
+En outre, la carte mère est équipée des dispositifs USB embarqués suivant:
+</p>
+<pre class="brush: plain; title: lsusb; notranslate" title="lsusb">';
+
+	} elseif ($lang == "de") {
+        $output =
+
+'
+<p>
+Zus&auml;tzlich sind die folgenden USB-Komponenten auf dem Mainboard vorhanden:
+</p>
+<pre class="brush: plain; title: lsusb; notranslate" title="lsusb">';
+	}
+
+
+
+#Strange things happen with out lspci output. Somehow, newlines are replaced by <br> if text is transferred as $content
+foreach ($lsusb_lines as $line) {
+        $output .= str_replace("<br />","\n",$line);
+}
+
+$output .= '</pre>';
+
+
         return $output;
 }
 
@@ -450,6 +649,10 @@ function lhg_scan_overview_shortcode($attr) {
 	require_once(plugin_dir_path(__FILE__)."../../lhg-hardware-profile-manager/templates/uid.php");
 	require_once(plugin_dir_path(__FILE__)."lhg.conf");
 
+        global $region;
+        $langurl = lhg_get_lang_url_from_region( $region );
+        if ($langurl == "de") $langurl = "";
+
 	$myquery = $lhg_price_db->prepare("SELECT id, sid, pub_id, scandate, kversion, distribution, status FROM `lhgscansessions` GROUP BY scandate ORDER BY scandate DESC LIMIT 10;");
 	#$sql = "SELECT id FROM `lhgshops` WHERE region <> \"de\"";
 	$identified_scans = $lhg_price_db->get_results($myquery);
@@ -517,11 +720,14 @@ function lhg_scan_overview_shortcode($attr) {
 
 			$output .= "<tr id=\"regcont\">";
 
+                        $langurl = "/".$langurl;
+                        if ($langurl == "/") $langurl = "";
+                        $langurl = str_replace("//","/",$langurl);
 
                         $output .= "
                         <td id=\"col-hw\">
 
-                        ".'<div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">&nbsp;<a href="/hardware-profile/system-'.$pub_id.'" target="_blank">'.$scandate_txt.' (see details ...)</a></div></div>';
+                        ".'<div class="subscribe-hwtext-scanlist"><div class="subscribe-hwtext-span-scanlist">&nbsp;<a href="'.$langurl.'/hardware-profile/system-'.$pub_id.'" target="_blank">'.$scandate_txt.' (see details ...)</a></div></div>';
 			$output .= " </td>";
 
                         # Status ---
@@ -585,6 +791,9 @@ function lhg_donation_table_shortcode($attr) {
         global $txt_cp_totalkarma;
         global $txt_cp_details;
 
+        # update detailed points overview in transverse DB
+        lhg_update_points_db();
+
         # before we create the table we update the data in the transverse DB
         lhg_update_karma_values('quarterly');
 
@@ -594,8 +803,8 @@ function lhg_donation_table_shortcode($attr) {
 
         $langurl = lhg_get_lang_url_from_region( $region );
 
-	# Show table of top users of ongoing Quarter
-	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse();
+	# Show table of top users of ongoing quarter
+	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse( false, false );
 
 
         $i = 0;
@@ -616,6 +825,8 @@ function lhg_donation_table_shortcode($attr) {
                         # skip anonymously added posts, i.e. user = user-submitted-posts
 	                $user_tmp = lhg_get_userdata_guid($guid);
                         $user=$user_tmp[0];
+
+                        #error_log("GUID: $guid");
 
                         if ( $user !== false )
                         if ($uid != 12378){
@@ -923,6 +1134,223 @@ function lhg_donation_list_shortcode($attr) {
         return $output;
 }
 
+function lhg_donation_history($attr) {
+        global $lang;
+        global $donation;
+
+	$start = $attr['start'];
+	$end   = $attr['end'];
+
+        list($endyear, $endmonth) = explode("-",$end);
+        if ($endmonth < 12) $enddate = "1-".( intval($endmonth) +1)."-".$endyear;
+        if ($endmonth == 12) $enddate = "1-1-".(intval($endyear)+1);
+
+        #error_log("END: $enddate - $endmonth");
+
+        $start_timestamp = strtotime($start);
+	$end_timestamp   = strtotime($enddate);
+
+        # 
+	$total_points = 0; # collects all points collected in this time frame
+        $donation_points = array(); # collects all points per donation target in this time frame
+
+
+        #
+        # donation points by hardware scans
+        #
+        # donations to distribution was introduced after 09-2016
+        # skip output otherwise
+        if ( $end_timestamp > strtotime("1-10-2016") ) {
+		$points_scan = lhg_points_from_hwscans( $start_timestamp, $end_timestamp );
+
+        	foreach ($points_scan as $key => $points) {
+                	#error_log("Pts: $points -> $key");
+	                $total_points += $points;
+        	        $donation_points[$key] += $points;
+		}
+	}
+
+        # sort by points
+        arsort($points_scan);
+        $distri = lhg_get_distribution_array();
+	$logo = $distri[$distri_name]["logo"];
+
+        foreach ($points_scan as $key => $points) {
+	        $distri_name = lhg_get_distri_name( $donation[$key]["Name"] );
+		$logo = $distri[$distri_name]["logo"];
+
+                $scan_output .= '<div class="donations-short-user-list">
+                        		<div class="donations-short-user-list-avatar">'.
+
+                                        "<img src=\"".$logo."\" width=45px>
+                                        </div>
+
+                                        ".'<div class="donations-short-user-list-text">
+                                        	<center>'.
+                                        	$donation[$key]["Name"]."<br><b>".round($points/$total_points*100)."%</b> ($points points)
+                                        	</center>
+                                        </div>
+
+                                </div>";
+	}
+
+
+        #
+        # donation points collected by users
+
+	list($list_guid, $list_points_guid) = cp_getAllQuarterlyPoints_transverse( $start_timestamp, $end_timestamp );
+
+        #print_r("LGUID:   $list_guid");
+
+
+        $i = 0;
+        if (sizeof($list_guid) > 0)
+	foreach($list_guid as $guid){
+
+
+		$user_tmp = lhg_get_userdata_guid($guid);
+                $user=$user_tmp[0];
+
+                if ( $user !== false ){
+                	#var_dump($user);
+                        #print sizeof($uid)."<p>";
+        	        $user_nicename = $user->user_nicename;
+                	$points = $list_points_guid[$i];
+
+			# get user's avatar
+                        $avatar = $user->avatar;
+                        # repair URL if linking to .de avatar on .com server
+                        if (strpos($avatar,"src='/avatars/") > 0) $avatar = str_replace( "src='/avatars/" , "src='http://www.linux-hardware-guide.de/avatars/" , $avatar );
+
+                        $wpuid_de = $user->wpuid_de;
+                        $wpuid_com = $user->wpuid;
+	                $user_language_txt = $user->language;
+        		$user_language_flag= lhg_show_flag_by_lang ( $user_language_txt );
+			$total_karma = $user->karma_com + $user->karma_de; //$num_com * 3 + $num_art * 50;
+
+                        if ($lang == "de") $uid = $user->wpuid_de;
+                        if ($lang == "com") $uid = $user->wpuid;
+
+                        //registration date
+                        #$regdate = date("d. M Y", strtotime(get_userdata( $uid ) -> user_registered ) );
+
+                        //donates to
+                        # TODO:
+                        # to be updated, because we need the donation target at the end of the given time frame
+                        $donation_target = lhg_get_donation_target_by_date( $guid, $end_timestamp );
+
+                        $total_points += $points;
+                        $donation_points[$donation_target] += $points;
+                        #$output .="User: $user_nicename -> Points: $points -> $donation_target <br>";
+
+
+                        ## show user info
+                        ##
+			$user_list .= '<div class="donations-short-user-list">
+                        		<div class="donations-short-user-list-avatar">';
+
+			# TODO: localized hardware profile should be linked. Not US version
+
+			# linked avatar to user page if on local server
+			# link avatar to guser page, if user present on other servers
+			if ($lang == "de") {
+				if ($user->wpuid_de != 0) {
+					$user_list .= '<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+			                $close0 = 1; # remember that link has to be closed
+			        } else {
+					$user_list .= '<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close0 = 1;
+			        }
+			}
+
+			if ($lang != "de") {
+				if ($user->wpuid != 0) {
+					$user_list .= '<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+			                $close0 = 1; # remember that link has to be closed
+			        } else {
+					$user_list .= '<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close0 = 1; # remember that link has to be closed
+			        }
+			}
+
+			$user_list .='    <div class="userlist-avatar">'.
+			      $avatar.'
+			    </div> ';
+
+			if ($close0 == 1) $user_list .= '</a></div>';
+                        $user_list .= '<div class="donations-short-user-list-text"><center>';
+
+
+			# show link to user page if on local server
+			# link to guser page, if user present on other servers
+			if ($lang == "de") {
+				if ($user->wpuid_de != 0) {
+			        	$user_list .= '		<a href="/hardware-profile/user'.$user->wpuid_de.'" class="recent-comments">';
+			                $close1 = 1; # remember that link has to be closed
+			        } else {
+			        	$user_list .= '		<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close1 = 1;
+			        }
+			}
+
+			if ($lang != "de") {
+				if ($user->wpuid != 0) {
+			        	$user_list .= '		<a href="/hardware-profile/user'.$user->wpuid.'" class="recent-comments">';
+			                $close1 = 1;
+			        } else {
+			        	$user_list .= '		<a href="/hardware-profile/guser'.$guid.'" class="recent-comments">';
+			                $close1 = 1;
+			        }
+			}
+
+			$user_list .= "".$user_nicename."";
+
+			if ($close1 == 1) $user_list .= '</a>';
+
+
+
+
+                        $user_list .= "<br>$points Points
+                         to<br>".
+                        $donation[$donation_target]["Name"]."
+
+                        </center> </div>";
+                        $user_list .= "</div>";
+
+		}
+                $i++;
+	}
+
+
+
+        #print "Scan results:";
+        #var_dump($scans_donation_target);
+
+
+        #$iendmonth= (int)$endmonth;
+        $output .= "<h2>Donations from ".date("d M Y",$start_timestamp)." to ".date("d M Y",$end_timestamp).":</h2>
+                        Collected Points: <b>$total_points</b><br>
+                        ";
+
+	foreach($donation_points as $key => $donation_point){
+                if ($donation_point > 0)
+                $output .= "Donations to ". $donation[$key]["Name"].": <b>".round($donation_point/$total_points*100)."%</b> ($donation_point points)<br>";
+	}
+
+
+        $output .= "<br>Users that collected and donated points:<br>
+        ".$user_list."";
+
+        # donations to distribution was introduced after 09-2016
+        # skip output otherwise
+        if ( $end_timestamp > strtotime("1-10-2016") ) $output .= '<br clear=all>Hardware scan results:<br>'.$scan_output."<br clear=all>";
+
+
+
+        return $output;
+}
+
+
 function lhg_scancommand_shortcode($attr) {
         global $lang;
 
@@ -954,3 +1382,61 @@ function lhg_donation_testing($attr, $content) {
         return;
 }
 
+#shortcode to show points collected by hardware scans
+function lhg_hardware_scans_points_shortcode($attr) {
+        global $lang;
+        global $donation;
+
+	$start = $attr['start'];
+	$end   = $attr['end'];
+
+        $start_timestamp = strtotime($start);
+	$end_timestamp   = strtotime($enddate);
+
+        if ($start == "") $start_timestamp = cp_StartOfQuarter();
+	if ($end == "") $end_timestamp = time();
+
+        #
+	$total_points = 0; # collects all points collected in this time frame
+        $donation_points = array(); # collects all points per donation target in this time frame
+
+        #
+        # donation points by hardware scans
+        #
+
+	$points_scan = lhg_points_from_hwscans( $start_timestamp, $end_timestamp );
+
+        foreach ($points_scan as $key => $points) {
+                #error_log("Pts: $points -> $key");
+                $total_points += $points;
+                $donation_points[$key] += $points;
+
+	}
+
+        # sort by points
+        arsort($points_scan);
+        $distri = lhg_get_distribution_array();
+	$logo = $distri[$distri_name]["logo"];
+
+        foreach ($points_scan as $key => $points) {
+	        $distri_name = lhg_get_distri_name( $donation[$key]["Name"] );
+		$logo = $distri[$distri_name]["logo"];
+                $url  = $distri[$distri_name]["url"];
+
+                $scan_output .= '<div class="donations-short-user-list">
+                        		<div class="donations-short-user-list-avatar">'.
+
+                                        '<a href="'.$url.'">'."<img src=\"".$logo."\" width=45px></a>
+                                        </div>
+
+                                        ".'<div class="donations-short-user-list-text">
+                                        	<center> <a href="'.$url.'">'.
+                                        	$donation[$key]["Name"]."</a><br><b>$points points</b>
+                                        	</center>
+                                        </div>
+
+                                </div>";
+	}
+
+        return $scan_output;
+}

@@ -1823,7 +1823,8 @@ function comment_form( $args = array(), $post_id = null ) {
                                                       //$required = ATT_REQ ? ' <span class="required">*</span>' : '';
                                                         global $region;
                                                         if ($ATT_MAX == "") $ATT_MAX = 2;
-                                                        if ($region != "de") echo '
+                                                        #if ($region != "de")
+                                                        echo '
                                                         <p class="comment-form-url comment-form-attachment">
 
                                                             <label for="attachment">'.$txt_att_attachment.'</label>

@@ -163,7 +163,7 @@ print "<br>";
 
 
 if ( (count($identified_scans) == 0) or ($skip_list == 1) ) {
-        # print '<div class="no-hw-found">No scans found</div>';
+        print '<div class="no-hw-found">No scans found</div>';
 }else {
 
 	if (sizeof($identified_scans) == 1) print "There is ".sizeof($identified_scans)." scan result that is linked to the anonymous user account ".$uid.".<br>&nbsp;<br>";

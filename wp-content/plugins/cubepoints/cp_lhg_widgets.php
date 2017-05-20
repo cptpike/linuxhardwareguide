@@ -362,29 +362,84 @@ function cp_getAllQuarterlyPoints(){
 
 }
 
-function cp_getAllQuarterlyPoints_transverse(){
+function cp_getAllQuarterlyPoints_transverse( $startdate, $enddate ){
 
         global $lhg_price_db;
-        $sql = "SELECT * FROM `lhgtransverse_users` WHERE karma_quarterly_com <> 0 OR karma_quarterly_de <> 0";
-        $results = $lhg_price_db->get_results($sql);
+
+        if (!is_numeric( $startdate ) or !is_numeric( $enddate ) ){
+                #error_log("No start & end date given");
+                $startdate = cp_StartOfQuarter();
+                $enddate   = cp_EndOfQuarter();
+
+                #error_log("start: $startdate end: $enddate");
+	}
 
 
-        # Sum up achieved points of the accumulation time span
-	foreach($results as $result){
-		$user_nicename = $result->user_nicename;
-		$points = $result->karma_quarterly_com + $result->karma_quarterly_de;
-                #$cp_inQuarter = cp_TimeInQuarter($result->timestamp);
-		#print "$user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data <br>";
+        if (is_numeric( $startdate ) && is_numeric( $enddate ) ){
+	        $sql = "SELECT * FROM `lhgtransverse_points` WHERE timestamp > $startdate AND timestamp < $enddate";
+	        $results = $lhg_price_db->get_results($sql);
 
-                $founduser_points[$result->id] = $points;
-                $founduser_guid[$result->id] = $result->id;
+	        # Sum up achieved points of the accumulation time span
+		foreach($results as $result){
+
+                        # skip admin points
+                        if ( ( ($result->wpuid_com) > 1) or ( ($result->wpuid_de) > 1 ) ) {
+
+        	                $points = $result->points;
+
+                	        # get guid
+                        	if ( ($result->wpuid_com) > 0) $guid = lhg_get_guid_from_wpuid_com($result->wpuid_com);
+	                        if ( ($result->wpuid_de) > 0) $guid = lhg_get_guid_from_wpuid_de($result->wpuid_de);
+
+                                # prevent doubple counting of scans
+                                $skip = 0;
+                                if ( strpos($result->comment, "/hardware-profile" ) > 0 ) {
+				        $sql_double = "SELECT MIN(timestamp) FROM `lhgtransverse_points` WHERE comment = '%s'";
+                                        $safe_sql = $lhg_price_db->prepare($sql_double, $result->comment);
+				    	$min_timestamp = $lhg_price_db->get_var($safe_sql);
+                                        if ($min_timestamp < $result->timestamp) $skip = 1; # this is a duplicate!
+                                        #error_log("min: $min_timestamp = $result->timestamp ?");
+	                	}
+
+                                if ($guid == "") $skip = 1;
+
+                	        # collect data in array
+                                if ($skip == 0) {
+					$founduser_points[$guid] += $points;
+	        		        $founduser_guid[$guid] = $guid;
+        	        	        #error_log("P: $points -> $guid -> ".$result->wpuid_com."");
+	                	}
+
+                	}
+	        }
+
+
+	}else{
+                # skip admin points
+        	$sql = "SELECT * FROM `lhgtransverse_users` WHERE ( karma_quarterly_com <> 0 OR karma_quarterly_de <> 0 ) AND wpuid <> 1";
+	        $results = $lhg_price_db->get_results($sql);
+
+	        # Sum up achieved points of the accumulation time span
+		foreach($results as $result){
+	                        #error_log("ID: ".$result->id);
+				$user_nicename = $result->user_nicename;
+				$points = $result->karma_quarterly_com + $result->karma_quarterly_de;
+	        	        #$cp_inQuarter = cp_TimeInQuarter($result->timestamp);
+				#print "$user_nicename: $result->timestamp --> $result->type, $result->uid, $result->points, $result->data <br>";
+
+	        	        $founduser_points[$result->id] = $points;
+        	        	$founduser_guid[$result->id] = $result->id;
+	        }
         }
+
+
         #print "USERP: <br>";
         #var_dump($founduser_points);
         #print "<br>ID: <br>";
         #var_dump($founduser_uid);
 
-        array_multisort($founduser_points, SORT_DESC, SORT_NUMERIC, $founduser_guid);
+        if ( $founduser_points != "" )
+        array_multisort( $founduser_points, SORT_DESC, SORT_NUMERIC, $founduser_guid );
 
         #print "<br>USERP sorted: <br>";
         #var_dump($founduser_points);

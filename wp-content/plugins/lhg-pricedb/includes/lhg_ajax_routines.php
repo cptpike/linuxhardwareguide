@@ -27,7 +27,7 @@ add_action('wp_ajax_nopriv_lhg_scan_update_mb_comment_ajax', 'lhg_scan_update_mb
 
 # HW scan results: comment on existing hardware
 add_action('wp_ajax_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
-add_action('wp_ajax_nopriv_lhg_scan_created_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_create_hardware_comment_ajax', 'lhg_scan_create_hardware_comment_ajax');
 
 # HW scan results: append comment to hardware article
 add_action('wp_ajax_lhg_scan_append_hardware_comment_ajax', 'lhg_scan_append_hardware_comment_ajax');
@@ -45,7 +45,109 @@ add_action('wp_ajax_nopriv_lhg_translate_slug_ajax', 'lhg_translate_slug_ajax');
 add_action('wp_ajax_lhg_update_teaser_image_ajax', 'lhg_update_teaser_image_ajax');
 add_action('wp_ajax_nopriv_lhg_update_teaser_image_ajax', 'lhg_update_teaser_image_ajax');
 
+# change status of scan (new, complete, ongoing, ...)
+add_action('wp_ajax_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
+add_action('wp_ajax_nopriv_lhg_update_scan_status_ajax', 'lhg_update_scan_status_ajax');
+
+# create a new mainboard / laptop article
+add_action('wp_ajax_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
+add_action('wp_ajax_nopriv_lhg_create_mainboard_post_ajax', 'lhg_create_mainboard_post_ajax');
+
+# modify title of post in scan overview
+add_action('wp_ajax_lhg_scan_update_title_ajax', 'lhg_scan_update_title_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_title_ajax', 'lhg_scan_update_title_ajax');
+
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_tags_ajax', 'lhg_scan_update_tags_ajax');
+
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_categories_ajax', 'lhg_scan_update_categories_ajax');
+
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_asin_ajax', 'lhg_scan_update_asin_ajax');
+
+# modify tags of post in scan overview
+add_action('wp_ajax_lhg_scan_update_designation_ajax', 'lhg_scan_update_designation_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_designation_ajax', 'lhg_scan_update_designation_ajax');
+
+# publish mainboard article
+add_action('wp_ajax_lhg_scan_publish_mb_article_ajax', 'lhg_scan_publish_mb_article_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_publish_mb_article_ajax', 'lhg_scan_publish_mb_article_ajax');
+
+# change mainboard title
+add_action('wp_ajax_lhg_scan_update_mb_title_ajax', 'lhg_scan_update_mb_title_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_mb_title_ajax', 'lhg_scan_update_mb_title_ajax');
+
+# change mainboard type
+add_action('wp_ajax_lhg_scan_update_mb_type_ajax', 'lhg_scan_update_mb_type_ajax');
+add_action('wp_ajax_nopriv_lhg_scan_update_mb_type_ajax', 'lhg_scan_update_mb_type_ajax');
+
 # AJAX funcitonalities
+
+# create a new mainboard article. Return the post id.
+# used by scan page to create article if MB was wrongly identified
+function lhg_create_mainboard_post_ajax() {
+        global $lhg_price_db;
+
+        require_once( WP_PLUGIN_DIR . '/lhg-hardware-profile-manager/templates/scan.php');
+
+	$sid   	 = $_REQUEST['session'] ;
+	$title   = $_REQUEST['title'] ;
+
+        #error_log("SID: $sid - Title: $title");
+
+        # execute standard actions for status change:
+        #lhg_db_update_status( $sid, $status, $uid );
+
+
+
+        $postid = lhg_create_mainboard_article($title, $sid, "");
+        $newurl = "/wp-admin/post.php?post=".$postid."&action=edit&scansid=".$sid;
+        #error_log("Created article: $postid");
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'postid' => $postid,
+                        'newurl' => $newurl
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
+# update the scan status of a hardware scan
+function lhg_update_scan_status_ajax() {
+        global $lhg_price_db;
+
+	$sid   	 = $_REQUEST['session'] ;
+	$status	 = $_REQUEST['status'] ;
+	$uid	 = $_REQUEST['uid'] ;
+
+        #error_log("SID: $sid - Stat: $status");
+
+        # execute standard actions for status change:
+        lhg_db_update_status( $sid, $status, $uid );
+
+        $response = new WP_Ajax_Response;
+        $response->add( array(
+                'data' => 'success',
+                'supplemental' => array(
+	        	'status' => $status,
+                ),
+                ) );
+
+        $response->send();
+
+        die();
+}
+
 
 # update a teaser image based on url and postid
 function lhg_update_teaser_image_ajax() {
@@ -244,6 +346,8 @@ function lhg_scan_append_hardware_comment_ajax() {
 function lhg_scan_create_hardware_comment_ajax() {
         global $lhg_price_db;
 
+        #error_log("Create comment!");
+
 	$session   = $_REQUEST['session'] ;
 	$comment   = $_REQUEST['comment'] ;
 	$username  = $_REQUEST['username'] ;
@@ -315,8 +419,8 @@ function lhg_scan_create_hardware_comment_ajax() {
                 'data' => 'success',
                 'supplemental' => array(
 	        	'text' => "Debug: $pid - $id - $asin - $comment - SID: $session -- END",
-        	         'return_comment' => "$return_comment",
-        	         'comment_id' => "$comment_id",
+        	         'return_comment' => $return_comment,
+        	         'comment_id' => $comment_id,
                 ),
                 ) );
 
@@ -427,6 +531,16 @@ function lhg_scan_update_ajax() {
         $asinURL = $_REQUEST['asinURL'] ;
         $comment = $_REQUEST['comment'] ;
 
+        // store user submitted title
+        if ($title != "")
+
+
+
+
+        // ToDo
+        // ASIN processing disabled -> separate routine needed
+        $asinURL = "";
+
         // get image URL
         $pos = strpos($asinURL,"/B0");
         $asin = substr($asinURL, $pos+1,10);
@@ -448,6 +562,7 @@ function lhg_scan_update_ajax() {
         lhg_update_categories_by_string($pid, $product_title, $mode);
         lhg_update_title_by_string($pid, $product_title, $mode);
         if ($mode == "drive") lhg_correct_drive_name($pid, $session);
+
 
         # extract new Properties and new title coming from ASIN data
         $newtitle = get_the_title( $pid );
@@ -515,6 +630,207 @@ function lhg_scan_update_ajax() {
 
 }
 
+# update post title on scan page
+function lhg_scan_update_title_ajax() {
 
+	$pid       = $_REQUEST['postid'];
+	$id        = $_REQUEST['id'] ;
+	$session   = $_REQUEST['session'] ;
+        $title     = $_REQUEST['title'] ;
+        //$wpuid_de  = $_REQUEST['wpuid_de'] ;
+        //$wpuid_com = $_REQUEST['wpuid_com'] ;
+
+        global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usertitle = %s WHERE id = %s ", $title, $id);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
+
+# update post tags on scan page
+function lhg_scan_update_tags_ajax() {
+
+	$pid       = $_REQUEST['postid'];
+	$id        = $_REQUEST['id'] ;
+	$session   = $_REQUEST['session'] ;
+        $tags      = $_REQUEST['tags'] ;
+        //$wpuid_de  = $_REQUEST['wpuid_de'] ;
+        //$wpuid_com = $_REQUEST['wpuid_com'] ;
+
+
+        # create string of tag ids
+        $tagstring = "";
+        foreach ($tags as $tag)  {
+                if ( $tagstring == "" ) $tagstring = $tag;
+                if ( $tagstring != "" ) $tagstring = $tagstring.",$tag";
+        }
+
+	global $lhg_price_db;
+
+        #error_log("tags ajax: $id $pid $session $tagstring");
+
+        if ($id == "mb") {
+                # store mainboard data
+		$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET mb_usertags_ids = %s WHERE sid = %s ", $tagstring, $session );
+		$result = $lhg_price_db->query($myquery);
+	}else{
+		$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usertags_ids = %s WHERE id = %s ", $tagstring, $id);
+		$result = $lhg_price_db->query($myquery);
+        }
+        exit();
+}
+
+# update post categories on scan page
+function lhg_scan_update_categories_ajax() {
+
+	$pid        = $_REQUEST['postid'];
+	$id         = $_REQUEST['id'] ;
+	$session    = $_REQUEST['session'] ;
+        $categories = $_REQUEST['categories'] ;
+        //$wpuid_de  = $_REQUEST['wpuid_de'] ;
+        //$wpuid_com = $_REQUEST['wpuid_com'] ;
+
+
+        # create string of tag ids
+        $catstring = "";
+        if ($categories != "")
+        foreach ($categories as $cat)  {
+                if ( $catstring == "" ) $catstring = $cat;
+                if ( $catstring != "" ) $catstring = $catstring.",$cat";
+        }
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhghwscans` SET usercategories = %s WHERE id = %s ", $catstring, $id);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
+
+
+# update asin ID 
+function lhg_scan_update_asin_ajax() {
+
+	$pid        = $_REQUEST['postid'];
+	$id         = $_REQUEST['id'] ;
+	$session    = $_REQUEST['session'] ;
+        $asin 	    = $_REQUEST['asin'] ;
+	$key = "amazon-product-single-asin";
+
+        #error_log("Update ASIN -> PID $pid, ID $id, Session: $session, ASIN: $asin");
+        #error_log("Before stored value($pid) = ".get_post_meta($pid, $key, TRUE));
+
+        if ($asin == "") exit();
+
+	# And Store asin in WPDB
+  	$value = $asin;
+	if( metadata_exists('post', $pid, $key) ) { //if the custom field already has a value
+  		update_post_meta($pid, $key, $value);
+                #error_log( "Updated ASIN (PID $pid) to $value");
+	} else { //if the custom field doesn't have a value
+  		add_post_meta($pid, $key, $value);
+                #error_log("Added ASIN: (PID $pid) to $value");
+	}
+
+        #error_log("Stored value($pid) = ".get_post_meta($pid, $key, TRUE)." == $asin ?");
+
+        exit();
+}
+
+# update scan designation
+function lhg_scan_update_designation_ajax() {
+
+	$sid         = $_REQUEST['sid'] ;
+	$designation = $_REQUEST['input'] ;
+
+        if ($designation == "") exit();
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET designation = %s WHERE sid = %s ", $designation, $sid);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
+
+function lhg_scan_publish_mb_article_ajax() {
+
+	$sid          = $_REQUEST['sid'] ;
+	$id	      = $_REQUEST['id'] ;
+	$title_mb     = $_REQUEST['title_mb'] ;
+	$asin_mb      = $_REQUEST['asin_mb'] ;
+	$idarray_pci  = $_REQUEST['idarray_pci'] ;
+	$idarray_usb  = $_REQUEST['idarray_usb'] ;
+	$idarray_tags = $_REQUEST['idarray_tags'] ;
+	$postid       = $_REQUEST['postid'] ;
+	$type         = $_REQUEST['type'] ;
+
+        $idstring_pci = "";
+        if ($idarray_pci != "")
+        foreach ($idarray_pci as $idx)  {
+                if ( $idstring_pci != "" ) $idstring_pci .= $idstring_pci.",$idx";
+                if ( $idstring_pci == "" ) $idstring_pci = $idx;
+        }
+
+        $idstring_usb = "";
+        if ($idarray_usb != "")
+        foreach ($idarray_usb as $idx)  {
+                if ( $idstring_usb != "" ) $idstring_usb .= $idstring_usb.",$idx";
+                if ( $idstring_usb == "" ) $idstring_usb = $idx;
+        }
+
+        $idstring_tags = "";
+        if ($idarray_tags != "")
+        foreach ($idarray_tags as $idx)  {
+                if ( $idstring_tags != "" ) $idstring_tags .= $idstring_tags.",$idx";
+                if ( $idstring_tags == "" ) $idstring_tags = $idx;
+        }
+
+
+        #error_log("AJAX: SID: $sid -- ID: $id -- ALL_PCI: $idstring_pci -- ALL_USB: $idstring_usb -- Tags: $idstring_tags -- ASIN: $asin_mb -- title: $title_mb");
+        #error_log("AJAX: SID: $sid -- ID: $id -- ASIN: $asin_mb -- title: $title_mb");
+
+        lhg_scan_publish_mainboard_article( $sid, $postid, $asin_mb, $title_mb, $idarray_pci, $idarray_usb, $idarray_tags, $type );
+
+
+        exit();
+}
+
+# update mainboard designation
+function lhg_scan_update_mb_title_ajax() {
+
+	$sid         = $_REQUEST['session'] ;
+	$designation = $_REQUEST['title'] ;
+
+        #error_log("Update MB title: $designation SID: $sid");
+
+        if ($designation == "") exit();
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET mb_usertitle = %s WHERE sid = %s ", $designation, $sid);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
+
+# update mainboard type
+function lhg_scan_update_mb_type_ajax() {
+
+	$sid         = $_REQUEST['sid'] ;
+	$val	     = $_REQUEST['val'] ;
+
+        #error_log("Update MB type: $val SID: $sid");
+
+        if ($val == "") exit();
+
+	global $lhg_price_db;
+
+	$myquery = $lhg_price_db->prepare("UPDATE `lhgscansessions` SET mb_type_user = %s WHERE sid = %s ", $val, $sid);
+	$result = $lhg_price_db->query($myquery);
+
+        exit();
+}
 
 ?>

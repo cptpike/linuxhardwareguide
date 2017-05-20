@@ -29,13 +29,19 @@ require_once(plugin_dir_path(__FILE__).'includes/lhg_shortcodes.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_auto_finder.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_donations.php');
 require_once(plugin_dir_path(__FILE__).'includes/lhg_user_management.php');
-require_once(plugin_dir_path(__FILE__).'includes/lhg_chat.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_user_hardware.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_post_history.php');
+require_once(plugin_dir_path(__FILE__).'includes/lhg_json.php');
+#require_once(plugin_dir_path(__FILE__).'includes/lhg_chat.php');
 #require_once(plugin_dir_path(__FILE__).'includes/lhg_wpadmin_mods.php');
 require_once('/var/www/wordpress/version.php');
 
 # store new tags in LHGDB
 add_action ('edit_post', 'lhg_update_tag_links' );
 add_action ('save_post', 'lhg_update_tag_links' );
+
+# execute code based on the URL
+add_action( 'init', 'lhg_url_based_code' );
 
 
 # Disable visual editor for all users - breaks too many things
@@ -473,25 +479,32 @@ function lhg_save_id_widget_data( $postid ) {
     #write data (currently no check if updated)
     #
     # write USB ID
+    // warning -> this does not work if post update is initiated by hook-in
     $value_usb = $_POST['product-library-usbid'];
     $value_pci = $_POST['product-library-pciid'];
     $value_strg = $_POST['product-library-idstrg'];
     #echo "Val: $value \n";
-    $sql = "UPDATE lhgtransverse_posts SET `usbids` = \"%s\" WHERE postid_com = %s";
-    $safe_sql = $lhg_price_db->prepare($sql, $value_usb, $postid);
-    $result = $lhg_price_db->query($safe_sql);
+
+    if ($value_usb != "") {
+	    $sql = "UPDATE lhgtransverse_posts SET `usbids` = \"%s\" WHERE postid_com = %s";
+	    $safe_sql = $lhg_price_db->prepare($sql, $value_usb, $postid);
+	    $result = $lhg_price_db->query($safe_sql);
+    }
     #echo "SQL: $result";
 
     # write PCI ID
-    $sql = "UPDATE lhgtransverse_posts SET `pciids` = \"%s\" WHERE postid_com = %s";
-    $safe_sql = $lhg_price_db->prepare($sql, $value_pci, $postid);
-    $result = $lhg_price_db->query($safe_sql);
+    if ($value_pci != "") {
+	    $sql = "UPDATE lhgtransverse_posts SET `pciids` = \"%s\" WHERE postid_com = %s";
+	    $safe_sql = $lhg_price_db->prepare($sql, $value_pci, $postid);
+	    $result = $lhg_price_db->query($safe_sql);
+    }
 
-    # write PCI ID
-    $sql = "UPDATE lhgtransverse_posts SET `idstring` = \"%s\" WHERE postid_com = %s";
-    $safe_sql = $lhg_price_db->prepare($sql, $value_strg, $postid);
-    $result = $lhg_price_db->query($safe_sql);
-
+    # write ID String (but do not blindly overvwrite)
+    if ($value_strg != "") {
+	    $sql = "UPDATE lhgtransverse_posts SET `idstring` = \"%s\" WHERE postid_com = %s";
+	    $safe_sql = $lhg_price_db->prepare($sql, $value_strg, $postid);
+	    $result = $lhg_price_db->query($safe_sql);
+    }
 }
 
 function lhg_create_article_image( $image_url , $image_title ) {
@@ -819,5 +832,71 @@ function lhg_update_tag_links ( $postid ) {
         #return $properties;
 }
 
+function lhg_url_based_code ( ) {
+
+        #error_log("URL: ".$_SERVER['REQUEST_URI']);
+        #error_log("POS: ".strpos( $_SERVER['REQUEST_URI'], '/json' ));
+
+	if ( strpos( $_SERVER['REQUEST_URI'], '/autotranslate' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_url_request_autotranslate();
+	    exit;
+	}
+
+	if ( strpos( $_SERVER['REQUEST_URI'], '/debug' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_send_url_request();
+	    exit;
+	}
+
+	if ( strpos( $_SERVER['REQUEST_URI'], '/json' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_url_request_json();
+	    exit;
+	}
+
+	if ( strpos( $_SERVER['REQUEST_URI'], '/wp-admin/admin.php?movecomment' ) === 0 ) {
+	    // DO YOUR THING HERE, THEN REDIRECT
+	    #wp_redirect( 'http://example.com' );
+            lhg_url_request_move_comment();
+	    exit;
+	}
+
+
+}
+
+
+function lhg_send_url_request ( ) {
+
+	global $lhg_price_db;
+
+	$url = "http://192.168.3.112/json";
+        $guid = 22;
+
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+
+        $data = array (
+                'guid' => $guid,
+                'password' => $password,
+                'request' => 'create_article_translation',
+                'postid' => 54465,
+                'postid_server' => 'com'
+        );
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
+        print "Data requested";
+        var_dump($response);
+        exit;
+}
 
 ?>

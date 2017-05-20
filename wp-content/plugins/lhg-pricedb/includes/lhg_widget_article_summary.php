@@ -19,13 +19,13 @@ function wp_one_post_admin_scripts() {
   wp_register_script( 'jquery-ui', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js');
   wp_enqueue_script( 'jquery-ui' );
 
-  wp_register_style( 'wp-one-post-admin', plugins_url('css/lhg_widget_article_summary_admin.css', __FILE__));
+  wp_register_style( 'wp-one-post-admin', plugins_url('lhg-pricedb/css/lhg_widget_article_summary_admin.css'));
   wp_enqueue_style( 'wp-one-post-admin' );
 }    
 add_action('admin_enqueue_scripts', 'wp_one_post_admin_scripts');
 
 function wp_one_post_scripts() {
-  wp_register_style( 'wp-one-post-widget', plugins_url('css/lhg_widget_article_summary.css', __FILE__));
+  wp_register_style( 'wp-one-post-widget', plugins_url('lhg-pricedb/css/lhg_widget_article_summary.css'));
   wp_enqueue_style( 'wp-one-post-widget' );
 }
 add_action('wp_enqueue_scripts', 'wp_one_post_scripts');

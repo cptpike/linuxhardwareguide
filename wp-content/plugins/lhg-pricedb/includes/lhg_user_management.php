@@ -13,12 +13,38 @@ define ('LHG_KARMA_edit_others_posts', 500); # e.g. needed for translators
 
 define ('LHG_KARMA_POINTS_hwscan', 50); # How many points for an uploaded hardware scan
 
+#
+# include further sub-components of the user_management
+#
+# manage authorship of articles
+require_once(plugin_dir_path(__FILE__).'/lhg_user_management_authorship.php');
+
+
 # show comment menu for all users
 #add_menu_page('edit-comments.php');
 
 #apply_filters ( 'map_meta_cap', $caps, $cap, $user_id, $args );
 add_filter ( 'map_meta_cap', 'lhg_check_permissions', 10, 4 );
+#add_filter ( 'map_meta_cap', 'lhg_check_permissions_manufacturers', 10, 4 );
 function lhg_check_permissions( $caps, $cap, $user_id, $args) {
+
+        # all of this makes only sense if user is logged in
+        if ( ($user_id == 0) or ($user_id == "") ) return $caps;
+
+        $caps_old = $caps;
+
+        # check if this is a manufacturer
+        $caps = lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args );
+        #error_log("CAPS: $caps v $caps_old");
+        if ($caps !== false ) return $caps;
+        $caps = $caps_old;
+
+
+        # check if users own this hardware (i.e. uploaded corresponding scan)
+        if ($user_id > 0)
+        $user_owns_hardware = lhg_check_user_owns_hardware( $user_id, get_the_ID() );
+        #error_log("HW associated? $user_owns_hardware");
+        #if ($return === true ) return array();  # article belongs to user
 
 
 	#$karma = cp_getPoints( $user_id ); //get karma points
@@ -26,21 +52,47 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 
 	#error_log("User $user_id permission check cap: $cap - caps:".join(",",$caps) );
 
+
+        # user can edit own posts
+        if ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) {  # needed for comment activation
+                #error_log ("Test ongoign");
+
+        	if ( $user_owns_hardware ) {
+			$caps = array();
+                } elseif ( $karma < LHG_KARMA_edit_posts ) {
+                	$caps[] = 'activate_plugins';
+                } else {
+			$caps = array();
+                        #error_log("Enough points test nr 1. Let go!");
+        	}
+                return $caps;
+
+
+	}
+
+        # user can edit other (and own) posts
         if ( ( ( 'edit_post' == $cap )  && in_array( 'edit_others_posts', $caps) ) or
              ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) or   # needed for comment activation
              ( ( 'edit_post' == $cap )  && in_array( 'edit_published_posts', $caps) ) or   # edit translated posts
              ( ( 'edit_others_posts' == $cap )  && in_array( 'edit_others_posts', $caps) ) ){
-                if ( $karma < LHG_KARMA_edit_others_posts ) {
-                	$caps[] = 'activate_plugins';
-                }else{
+
+        	if ( $user_owns_hardware ) {
 			$caps = array();
+                } elseif ( $karma < LHG_KARMA_edit_others_posts ) {
+                	$caps[] = 'activate_plugins';
+                } else {
+			$caps = array();
+                        #error_log("Enough points test nr 1. Let go!");
         	}
                 return $caps;
 	}
 
+
         if ( 'edit_posts' == $cap ) {
                 #error_log("User wants to edit post - caps:".join(",",$caps) );
-                if ( $karma < LHG_KARMA_edit_posts ) {
+                if ( $user_owns_hardware ) {
+			$caps = array();
+                } elseif ( $karma < LHG_KARMA_edit_posts ) {
                         #error_log("Not enough points!");
                 	$caps[] = 'activate_plugins';
                 }else{
@@ -78,13 +130,14 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
                 	$caps[] = 'activate_plugins';
                 }else{
         		$caps = array();
-
         	}
                 return $caps;
 	}
 
         if ( 'edit_published_posts' == $cap ) {
-                if ( $karma < LHG_KARMA_edit_published_posts ) {
+                if ( $user_owns_hardware ) {
+			$caps = array();
+                }elseif ( $karma < LHG_KARMA_edit_published_posts ) {
                 	$caps[] = 'activate_plugins';
                 }else{
 			$caps = array();
@@ -107,7 +160,6 @@ function lhg_check_permissions( $caps, $cap, $user_id, $args) {
 	#}
 
         #error_log("Unknown cap: $cap - caps:".join(",",$caps) );
-
 
 	return $caps;
 }
@@ -350,7 +402,7 @@ function lhg_add_scan_points() {
 
         global $lhg_price_db;
         global $lang;
-        $sql = "SELECT * FROM `lhgscansessions` WHERE karma <> \"linked\" ORDER BY id DESC LIMIT 10";
+        $sql = "SELECT * FROM `lhgscansessions` ORDER BY id DESC LIMIT 300";
         $results = $lhg_price_db->get_results($sql);
 
         foreach($results as $result){
@@ -360,6 +412,7 @@ function lhg_add_scan_points() {
                 #print " WPUID: ".$result->wp_uid;
                 #print " EM: ".$result->email;
                 #print "<br>";
+
 
                 if  ( ($lang != "de") && ($result->wp_uid != 0 ) ) {
                         # user was identified by its ID
@@ -379,7 +432,7 @@ function lhg_add_scan_points() {
                                 $user = get_user_by( 'email', $result->email );
                                 if ($user->ID != ""){
                                         lhg_link_hwscan( $user->ID, $result->sid);
-                                        lhg_update_userdb( 'email' , $user->ID , $result->email );
+                                        lhg_update_userdb_by_uid( 'email' , $user->ID , $result->email );
 				}
                                 # maybe username was entered instead of email
                                 $user = get_user_by( 'user_login', $result->email );
@@ -414,12 +467,23 @@ function lhg_link_hwscan( $uid, $sid ) {
 
         #error_log("Create link for $uid with $sid");
         global $lang;
-
-	if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-	if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
-        #error_log("Points added");
-
         global $lhg_price_db;
+
+        # check if points were already stored in DB
+        $sql = "SELECT id FROM `lhgtransverse_points` WHERE comment LIKE '%".$sid."%'";
+        $result = $lhg_price_db->get_var($sql);
+
+        if ($result == "") {
+
+		if ($lang != "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware scan added <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+		if ($lang == "de") cp_points('addpoints', $uid, LHG_KARMA_POINTS_hwscan , 'Hardware Scan hinzugefügt <a href="/hardware-profile/scan-'.$sid.'">'.$sid.'</a>');
+        	#error_log("Lang: $lang -> Points $sid added for $uid");
+
+	}else{
+                #error_log("Points $sid for $uid already existing");
+        }
+
+
         $sql = "UPDATE `lhgscansessions` SET `karma`=  \"linked\" WHERE sid = \"$sid\"";
     	$result = $lhg_price_db->query($sql);
 
@@ -624,6 +688,7 @@ function lhg_update_userdb_by_uid( $type , $uid , $data) {
 function lhg_update_userdb_by_guid( $type , $guid , $data) {
 
         global $lhg_price_db;
+        global $lang;
 
         if ($type == "email") {
 		        $sql = "UPDATE `lhgtransverse_users` SET emails =  \"$data\" WHERE id = \"".$guid."\" ";
@@ -676,6 +741,11 @@ function lhg_update_userdb_by_guid( $type , $guid , $data) {
                         return;
 	}
         if ($type == "avatar") {
+                        # add domain in .de uploaded avatars
+                        if ( ($lang == "de") && (strpos($data, "<img src='/") > -1 ) ) {
+                                $data = str_replace( "<img src='/", "<img src='http://www.linux-hardware-guide.de/", $data);
+			}
+
 		        $sql = "UPDATE `lhgtransverse_users` SET avatar =  %s WHERE id = \"".$guid."\" ";
                         $safe_sql=$lhg_price_db->prepare($sql, $data);
     			$result = $lhg_price_db->query($safe_sql);
@@ -825,9 +895,99 @@ function lhg_get_userdata_guid( $guid ) {
 	$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
         $user = $lhg_price_db->get_results($sql);
 
+        # repair avatar
+        #error_log("avatar: ".$user[0]->avatar);
+        if ( ($user[0]->wpuid_de > 0 ) && (strpos($user[0]->avatar, "<img src='/") > -1 ) ) {
+                # we have a .de user with obviously broken .de avatar
+                #error_log("Repair avatar!");
+                $user[0]->avatar = str_replace( "<img src='/", "<img src='http://www.linux-hardware-guide.de/", $user[0]->avatar);
+	}
+
+
+        #var_dump($user);
+        #error_log("Avatar: ".$user->avatar);
+
         return $user;
 
 }
+
+function lhg_get_avatar_url_by_guid( $guid ) {
+        global $lhg_price_db;
+
+	$sql = "SELECT avatar FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+        $avatar = $lhg_price_db->get_var($sql);
+
+        #error_log("AVT: $avatar");
+
+        #Gravatar stored avatar image
+        if (strpos($avatar,"gravatar") > 1) {
+        	$start = strpos($avatar, "src='");
+	        $imgurl = substr($avatar, $start+5);
+                $tmp = explode("' class", $imgurl);
+                $imgurl = $tmp[0];
+                $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
+	}else{
+
+        	if ( strpos($avatar,"http://") &&  strpos($avatar, 'src="') ) {
+
+		        #local avatar .com
+	        	$start = strpos($avatar, 'src="');
+			$imgurl = substr($avatar, $start+5);
+        		$tmp = explode('" class', $imgurl);
+                	$imgurl = $tmp[0];
+
+        	} elseif ( ( strpos($avatar,"http://") == "" ) && strpos($avatar, "src='") ) {
+
+
+	                $start = strpos($avatar, "src='");
+		        $imgurl = substr($avatar, $start+5);
+        		$tmp = explode("' class", $imgurl);
+                	$imgurl = $tmp[0];
+
+
+	        	# repair needed?
+			$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+		        $user = $lhg_price_db->get_results($sql);
+                        #error_log("pos:".strpos($user[0]->avatar, "/ava") );
+                        if ( ($user[0]->wpuid_de > 0 ) && (strpos($user[0]->avatar, "/ava") == 1 ) ) {
+		                # we have a .de user with obviously broken .de avatar
+	                	$imgurl = str_replace( "/avatar", "http://www.linux-hardware-guide.de/avatar", imgurl);
+                                #error_log("repair!");
+			}
+
+
+	        } else {
+
+	        	#local avatar .de
+        	        $start = strpos($avatar, "src='");
+		        $imgurl = substr($avatar, $start+5);
+        		$tmp = explode("' class", $imgurl);
+                	$imgurl = $tmp[0];
+                }
+        }
+
+
+
+        # add server if image URL still starts with absolute path
+        #error_log("IMGURL_START: ".strpos($imgurl,"http://")." -> ".$imgurl);
+	if ( strpos($imgurl,"/avat") == 0 ) {
+		$sql = "SELECT * FROM `lhgtransverse_users` WHERE id = \"".$guid."\" ";
+		$user = $lhg_price_db->get_results($sql);
+
+                if ($user[0]->wpuid_de > 0 ) {
+	        	$imgurl = "http://www.linux-hardware-guide.de".$imgurl;
+		} elseif ($user[0]->wpuid > 0 ) {
+	        	$imgurl = "http://www.linux-hardware-guide.com".$imgurl;
+		}
+
+	}
+
+        #error_log("IMGURL: $imgurl");
+        return $imgurl;
+
+
+}
+
 
 function lhg_get_karma( $uid ) {
 
@@ -888,6 +1048,34 @@ function lhg_get_guid( $uid ) {
         return $results[0]->id;
 }
 
+function lhg_get_guid_from_wpuid_com( $uid ) {
+        global $lhg_price_db;
+
+        if ($uid == "") {
+                error_log("ERROR: lhg_get_guid_from_wpuid_com -> empty uid provided");
+                return;
+	}
+
+	$sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid = \"".$uid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+
+        return $results[0]->id;
+}
+
+function lhg_get_guid_from_wpuid_de( $uid ) {
+        global $lhg_price_db;
+
+        if ($uid == "") {
+                error_log("ERROR: lhg_get_guid_from_wpuid_de -> empty uid provided");
+                return;
+	}
+
+	$sql = "SELECT * FROM `lhgtransverse_users` WHERE wpuid_de = \"".$uid."\" ";
+        $results = $lhg_price_db->get_results($sql);
+
+        return $results[0]->id;
+}
+
 # return the UID (of current server) based on global UID
 function lhg_get_uid_from_guid( $guid ) {
         global $lhg_price_db;
@@ -933,6 +1121,100 @@ function lhg_get_scan_uploader_guid( $sid ) {
         return $guid;
 }
 
+
+function lhg_check_permissions_manufacturers( $caps, $cap, $user_id, $args) {
+
+        global $post;
+
+        if ( lhg_uid_is_manufacturer($user_id) ) {
+                #error_log("Manufactruer");
+                #error_log (" PID: ".get_the_ID() );
+                #error_log (" post: ".$post->ID );
+
+                #check if current page is an article
+                if ( $post->ID == "" ) return false;
+
+                #error_log ("this is a single page. PID: ".get_the_ID() );
+
+                # check if article tags belong to manufacturer
+                if ( !lhg_check_if_manufacturer_can_edit( $user_id, get_the_ID() ) ) return false;
+
+
+                # all checks passed - manufacturer can edit this article
+                if ( ( ( 'edit_post' == $cap )  && in_array( 'edit_others_posts', $caps) ) or
+	             ( ( 'edit_post' == $cap )  && in_array( 'edit_posts', $caps) ) or   # needed for comment activation
+        	     ( ( 'edit_post' == $cap )  && in_array( 'edit_published_posts', $caps) ) or   # edit translated posts
+	             ( ( 'edit_others_posts' == $cap )  && in_array( 'edit_others_posts', $caps) ) ){
+			$caps = array();
+	                return $caps;
+		}
+
+        } else {
+                #error_log("No manufactruer");
+                return false;
+        }
+
+        return false;
+
+}
+
+function lhg_check_if_manufacturer_can_edit( $user_id, $post_id ) {
+
+        global $lhg_price_db;
+        global $lang;
+
+	if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_tags_com FROM `lhgtransverse_users` WHERE wpuid = %s", $user_id);
+	if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_tags_de FROM `lhgtransverse_users` WHERE wpuid_de = %s", $user_id);
+	$taglist = $lhg_price_db->get_var($myquery);
+
+	if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_categories_com FROM `lhgtransverse_users` WHERE wpuid = %s", $user_id);
+	if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT manufacturer_categories_de FROM `lhgtransverse_users` WHERE wpuid_de = %s", $user_id);
+	$categorylist = $lhg_price_db->get_var($myquery);
+
+        # check if article has tags
+        $tagarray = explode(",",$taglist);
+
+
+        $posttags = wp_get_post_tags($post_id, array('fields' => 'ids') );
+
+        foreach ($tagarray as $usertag){
+	        foreach ($posttags as $posttag){
+                	#error_log ("UTag: $usertag = $posttag ?");
+                        if ($usertag == $posttag) return true; #corresponding manufacturer found
+		}
+	}
+
+        # check if article is in category list
+        $categoryarray = explode(",",$categorylist);
+        #error_log("Category check: $categorylist");
+
+
+        $postcategories = wp_get_post_tags($post_id, array('fields' => 'ids') );
+
+        foreach ($categoryarray as $usercategory){
+	        foreach ($postcategories as $postcategory){
+                	#error_log ("CTag: $usercategory = $postcategory ?");
+                        if ($usercategory == $postcategory) return true; #corresponding manufacturer found
+		}
+	}
+        return false; # article does not belong to manufacturer
+}
+
+function lhg_uid_is_manufacturer( $user_id ) {
+
+        global $lhg_price_db;
+        global $lang;
+
+	if ($lang != "de") $myquery = $lhg_price_db->prepare("SELECT validated_user FROM `lhgtransverse_users` WHERE wpuid = %s", $user_id);
+	if ($lang == "de") $myquery = $lhg_price_db->prepare("SELECT validated_user FROM `lhgtransverse_users` WHERE wpuid_de = %s", $user_id);
+	$validation_type = $lhg_price_db->get_var($myquery);
+
+        #error_log("Type: $validation_type");
+
+        if ($validation_type == "manufacturer") return true;
+        return false;
+
+}
 
 
 ?>

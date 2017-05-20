@@ -1,5 +1,8 @@
 <?php
 
+# lhg_create_cpu_article
+
+
 function lhg_create_cpu_article ($title, $sid, $id ) {
   # returns the post id of created or already existing draft article
 
@@ -150,6 +153,9 @@ $cpu0 = implode("\n",$new_cpulines);
   } else { //if the custom field doesn't have a value
   	add_post_meta($newPostID, $key, $value);
   }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
 
   return $newPostID;
 
@@ -411,11 +417,16 @@ $article .= "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" versi
   # set Amazon ID
   $key = "amazon-product-single-asin";
   $value = $amzid;
+
+  if ($amzid != "")
   if(get_post_meta($newPostID, $key, FALSE)) { //if the custom field already has a value
   	update_post_meta($newPostID, $key, $value);
   } else { //if the custom field doesn't have a value
   	add_post_meta($newPostID, $key, $value);
   }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
 
   return $newPostID;
 
@@ -558,6 +569,9 @@ function lhg_create_pci_article ($title, $sid, $id ) {
   } else { //if the custom field doesn't have a value
   	add_post_meta($newPostID, $key, $value);
   }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
 
   return $newPostID;
 
@@ -888,6 +902,9 @@ function lhg_create_drive_article ($title, $sid, $id ) {
   	add_post_meta($newPostID, $key, $value);
   }
 
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
+
   return $newPostID;
 }
 
@@ -998,7 +1015,7 @@ It is automatically recognized and fully supported by the Linux kernel:
 [/code]
 ';
 
-  $category_array = lhg_category_by_title ( $title  );
+  $category_array = lhg_category_by_title ( $title );
 
 
   #print "Article creation started";
@@ -1066,6 +1083,9 @@ It is automatically recognized and fully supported by the Linux kernel:
   } else { //if the custom field doesn't have a value
   	add_post_meta($newPostID, $key, $value);
   }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
 
   return $newPostID;
 }
@@ -1646,7 +1666,7 @@ function lhg_create_new_DB_entry_post ( $postid, $mode , $mode_data ) {
 
   if ($mode == "drive") {
         $idstring = $mode_data;
-
+        #error_log("update idstring to $mode_data");
         $sql = "UPDATE lhgtransverse_posts SET `idstring` = \"%s\" WHERE postid_com = %s";
 	$safe_sql = $lhg_price_db->prepare($sql, $idstring, $postid);
 	$result = $lhg_price_db->query($safe_sql);
@@ -1804,6 +1824,10 @@ function lhg_clean_drive_title ( $title ) {
   $title = str_replace("ASUS ","Asus ",$title);
   $title = str_replace("SAMSUNG ","Samsung ",$title);
   $title = str_replace("TSSTcorp ","Toshiba / Samsung ",$title);
+  $title = str_replace("INTENSO ","Intenso ",$title);
+  $title = str_replace("HITACHI ","Hitachi ",$title);
+  $title = str_replace("SEAGATE ","Seagate ",$title);
+  $title = str_replace("MAXTOR ","Maxtor ",$title);
 
   # HTS Hitachi Drive but no Hitachi name
   if ( preg_match('/HTS[0-9][0-9]/',$title) && (!preg_match('/Hitachi/i',$title)) ) $title = "Hitachi ".$title;
@@ -1851,6 +1875,8 @@ function lhg_clean_usb_title ( $title ) {
   $title = str_replace("Inc.","",$title);
 
   $title = str_replace("America Info. Systems","",$title);
+  $title = str_replace("Belkin Components","Belkin",$title);
+  $title = str_replace("ASUSTek Comupter","Asus",$title);
   $title = str_replace("Pte.","",$title);
 
   $title = str_replace(",","",$title);
@@ -1904,6 +1930,7 @@ function lhg_clean_mainboard_name ( $title  ) {
 
 
         # make title beautiful
+        $title = str_replace("PIONEER","Pioneer", $title);
         $title = str_replace("ZOTAC","Zotac", $title);
         $title = str_replace("FUJITSU","Fujitsu", $title);
         $title = str_replace("SAMSUNG ELECTRONICS CO., LTD.","Samsung", $title);
@@ -2035,12 +2062,14 @@ function lhg_update_title_by_string($pid, $string, $mode)  {
         if ( stristr($string, "Dual-Core") != false ) array_push($props,"Dual Core");
         if ( stristr($string, "Socket G2") != false ) array_push($props,"Socket G2");
 
-                #repair broken cache string
+        #repair broken cache string
         if ( preg_match("/ [0-9]{3}K Cache/i", $string, $match) == 1 ) array_push($props, str_replace("K Cache","KB Cache",$match[0]));
         if ( preg_match("/ [0-9]{1} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
         if ( preg_match("/ [0-9]{2} MB Cache/i", $string, $match) == 1 ) array_push($props, $match[0]);
         if ( preg_match("/ [0-9]{1}MB Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-8)." MB Cache" );
         if ( preg_match("/ [0-9]{2}MB Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-8)." MB Cache" );
+        if ( preg_match("/ [0-9]{1}M Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-7)." MB Cache" );
+        if ( preg_match("/ [0-9]{2}M Cache/i", $string, $match) == 1 ) array_push($props, substr($match[0],0,-7)." MB Cache" );
 
         # Sometimes CPU title do not have the word "Cache"
         if ( ( preg_match("/Cache/i", $string, $match) === false ) && ( preg_match("/Intel/i", $string, $match) == 1 ) && ( preg_match("/ [0-9] MB /i", $string, $match) == 1 ) )  array_push($props, $match[0]."Cache");
@@ -2257,6 +2286,8 @@ function lhg_category_by_title ( $title  ) {
   if (preg_match('/DVD writer/i',$title)) array_push ( $catlist , 478);
   if (preg_match('/ External/i',$title)) array_push ( $catlist , 333);
   if (preg_match('/ SSD/i',$title)) array_push ( $catlist , 583);
+  if (preg_match('/Ethernet/i',$title)) array_push ( $catlist , 5);
+  if (preg_match('/Ethernet/i',$title)) array_push ( $catlist , 322);
 
   return $catlist;
 }
@@ -2370,6 +2401,7 @@ function lhg_taglist_by_title ( $title  ) {
 function lhg_translate_title_en_to_de( $title )  {
         # ToDo: Translate only properties, not product ID
 
+	$title = str_replace("Optical Drive","Optisches Laufwerk",$title);
 	$title = str_replace("Socket","Sockel",$title);
 	$title = str_replace("socket","Sockel",$title);
 	$title = str_replace(" Burner","-Brenner",$title);
@@ -2508,3 +2540,1141 @@ function lhg_correct_post_comment_status( $post_ID, $post_after ) {
 }
 
 
+# code to be executed
+function lhg_url_request_autotranslate(  ) {
+
+}
+
+# move comment to transverse server
+function lhg_url_request_move_comment(  ) {
+
+
+
+        # ToDo: no support for attachments
+
+	global $lhg_price_db;
+        global $lang;
+
+        if (!current_user_can("moderate_comments")){
+                print "You are not allowed to moderate comments";
+                exit;
+	}
+
+        $cid = $_GET['cid'];
+
+        #$parsed = parse_url( $_SERVER['REQUEST_URI'] );
+        #print "Parsed: ".$parsed['query']."<br>";
+        print "Move comment ".$_GET['cid']."<br>";
+
+        # set json conterpart and admin GUID
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12") {
+		$url = "http://192.168.56.13/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+		$url = "http://192.168.56.12/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+		$url = "http://192.168.3.113/json";
+        	$guid = 22;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+		$url = "http://192.168.3.112/json";
+        	$guid = 22;
+	}
+
+        # get comment
+        $comment = get_comment($cid);
+
+        # get JSON password for transverse requests
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+        # get GUID of comment owner
+        if ($lang == "de") $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid_de = \"%s\" ";
+        if ($lang != "de") $sql = "SELECT id FROM `lhgtransverse_users` WHERE wpuid = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $comment->user_id );
+	$comment_guid = $lhg_price_db->get_var($safe_sql);
+
+        if ($lang == "de") $server="de";
+        if ($lang != "de") $server="com";
+
+        $data = array (
+                'comment_guid' => $comment_guid,
+                'comment_postid' => $comment->comment_post_ID,
+                'password' => $password,
+                'request' => 'move_comment',
+                'comment_id' => $cid,
+                'comment_content' => $comment->comment_content,
+                'comment_date' => $comment->comment_date,
+                'comment_date_gmt' => $comment->comment_date_gmt,
+                'comment_author' => $comment->comment_author,
+                'comment_author_email' => $comment->comment_author_email,
+                'comment_author_url' => $comment->comment_author_url,
+                'comment_author_IP' => $comment->comment_author_IP,
+                'comment_agent' => $comment->comment_agent,
+                'commentid_server' => $server
+        );
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
+        wp_redirect( "/wp-admin/edit-comments.php?comment_status=approved" );
+
+        # Todo: delete comments (implement only after functioning transfer was tested
+
+        exit;
+
+
+}
+
+# starting automatic translation
+function lhg_create_article_translation( $postid, $postid_server, $data ) {
+
+
+
+        #error_log("PID: $postid - $postid_server");
+
+	global $lhg_price_db;
+        global $lang;
+
+        if ($postid_server != com) {
+                print "Translation only tested from com -> de";
+                print "Stopping for safety reasons";
+                exit;
+	}
+
+        # tag translation
+        list($tagarray_ids, $tagarray_names) = lhg_create_article_translation_tags( $postid, $postid_server );
+
+        # title translation
+        $translated_title = lhg_create_article_translation_title( $postid, $postid_server );
+
+        #error_log("TT: $translated_title");
+
+        # icon
+        $icon = lhg_create_article_translation_icon( $postid, $postid_server, $data );
+
+        # category translation
+        $category_ids = lhg_create_article_translation_categories( $postid, $postid_server );
+
+        # content translation
+        $result_content = lhg_create_article_translation_content( $postid, $postid_server );
+
+
+        # create new article
+	$myPost = array(
+			'post_status' => 'publish',
+                        'post_content' => $result_content,
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $translated_title,
+			'post_category' => $category_ids,
+                        'tags_input' => $tagarray_names,
+                        'comment_status' => 'open'
+		);
+
+  	$newPostID = wp_insert_post($myPost);
+
+        #error_log("Created article: $newPostID");
+
+
+        # add amazon id
+        # local Amazon ID
+        lhg_create_article_translation_amazonid( $newPostID, $data["ASIN"] );
+
+
+	#update_post_meta($newPostID, 'amazon-product-single-asin', $amazon_id );
+        #if ($amazon_id == "") $amazon_id = $data["ASIN"];
+        if ($lang == "de") lhg_amazon_create_db_entry( "de", $newPostID, $amazon_id );
+
+        #
+        # auto-create link with com article
+        #
+        # set new post id
+        $sql = "UPDATE lhgtransverse_posts SET `postid_de` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $newPostID, $postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        # link icon with article
+	lhg_create_article_translation_iconcreation( $icon, $newPostID, $postid_server, "create" );
+
+
+        # create history entry
+        $lang_from = "en";
+        $lang_to = "de";
+        $postid_from = $postid;
+        $postid_to = $newPostID;
+  	lhg_post_history_translation( $lang_from, $lang_to, $postid_from, $postid_to, $guid);
+
+
+
+}
+
+# starting automatic translation update
+function lhg_update_article_translation( $postid, $postid_server, $data ) {
+
+
+
+        #error_log("PID: $postid - $postid_server");
+
+	global $lhg_price_db;
+        global $lang;
+
+        if ($postid_server != com) {
+                print "Translation only tested from com -> de";
+                print "Stopping for safety reasons";
+                exit;
+	}
+
+        # tag translation
+        list($tagarray_ids, $tagarray_names) = lhg_create_article_translation_tags( $postid, $postid_server );
+
+        # title translation
+        $translated_title = lhg_create_article_translation_title( $postid, $postid_server );
+
+        #error_log("TT: $translated_title");
+
+        # icon - do not update the icon
+        $icon = lhg_create_article_translation_icon( $postid, $postid_server, $data);
+
+        # category translation
+        $category_ids = lhg_create_article_translation_categories( $postid, $postid_server );
+
+        # content translation
+        $result_content = lhg_create_article_translation_content( $postid, $postid_server );
+
+
+        # get translated postid
+	if ($lang == "de") $sql = "SELECT `postid_de`  FROM `lhgtransverse_posts` WHERE postid_com = %s";
+	if ($lang != "de") $sql = "SELECT `postid_com` FROM `lhgtransverse_posts` WHERE postid_de = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $translated_postid = $lhg_price_db->get_var($safe_sql);
+
+        #error_log("Updating pid: $translated_postid");
+
+        # create new article
+	$myPost = array(
+                        'ID' => $translated_postid,
+                        'post_status' => 'publish',
+                        'post_content' => $result_content,
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $translated_title,
+			'post_category' => $category_ids,
+                        'tags_input' => $tagarray_names,
+                        'comment_status' => 'open'
+		);
+
+  	wp_update_post($myPost);
+
+        #error_log("Created article: $newPostID");
+
+
+        # add amazon id
+        # local Amazon ID
+        lhg_create_article_translation_amazonid( $translated_postid, $data["ASIN"] );
+
+
+        #if ($amazon_id == "") $amazon_id = $data["ASIN"];
+        #error_log("AID: ".$amazon_id);
+        #error_log("data: ".json_encode($data) );
+	#update_post_meta($translated_postid, 'amazon-product-single-asin', $amazon_id );
+        #if ($lang == "de") lhg_amazon_create_db_entry( "de", $translated_postid, $amazon_id );
+
+        #
+        # auto-create link with com article
+        #
+        # set new post id
+        #$sql = "UPDATE lhgtransverse_posts SET `postid_de` = \"%s\" WHERE postid_com = %s";
+	#$safe_sql = $lhg_price_db->prepare($sql, $newPostID, $postid);
+	#$result = $lhg_price_db->query($safe_sql);
+
+        # link icon with article
+	lhg_create_article_translation_iconcreation( $icon, $translated_postid, $postid_server, "update"  );
+
+
+        # create history entry
+        $lang_from = "en";
+        $lang_to = "de";
+        $postid_from = $postid;
+        $postid_to = $translated_postid;
+  	lhg_post_history_translation_update( $lang_from, $lang_to, $postid_from, $postid_to, $guid);
+
+
+}
+
+
+#
+# if an article is updated an automatic translation can be checked
+# if article is already translated and modified, translation will not be done
+#
+add_action ('edit_post', 'lhg_initiate_autotranslate' );
+
+function lhg_initiate_autotranslate( $postid ) {
+	global $lhg_price_db;
+
+        #error_log("starting auto-translation after article update or publishing");
+
+        #first check if article was already translated
+        global $lang;
+
+        # check if article was already published
+        if ($lang == "de")  $sql = "SELECT postid_com FROM lhgtransverse_posts WHERE postid_de  = '%s' ";
+        if ($lang != "de")  $sql = "SELECT postid_de  FROM lhgtransverse_posts WHERE postid_com = '%s' ";
+	$safe_sql = $lhg_price_db->prepare( $sql,  $postid );
+	$translated_postid = $lhg_price_db->get_var($safe_sql);
+
+        if ($translated_postid > 0) {
+                # translation already exists
+                $article_translated = 1;
+	}else{
+                # initiate translation
+                lhg_initiate_autotranslate_by_json_request( $postid );
+                return;
+        }
+
+        # check if article was already edited
+        if ($lang == "de")  $sql = "SELECT timestamp FROM lhgtransverse_post_history WHERE postid_com  = '%s' AND chage_type = '%s' ";
+        if ($lang != "de")  $sql = "SELECT timestamp  FROM lhgtransverse_post_history WHERE postid_de   = '%s' AND chage_type = '%s' ";
+	$safe_sql = $lhg_price_db->prepare( $sql,  $translated_postid, "acticle_edited" );
+	$edited_timestamp = $lhg_price_db->get_var($safe_sql);
+
+
+        if ( ($article_translated == 1) && !($edited_timestamp > 0 ) ) {
+                # article was auto translated but never modified.
+                # Consequently, we can overwrite the article
+                lhg_initiate_autotranslate_update_by_json_request( $postid );
+                return;
+        }
+}
+
+function lhg_initiate_autotranslate_by_json_request( $postid ) {
+
+        #error_log("Translation request started");
+	global $lhg_price_db;
+        global $lang;
+
+        # set json conterpart and admin GUID
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12") {
+		$url = "http://192.168.56.13/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+		$url = "http://192.168.56.12/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+		$url = "http://192.168.3.113/json";
+        	$guid = 22;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+		$url = "http://192.168.3.112/json";
+        	$guid = 22;
+	}
+
+
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+        if ($lang == "de") $server = "de";
+        if ($lang != "de") $server = "com";
+
+        $data = array (
+                'guid' => $guid,
+                'password' => $password,
+                'request' => 'create_article_translation',
+                'postid' => $postid,
+                'postid_server' => $server
+        );
+
+        # add ASIN to request if available
+	$key = "amazon-product-single-asin";
+  	if($val = get_post_meta($postid, $key, TRUE)) {
+	  	$data['ASIN'] = $val;
+  	}
+
+        # post thumbnail to be transferred
+        if ( has_post_thumbnail( $postid ) ) { // check if the post has a Post Thumbnail assigned to it.
+		#$imgurl = get_the_post_thumbnail_url( $postid );
+
+                $post = get_post( $postid );
+		$post_thumbnail_id = get_post_thumbnail_id( $post );
+
+		$imgurl = wp_get_attachment_url( get_post_thumbnail_id( $postid ) );
+
+		if ( $imgurl != "" ) {
+                        #$imgurl = wp_get_attachment_image_src( $post_thumbnail_id, 'thumbnail-size', true );
+        	        $data['thumbnail'] = $imgurl;
+		}
+	}
+
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
+        #error_log("Json request posted");
+
+}
+
+
+# update translation if it never was modified in between
+function lhg_initiate_autotranslate_update_by_json_request( $postid ) {
+
+	global $lhg_price_db;
+        global $lang;
+
+        # set json conterpart and admin GUID
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12") {
+		$url = "http://192.168.56.13/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+		$url = "http://192.168.56.12/json";
+        	$guid = 9;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+		$url = "http://192.168.3.113/json";
+        	$guid = 22;
+	}
+
+	if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+		$url = "http://192.168.3.112/json";
+        	$guid = 22;
+	}
+
+
+        $sql = "SELECT json_password FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $guid );
+	$password = $lhg_price_db->get_var($safe_sql);
+
+        if ($lang == "de") $server = "de";
+        if ($lang != "de") $server = "com";
+
+        $data = array (
+                'guid' => $guid,
+                'password' => $password,
+                'request' => 'article_translation_update',
+                'postid' => $postid,
+                'postid_server' => $server
+        );
+
+        # add ASIN to request if available
+	$key = "amazon-product-single-asin";
+  	if($val = get_post_meta($postid, $key, TRUE)) {
+	  	$data['ASIN'] = $val;
+  	}
+
+        # post thumbnail to be transferred
+        if ( has_post_thumbnail( $postid ) ) { // check if the post has a Post Thumbnail assigned to it.
+		#$imgurl = get_the_post_thumbnail_url( $postid );
+
+                $post = get_post( $postid );
+		$post_thumbnail_id = get_post_thumbnail_id( $post );
+
+		$imgurl = wp_get_attachment_url( get_post_thumbnail_id( $postid ) );
+
+		if ( $imgurl != "" ) {
+                        #$imgurl = wp_get_attachment_image_src( $post_thumbnail_id, 'thumbnail-size', true );
+        	        $data['thumbnail'] = $imgurl;
+		}
+	}
+
+        // request the action
+        $response = wp_remote_post( $url,
+        		array( 'body' => $data, 'timeout' => 20 )
+	            );
+
+}
+
+# translate the tags to new article
+function lhg_create_article_translation_tags( $postid, $postid_server ) {
+
+        #
+        # get tags
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `tagids_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_tags = $lhg_price_db->get_var($safe_sql);
+
+        $tagarray_slug = explode(",",$result_tags);
+
+        $tagarray_ids  = array();
+        $tagarray_names= array();
+        foreach($tagarray_slug as $tagarray_s){
+
+	  # get "de" slug from DB
+  	  $sql = "SELECT `slug_de` FROM `lhgtransverse_tags` WHERE slug_com = %s";
+          $safe_sql = $lhg_price_db->prepare($sql, $tagarray_s);
+          $de_tag = $lhg_price_db->get_var($safe_sql);
+
+          #fallback
+          #print "ERROR: tag ($tagarray_s) not found -> fallback used<br>";
+          if ($de_tag == "") $de_tag = $tagarray_s;
+
+          $tmp = get_term_by('slug', $de_tag , 'post_tag');
+          #var_dump($tmp); print "<br>";
+	  array_push($tagarray_ids, $tmp->term_id );
+	  array_push($tagarray_names, $tmp->name );
+
+	}
+
+        return array($tagarray_ids, $tagarray_names);
+}
+
+# translate title
+function lhg_create_article_translation_title( $postid, $postid_server ) {
+
+        #
+        # get title
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `title_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_title = $lhg_price_db->get_var($safe_sql);
+
+	$result_title_de = lhg_translate_title_en_to_de( $result_title );
+
+        return $result_title_de;
+}
+
+# transfer icon
+# $data ... full JSON object
+function lhg_create_article_translation_icon( $postid, $postid_server, $data ) {
+
+        #
+        # get icon
+        #
+        global $lhg_price_db;
+
+        $result_icon = $data['thumbnail'];
+
+        if ($result_icon == "") {
+        	$sql = "SELECT `icon_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        	$safe_sql = $lhg_price_db->prepare($sql, $postid);
+	        $result_icon = $lhg_price_db->get_var($safe_sql);
+	}
+
+        return $result_icon;
+}
+
+# translate categories
+function lhg_create_article_translation_categories( $postid, $postid_server ) {
+
+        #
+        # get categories
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `categories_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_categories = $lhg_price_db->get_var($safe_sql);
+
+        $category_slugs = explode(",",$result_categories);
+        $category_ids   = array();
+
+        foreach($category_slugs as $cat_slug){
+
+          $catid = get_category_by_slug($cat_slug);
+          #var_dump ($catid);
+
+          # 1. auto recognition by slug
+          if ( ($catid->cat_ID) != "") array_push($category_ids, $catid->cat_ID );
+
+          # 2. not all categories are found by english slugs.
+          # No use for automatic detection. We simply identify them manually here:
+          if ($cat_slug == "cctv" ) array_push($category_ids, 663);
+          if ($cat_slug == "internal" ) array_push($category_ids, 335);
+          if ($cat_slug == "ultrabook" ) array_push($category_ids, 589);
+          if ($cat_slug == "all-in-one-printer" ) array_push($category_ids, 368);
+          if ($cat_slug == "external" ) array_push($category_ids, 333);
+          if ($cat_slug == "ssd" ) array_push($category_ids, 601);
+          if ($cat_slug == "printer" ) array_push($category_ids, 323);
+          if ($cat_slug == "laser-printer" ) array_push($category_ids, 488);
+          if ($cat_slug == "graphiccards" ) array_push($category_ids, 507);
+          if ($cat_slug == "network" ) array_push($category_ids, 5);
+
+	}
+        return $category_ids;
+}
+
+# translate content
+function lhg_create_article_translation_content( $postid, $postid_server ) {
+
+        #
+        # get content
+        #
+        global $lhg_price_db;
+
+	$sql = "SELECT `postcontent_com` FROM `lhgtransverse_posts` WHERE postid_com = %s";
+        $safe_sql = $lhg_price_db->prepare($sql, $postid);
+        $result_content = $lhg_price_db->get_var($safe_sql);
+
+        $result_content = str_replace("<!--:us-->","",$result_content);
+        $result_content = str_replace("<!--:-->","",$result_content);
+        # for safety reasons we had to replace chars when storing them in PriceDB. Now we need to
+        # revert this (normally only for the [code] block but we do not distinguish text and code yet - ToDo!)
+        $result_content = str_replace("&lt;","<",$result_content);
+        $result_content = str_replace("&gt;",">",$result_content);
+        $result_content = str_replace("&quot;","\"",$result_content);
+        $result_content = str_replace("&amp;","&",$result_content);
+
+        return $result_content;
+}
+
+# translate content
+function lhg_create_article_translation_amazonid( $postid, $asin ) {
+
+
+        # use AMAZON ID that was transmitted by JSON request
+        #if ($asin != "") return;
+
+        #error_log("AID: ".$amazon_id);
+        #error_log("data: ".json_encode($data) );
+
+        # create post meta data
+        update_post_meta($postid, 'amazon-product-single-asin', $asin );
+        update_post_meta($postid, 'amazon-product-content-hook-override', 2 );
+        update_post_meta($postid, 'amazon-product-content-location', 1 );
+        update_post_meta($postid, 'amazon-product-excerpt-hook-override', 2 );
+        update_post_meta($postid, 'amazon-product-isactive', 1 );
+        update_post_meta($postid, 'amazon-product-newwindow', 3 );
+
+        if ($lang == "de") lhg_amazon_create_db_entry( "de", $translated_postid, $amazon_id );
+
+        return;
+}
+
+
+# created post image
+function lhg_create_article_translation_iconcreation( $result_icon, $newPostID, $postid_server, $type ) {
+
+
+        #error_log("NPID: $newPostID -> ".has_post_thumbnail( $newPostID ) );
+
+        if ( has_post_thumbnail( $newPostID ) ) { // check if the post has a Post Thumbnail assigned to it.
+		#$imgurl = get_the_post_thumbnail_url( $postid );
+
+                #$post = get_post( $newPostID );
+		#$post_thumbnail_id = get_post_thumbnail_id( $post );
+
+		$imgurl = wp_get_attachment_url( get_post_thumbnail_id( $newPostID ) );
+
+	}
+
+        # compare the image file names. The paths can be different between .de and .com server
+        if ( end(split("/",$result_icon)) == end(split("/",$imgurl)) ) {
+                # nothing to be done
+                #error_log("Already correct image used");
+                return;
+	}
+
+        #error_log("Update image $result_icon");
+        #error_log("Old image $imgurl");
+
+        if ($result_icon != "")  {
+
+        	if ($_SERVER['SERVER_ADDR'] == "192.168.56.12"){
+			$murl = "http://192.168.56.13";
+		}
+
+		if ($_SERVER['SERVER_ADDR'] == "192.168.56.13") {
+			$murl = "http://192.168.56.12";
+		}
+
+		if ($_SERVER['SERVER_ADDR'] == "192.168.3.112") {
+			$murl = "http://192.168.3.113";
+		}
+
+		if ($_SERVER['SERVER_ADDR'] == "192.168.3.113") {
+			$murl = "http://192.168.3.112";
+		}
+
+
+  		$upload_dir = wp_upload_dir();
+                $image_url= $murl.$result_icon;
+		$image_data = file_get_contents($image_url);
+		$filename = basename($image_url);
+
+                #print "FN: $filename <br>";
+                #print "IU: $image_url <br>";
+
+                if(wp_mkdir_p($upload_dir['path']))
+    			$file = $upload_dir['path'] . '/' . $filename;
+		else
+    			$file = $upload_dir['basedir'] . '/' . $filename;
+
+		file_put_contents($file, $image_data);
+
+		$wp_filetype = wp_check_filetype($filename, null );
+
+                $attachment = array(
+		    'post_mime_type' => $wp_filetype['type'],
+		    'post_title' => sanitize_file_name($filename),
+		    'post_content' => '',
+		    'post_status' => 'inherit'
+		);
+		$attach_id = wp_insert_attachment( $attachment, $file, $newPostID );
+		require_once(ABSPATH . 'wp-admin/includes/image.php');
+		$attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+		wp_update_attachment_metadata( $attach_id, $attach_data );
+
+		set_post_thumbnail( $newPostID, $attach_id );
+
+	}
+}
+
+# created comment based on transfer request
+function lhg_create_comment_by_json_request( $data ) {
+
+        global $lhg_price_db;
+        global $lang;
+
+        # get postid comment needs to be associated with
+        $o_postid = $data["comment_postid"];
+        if ( $data["commentid_server"] == "com" ) $sql = "SELECT postid_de  FROM `lhgtransverse_posts` WHERE postid_com = \"%s\" ";
+        if ( $data["commentid_server"] == "de" )  $sql = "SELECT postid_com FROM `lhgtransverse_posts` WHERE postid_de  = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $o_postid );
+	$new_postid = $lhg_price_db->get_var($safe_sql);
+
+        # get user id comment needs to be associated with
+        $comment_guid = $data["comment_guid"];
+        if ($lang == "de") $sql = "SELECT wpuid_de FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+        if ($lang != "de") $sql = "SELECT wpuid    FROM `lhgtransverse_users` WHERE id = \"%s\" ";
+	$safe_sql = $lhg_price_db->prepare( $sql, $comment_guid );
+	$new_uid = $lhg_price_db->get_var($safe_sql);
+
+        $data = array(
+                'comment_post_ID' => $new_postid,
+                'user_id' => $new_uid,
+                'comment_date' => $data["comment_date"],
+                'comment_date_gmt' => $data["comment_date_gmt"],
+                'comment_content' => $data["comment_content"],
+                'comment_agent' => $data["comment_agent"],
+                'comment_author' => $data["comment_author"],
+                'comment_author_email' => $data["comment_author_email"],
+                'comment_author_url' => $data["comment_author_url"],
+                'comment_author_IP' => $data["comment_author_IP"],
+        );
+
+        wp_insert_comment( $data );
+        exit;
+}
+
+# publish article based on scan overview selections (AJAX initiated)
+function lhg_scan_publish_mainboard_article( $_sid, $_postid, $_asin_mb, $_title_mb, $_idarray_pci, $_idarray_usb, $_idarray_tags, $_type ) {
+
+  global $lhg_price_db;
+  global $lang;
+
+  # article creation should be limited to .com server
+  if ($lang == "de") {
+                error_log("Article creation on .de server should not happen. ID: $id");
+                return;
+  }
+
+ # $laptop_probability = lhg_scan_is_laptop( $sid );
+ #
+ # // if mainboard
+ # if ($laptop_probability < 0.8) {
+ #       $category = 472;
+ #       $taglist = array( 472 );
+ # } else { #or if laptop
+ #       $category = 470;
+ #       $taglist = array( 470 );
+ #       $taglist = array( 450 );
+ # }
+
+ # # Download only once for speed improvement
+ # global $lspci_content_from_library;
+ # global $dmesg_content_from_library;
+ # global $lsb_content_from_library;
+ # global $version_content_from_library;
+ #
+ #
+ # if ( $lspci_content_from_library == "" ) {
+ #       $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lspci.txt";
+ # 	$lspci_content_from_library = file_get_contents($url);
+ # }
+ #
+ # if ( $dmesg_content_from_library == "" ) {
+ #         $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=dmesg.txt";
+ #         $dmesg_content_from_library = file_get_contents($url);
+ # }
+ #
+ # if ( $lsb_content_from_library == "" ) {
+ #         $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=lsb_release.txt";
+ #         $lsb_content_from_library = file_get_contents($url);
+ # }
+ #
+ # if ( $version_content_from_library == "" ) {
+ #         $url="http://library.linux-hardware-guide.com/showdata.php?sid=".$sid."&file=version.txt";
+ #      	  $version_content_from_library = file_get_contents($url);
+ # }
+
+#$lspci = explode("\n\n",$lspci_content_from_library);
+##print "<br>Dump:".var_dump($lspci)."<br>";
+#$lspci0 = $lspci[0];
+#$lspci0 = str_replace("\n\n","",$lspci0);
+#
+#
+#	# create filtered and unfiltered list of all PCI IDs as array $pci_array_all
+#	$lspci_array = explode("\n",$lspci_content_from_library);
+#        $pcilist = array();
+#
+#        foreach ($lspci_array as $line) {
+#                #print "L $i:".$line."<br>";
+#                $pciid_found = preg_match("/\[....:....\]/",$line,$matches);
+#                $subsystem_found = preg_match("/Subsystem/",$line,$matches2);
+#                #print preg_match("/\[....:....\]/",$line,$matches)." - ".var_dump($matches)."<br>";
+#
+#                $clean_pciid = $matches[0];
+#                $clean_pciid = str_replace("[","",$clean_pciid);
+#                $clean_pciid = str_replace("]","",$clean_pciid);
+#                # PCI ID found, but no Subsystem ID
+#                if ( ( $pciid_found == 1 ) && ( $subsystem_found == 0) ) array_push($pcilist, $clean_pciid);
+#        }
+#        $pci_array_all = $pcilist;
+
+
+
+
+
+	# get distribution name from scan data base
+	$sql = "SELECT distribution FROM `lhgscansessions` WHERE sid = \"".$_sid."\"";
+    	$result = $lhg_price_db->get_results($sql);
+        $result0 = $result[0];
+        $distribution = $result0->distribution;
+
+	# get kernel version of scan 
+	$sql = "SELECT kversion FROM `lhgscansessions` WHERE sid = \"".$_sid."\"";
+    	$result = $lhg_price_db->get_results($sql);
+        $result0 = $result[0];
+        $version = $result0->kversion;
+
+	# get DMI output of scan
+	$sql = "SELECT dmi FROM `lhgscansessions` WHERE sid = \"".$_sid."\"";
+    	$result = $lhg_price_db->get_results($sql);
+        $result0 = $result[0];
+        $dmi_line = $result0->dmi;
+
+        # set categories
+        if ($_type == "laptop") $categories = array( 470 );
+        if ($_type == "mainbord") $categories = array( 472 );
+        if ($_type == "ultrabook") $categories = array( 470, 562 );
+        if ($_type == "pc-system") $categories = array( 469 );
+        if ($_type == "low-power-pc") $categories = array( 469, 471 );
+        if ($_type == "other") $categories = "";
+
+	#create PCI list
+        $lspci_list = "";
+        $pci_array = array();
+        $subid_array = array();
+	foreach ($_idarray_pci as $pciid) {
+
+                $sql = "SELECT pciid, idstring, pciid_subsystem, idstring_subsystem FROM `lhghwscans` WHERE sid = \"".$_sid."\" AND id = \"".$pciid."\"";
+    		$result = $lhg_price_db->get_results($sql);
+                #error_log( "SID: $_sid ID: $pciid -> ".print_r($result, true) );
+	        $result0 = $result[0];
+        	$pciid_result = $result0->idstring;
+                $lspci_list .= $pciid_result;
+                #if ($result0->pciid_subsystem != "")    $lspci_list .= "\n".$result0->pciid_subsystem;
+                if ($result0->idstring_subsystem != "") $lspci_list .= $result0->idstring_subsystem;
+                #$lspci_list .= "\n";
+                #error_log("PCIID: $pciid -> $result0->pciid"." ".$pciid_result ."\n".$result0->pciid_subsystem." ".$result0->idstring_subsystem);
+                array_push($pci_array, $result0->pciid);
+                array_push($subid_array, $result0->pciid_subsystem);
+	}
+
+
+	#create USB list
+        $usb_list = "";
+        $usb_array = array();
+        if ($_idarray_usb != "")
+	foreach ($_idarray_usb as $usbid) {
+
+                $sql = "SELECT idstring, usbid FROM `lhghwscans` WHERE sid = \"".$_sid."\" AND id = \"".$usbid."\"";
+    		$result = $lhg_price_db->get_results($sql);
+	        $result0 = $result[0];
+        	$usbid_result = $result0->idstring;
+                $lsusb_list .= $result0->usbid." ".$usbid_result ."\n" ;
+		array_push($usb_array, $result0->usbid);
+
+
+	}
+
+        #create tag array
+        $tagstring = lhg_convert_tag_array_to_string( $_idarray_tags );
+
+        #error_log("ToDo: Tags to be transferred to taxonomies");
+
+
+
+$article = "[lhg_mainboard_intro distribution=\"".trim($distribution)."\" version=\"".trim($version)."\" dmi_output=\"".trim($dmi_line)."\"]
+
+[lhg_mainboard_lspci]
+".trim($lspci_list)."
+[/lhg_mainboard_lspci]
+";
+
+if ($lsusb_list != "")
+$article .= "
+[lhg_mainboard_usb]
+".trim($lsusb_list)."
+[/lhg_mainboard_usb]
+";
+
+$title="<!--:us-->".$_title_mb."<!--:-->";
+
+	$myPost = array(
+			'ID' => $_postid,
+			'post_status' => 'publish',
+                        'post_content' => "<!--:us-->".$article."<!--:-->",
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $title,
+			'post_category' => $categories,
+                        'tags_input' => $tagstring
+		);
+
+  	wp_update_post( $myPost );
+
+        # create entry in lhgtransverse_posts
+        $identifier = join(",",$pci_array);
+	if ($_type == "laptop") {
+	        $identifier = lhg_get_mainboard_fingerprint( $sid );
+	        lhg_create_new_DB_entry_post ( $_postid, "laptop", $identifier );
+
+                $sql = "UPDATE lhgtransverse_posts SET `categories_com` = \"%s\" WHERE postid_com = %s";
+		$safe_sql = $lhg_price_db->prepare($sql, "notebook", $_postid);
+		$result = $lhg_price_db->query($safe_sql);
+
+	} else {
+	        $identifier = lhg_get_mainboard_fingerprint( $sid );
+		lhg_create_new_DB_entry_post ( $_postid, "mainboard", $identifier );
+
+                $sql = "UPDATE lhgtransverse_posts SET `categories_com` = \"%s\" WHERE postid_com = %s";
+		$safe_sql = $lhg_price_db->prepare($sql, "mainboards", $_postid);
+		$result = $lhg_price_db->query($safe_sql);
+	}
+
+
+	# set Amazon ID
+  	$key = "amazon-product-single-asin";
+	$value = $_asin_mb;
+  	if(get_post_meta($_postid, $key, FALSE)) { //if the custom field already has a value
+  		update_post_meta($_postid, $key, $value);
+	} else { //if the custom field doesn't have a value
+  		add_post_meta($_postid, $key, $value);
+	}
+
+        # store PCI IDs
+        lhg_set_pciids( $_postid, $pci_array );
+
+        # store PCI IDs
+        lhg_set_subids( $_postid, $subid_array );
+
+        # store USB IDs
+        lhg_set_usbids( $_postid, $usb_array );
+
+
+
+
+exit;
+
+
+
+#############
+#############
+# OLD STUFF
+
+
+  # ToDo: should be created based on lspci and dmesg output
+
+  $new_taglist = lhg_taglist_by_title( $title );
+  $taglist = array_merge( $taglist, $new_taglist );
+  $tagstring = lhg_convert_tag_array_to_string( $taglist );
+
+
+
+  #print "Article creation started";
+
+  #print "<br>Title: $title <br> ScanID: $sid<br>";
+
+        $title="<!--:us-->".$title."<!--:-->";
+
+	$myPost = array(
+			'post_status' => 'draft',
+                        'post_content' => "<!--:us-->".$article."<!--:-->",
+			'post_type' => 'post',
+			'post_author' => 1,
+			'post_title' =>  $title,
+			'post_category' => array($category),
+                        'tags_input' => $tagstring,
+		);
+        global $wpdb;
+	#$post_if = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title'");
+        #print "PI: ".$post_if;
+
+	$post_if2 = $wpdb->get_var("SELECT count(post_title) FROM $wpdb->posts WHERE post_title like '$title' AND post_status = 'draft' ");
+        #print "PI2: ".$post_if2;
+
+        $sql = "SELECT created_postid FROM `lhghwscans` WHERE id = \"".$id."\" ";
+        $created_id = $lhg_price_db->get_var($sql);
+
+
+  if ( ($post_if2 > 0) or ($created_id != 0) ) {
+  	#print "Title exists";
+        if ($created_id != 0) $newPostID = $created_id;
+        if ($created_id == 0) $newPostID = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_title like '$title' AND post_status = 'draft' ");
+
+	# store created_id for already existing articles
+	if ($created_id == 0)  {
+                $sql = "UPDATE `lhghwscans` SET created_postid = \"".$newPostID."\" WHERE id = \"".$id."\" ";
+        	$result = $lhg_price_db->query($sql);
+        }
+
+  }else{
+  	//-- Create the new post
+        #print "new article";
+  	$newPostID = wp_insert_post($myPost);
+        $sql = "UPDATE `lhghwscans` SET created_postid = \"".$newPostID."\" WHERE id = \"".$id."\" ";
+        $result = $lhg_price_db->query($sql);
+  }
+  #print "<br>done<br>";
+
+  # ToDo: store MB in DB
+  # ToDo: store MB in DB
+
+  # Store scan info in DB
+  #
+  # get CPU identifier
+  #$pos = strpos($cpu0, "model name");
+  #$pos_end = strpos( substr($cpu0,$pos) , "\n");
+  #$pos_colon = strpos( substr($cpu0,$pos) , ":");
+  #print "POS: $pos - $pos_colon - $pos_end<br>";
+  #print substr($cpu0,$pos+$pos_colon+2, $pos_end-$pos_colon-2)."<br>";
+  #$cpu_identifier = substr($cpu0,$pos+$pos_colon+2, $pos_end-$pos_colon-2);
+
+
+  if ($laptop_probability > 0.8) {
+        # store all pci ids
+        $identifier = lhg_get_mainboard_fingerprint( $sid );
+        lhg_create_new_DB_entry_post ( $newPostID, "laptop", $identifier );
+
+  } else {
+        # store all pci ids
+        # ToDo: filter pciids not onboard!
+        $identifier = lhg_get_mainboard_fingerprint( $sid );
+        #$identifier = implode(",",$pci_array_all);
+	lhg_create_new_DB_entry_post ( $newPostID, "mainboard", $identifier );
+  }
+
+  # get Amazon ID, if available
+  $amzid = lhg_get_AMZ_ID_from_scan ( $sid, "mainboard", "" );
+  #print "AMZID CPU: $amzid";
+
+  # set Amazon ID
+  $key = "amazon-product-single-asin";
+  $value = $amzid;
+
+  if ($amzid != "")
+  if(get_post_meta($newPostID, $key, FALSE)) { //if the custom field already has a value
+  	update_post_meta($newPostID, $key, $value);
+  } else { //if the custom field doesn't have a value
+  	add_post_meta($newPostID, $key, $value);
+  }
+
+  # store in history that article was created
+  lhg_post_history_scancreate( $newPostID, $sid);
+
+  return $newPostID;
+
+
+}
+
+function lhg_set_usbids( $_postid, $_usbids ){
+        # set USB IDs for existing article
+        # expects array of USB IDs
+
+        global $lhg_price_db;
+        global $lang;
+
+        if ($lang == "de") {
+                error_log("Routine lhg_set_usbids only valid for .com server");
+                exit;
+        }
+
+        $usbstring = join(",", $_usbids);
+        $sql = "UPDATE lhgtransverse_posts SET `usbids` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $usbstring, $_postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        #error_log("set USB IDs for $_postid to $usbstring");
+
+}
+
+function lhg_set_pciids( $_postid, $_pciids ){
+        # set PCI IDs for existing article
+        # expects array of PCI IDs
+
+        global $lhg_price_db;
+        global $lang;
+
+        if ($lang == "de") {
+                error_log("Routine lhg_set_pciids only valid for .com server");
+                exit;
+        }
+
+        $pcistring = join(",", $_pciids);
+        $sql = "UPDATE lhgtransverse_posts SET `pciids` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $pcistring, $_postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        #error_log("set PCI IDs for $_postid to $pcistring");
+
+}
+
+function lhg_set_subids( $_postid, $_subids ){
+        # set PCI IDs for existing article
+        # expects array of PCI IDs
+
+        global $lhg_price_db;
+        global $lang;
+
+        if ($lang == "de") {
+                error_log("Routine lhg_set_subids only valid for .com server");
+                exit;
+        }
+
+        $substring = join(",", $_subids);
+        $sql = "UPDATE lhgtransverse_posts SET `subids` = \"%s\" WHERE postid_com = %s";
+	$safe_sql = $lhg_price_db->prepare($sql, $substring, $_postid);
+	$result = $lhg_price_db->query($safe_sql);
+
+        #error_log("set PCI IDs for $_postid to $pcistring");
+
+}
+
+
+?>

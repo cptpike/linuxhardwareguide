@@ -1,6 +1,8 @@
 <?php
 
 #require_once(plugin_dir_path(__FILE__)."../../themes/blue-and-grey/functions.php");
+require_once(plugin_dir_path(__FILE__)."lhg-scanresults.php");
+require_once(plugin_dir_path(__FILE__)."lhg-scanresults-jquery.php");
 
 /*
 Plugin Name: LHG - Hardware Profile Manager
@@ -787,6 +789,10 @@ class wp_subscribe_reloaded{
 	public function add_subscription($_post_id = 0, $_email = '', $_status = 'Y'){
 		global $wpdb;
 
+                # break if email tries illegal stuff
+                lhg_email_filter( $_email );
+
+
 		// Does the post exist?
 		$target_post = get_post($post_id);
 		if (($post_id > 0) && !is_object($target_post))
@@ -1313,4 +1319,40 @@ if (!empty($subscribe_to_comments_action) && !empty($_POST['subscribe_reloaded_e
 	setcookie('comment_author_email'.COOKIEHASH, $subscribe_to_comments_clean_email, time()+1209600, '/');
 }
 
+function lhg_email_filter ( $_email ) {
+                # quick fix to prevent emails with SQL injection
+                # check for unwanted emails:
+                if ( (strpos( $_email, '(') !== false) or
+                     (strpos( $_email, ')') !== false) or
+                     (strpos( $_email, '$') !== false) or
+                     (strpos( $_email, '!') !== false) or
+                     (strpos( $_email, '|') !== false) or
+                     (strpos( $_email, '{') !== false) or
+                     (strpos( $_email, '"') !== false) or
+                     (strpos( $_email, "'") !== false) or
+                     (strpos( $_email, "@@") !== false) or
+                     (strpos( $_email, "&") !== false) or
+                     (strpos( $_email, ";") !== false) or
+                     (strpos( $_email, "%") !== false)
+                )
 
+                {
+                        die("This was not a valid email address");
+                }
+}
+
+
+function lhg_email_filter_time ( $_email ) {
+
+                #store last request as transient
+                $email_san = sanitize_title( $_email );
+                $test = get_transient( 'email_check_'.$email_san );
+
+                if ( $test != false) {
+                        die("Too many requests. Please wait");
+
+		}else {
+                        #next time, wait for 5 minutes
+	                set_transient( 'email_check_'.$email_san , time(), 20*60 );
+		}
+}

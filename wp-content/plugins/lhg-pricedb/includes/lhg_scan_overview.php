@@ -137,8 +137,10 @@ function lhg_menu_hw_scans () {
 
 	if ($_POST != "") lhg_db_update_scaninfo();
 
+        lhg_show_new_scan_chats();
+
         $res = lhg_db_get_scan_sids ();
-        print "<h1>Hardware Scans</h1>";
+        print "<h2>Hardware Scans</h2>";
         print "<br>";
 
 #print "POST:";
@@ -242,38 +244,15 @@ print "<td><b>Date</b></td><td><b>Link</b></td><td><b>Comment User</b></td> <td>
 
                         if ($uploader_guid > 0) {
 	                        $user_tmp = lhg_get_userdata_guid( $uploader_guid );
+                                $imgurl = lhg_get_avatar_url_by_guid( $uploader_guid );
         			$user=$user_tmp[0];
 			        $user_nicename = $user->user_nicename;
 		        	$avatar = $user->avatar;
 			        $wpuid_de = $user->wpuid_de;
 			        $wpuid_com = $user->wpuid;
-                                #Gravatar stored avatar image
-                                if (strpos($avatar,"gravatar") > 1) {
-                                	$start = strpos($avatar, "src='");
-	                                $imgurl = substr($avatar, $start+5);
-        	                        $tmp = explode("' class", $imgurl);
-                	                $imgurl = $tmp[0];
-                        	        $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
-				}else{
+                        	$usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
 
-                                        if (strpos($avatar,"http://") ) {
 
-	                                        #local avatar .com
-	                                	$start = strpos($avatar, 'src="');
-		                                $imgurl = substr($avatar, $start+5);
-        		                        $tmp = explode('" class', $imgurl);
-                		                $imgurl = $tmp[0];
-                        		        $usertxt = '<img src="'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
-	                                }else{
-
-	                                        #local avatar .de
-        	                        	$start = strpos($avatar, "src='");
-		                                $imgurl = substr($avatar, $start+5);
-        		                        $tmp = explode("' class", $imgurl);
-                		                $imgurl = $tmp[0];
-                        		        $usertxt = '<img src="http://www.linux-hardware-guide.de'.$imgurl.'" width="20px" heigth="20px" title="User: '.$user_nicename.'" alt="User: '.$user_nicename.'">';
-                                        }
-                                }
 			}
 
 
@@ -390,7 +369,7 @@ function lhg_db_update_scaninfo (  ) {
                 if ($key == "filter_show_feedback") update_user_meta( $userid, 'lhg_scan_show_feedback', true );
 
                 if ($rawkey == "hwscan_acomment") lhg_db_update_acomment($sid,$value);
-                if ($rawkey == "status") lhg_db_update_status($sid,$value);
+                if ($rawkey == "status") lhg_db_update_status($sid,$value,$userid);
 
 	}
 
@@ -410,25 +389,43 @@ function lhg_db_update_acomment ( $sid , $value  ) {
 
 }
 
-function lhg_db_update_status ( $sid , $value  ) {
+function lhg_db_update_status ( $sid , $value , $uid ) {
+
+        //if initiated by ajax, we need some functions from scan.php
+        require_once( WP_PLUGIN_DIR . '/lhg-hardware-profile-manager/templates/scan.php' );
 
 	global $lhg_price_db;
+
+        # retrieve old status
+        $sql = "SELECT status FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
+    	$old_status = $lhg_price_db->get_var($sql);
+        if ($old_status == "") $old_status = "new";
+        if ($old_status == $value) return; # nothing to do! Do not waste time with id transformations
+
+        # write status changelog: status was change at ... from ... to ... by ...
+        $comment_text = $old_status." -> ".$value;
+        $sql = $lhg_price_db->prepare("INSERT INTO `lhgscan_comments` (comment_text, comment_date, scanid, user, commenttype)
+                       VALUES  (%s, %s, %s, %s, %s)", $comment_text, time(), $sid, $uid, "status_change");
+    	$id = $lhg_price_db->query($sql);
+
+        # store new status
         $sql = "SELECT id FROM `lhgscansessions` WHERE sid = \"".$sid."\"";
     	$id = $lhg_price_db->get_var($sql);
-
-        #print "UPDATE id: $id -> $value <br>";
-
         $sql = "UPDATE `lhgscansessions` SET status = \"".$value."\" WHERE id = \"".$id."\"";
     	$result = $lhg_price_db->get_var($sql);
 
-        if ($value == "complete") {
+        if ( ($value == "complete") && ( $old_value != "complete") ) {
                 #get mail address
 
                 $myquery = $lhg_price_db->prepare("SELECT email FROM `lhgscansessions` WHERE sid = %s ", $sid);
 		$email = $lhg_price_db->get_var($myquery);
+
+                if ($email == "") $email = lhg_get_hwscanmail($sid);
+
                 #send mail notification to user
 		if ($email != "") {
 		        $subject = "LHG Hardware Scan - Finished";
+                        $headers[]   = 'Reply-To: Linux Hardware Guide <webmaster@linux-hardware-guide.com>';
         		$message = 'Hello,
 
 Thank you for uploading your hardware data to the Linux-Hardware-Guide.
@@ -438,13 +435,14 @@ http://www.linux-hardware-guide.com/hardware-profile/scan-'.$sid.'
 Please visit this page and rate the Linux compatibility of your hardware components and also leave
 comments (e.g., if additional steps are needed for the hardware or if everything works out of the box).
 
-In case of further questions do not hesitate to contact us.
+In case of further questions do not hesitate to contact us under webmaster@linux-hardware-guide.com.
 
 Best regards,
 Linux-Hardware-Guide Team
 ';
 
-        		wp_mail( $email, $subject, $message );
+                        error_log("Complete mail: $email");
+        		wp_mail( $email, $subject, $message, $headers );
 		}
 	}
 }
@@ -545,6 +543,60 @@ function lhg_create_rating_img( $rating ) {
 	}
         return $output;
 }
-		       
+
+
+# get all scans corresponding to certain uid
+function lhg_get_scanids_by_uid ( $uid ) {
+
+        global $lang;
+        global $lhg_price_db;
+
+	if ($lang != de) $results = $lhg_price_db->get_results("SELECT sid FROM `lhgscansessions` WHERE wp_uid = $uid");
+	if ($lang == de) $results = $lhg_price_db->get_results("SELECT sid FROM `lhgscansessions` WHERE wp_uid_de = $uid");
+
+        $scanarray=array();
+        foreach ($results as $result) {
+                #error_log("Res: ".$result->sid);
+                array_push($scanarray, $result->sid);
+	}
+
+        return $scanarray;
+
+}
+
+function lhg_show_new_scan_chats () {
+
+        global $lang;
+        global $lhg_price_db;
+
+        # 1. find feedback chats where registered users are involved
+        #$uid = get_current_user_id();
+        # Debug
+        #$uid = 12335;
+        # ToDo: currently only working for .com server? "uid" seems to be language dependent
+	if ($lang != de) $scanids = $lhg_price_db->get_results("SELECT DISTINCT(scanid) FROM `lhgscan_comments` WHERE user > 0 AND commenttype <> 'status_change'");
+	#if ($lang == de) $results = $lhg_price_db->get_results("SELECT sid FROM `lhgscansessions` WHERE wp_uid_de = $uid");
+
+        # 2. check if registered user had last comment
+        foreach ($scanids as $tmp_scanid) {
+                $scanid = $tmp_scanid->scanid;
+                # ToDo: should this be limted to "feedback_needed" scans?
+                $reguser_last_comment_timestamp = $lhg_price_db->get_var("SELECT MAX(comment_date) FROM `lhgscan_comments` WHERE user > 0 AND scanid = '$scanid' AND commenttype <> 'status_change'");
+                $last_comment_timestamp = $lhg_price_db->get_var("SELECT MAX(comment_date) FROM `lhgscan_comments` WHERE scanid = '$scanid' AND commenttype <> 'status_change'");
+                #var_dump($my_last_comment_timestamp);
+
+                if ($last_comment_timestamp > $reguser_last_comment_timestamp)
+                	$output .= 'New comment for <a href="/hardware-profile/editscan-'.$scanid.'">'.$scanid.'</a><br>';
+	}
+
+        # if we found new chats than show the overview
+        if ($output != "") {
+	        print "<h2>New Scan Feedback</h2>";
+                print $output;
+	}
+
+}
+
+
 
 ?>

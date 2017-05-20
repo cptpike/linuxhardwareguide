@@ -4,8 +4,6 @@
 # extract from wpdb -> store in priceDB
 add_action('comment_post', 'lhg_store_comment_numbers', 10, 2 );
 
-
-
 // ini_set( 'display_errors', 1 );
 // error_reporting(-1);
 
@@ -28,64 +26,377 @@ $donation_total = 30.00;
 
 function get_distri_logo( $distribution )  {
 
-        #print "POS: ".strpos($distribution,"Ubuntu")."<br>";
+        $distri = lhg_get_distribution_array();
+        $distri_name = lhg_get_distri_name( $distribution );
+	$logo = $distri[$distri_name]["logo"];
 
-        #default:
-        $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/unknown-logo.png";
 
-        if ( strpos($distribution,"Ubuntu") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/ubuntu-logo.png";
-        if ( strpos($distribution,"Mint") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linuxmint-logo.png";
-        if ( strpos($distribution,"LMDE") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linuxmint-logo.png";
-        if ( strpos($distribution,"Debian") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/debian-logo.jpg";
-        if ( strpos($distribution,"Fedora") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/fedora-logo.jpg";
-        if ( strpos($distribution,"Zorin") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/zorin-logo.png";
-        if ( strpos($distribution,"Tanglu") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/tanglu-logo.png";
-        if ( strpos($distribution,"Korora") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/korora-logo.jpg";
-        if ( strpos($distribution,"Arch Linux") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/arch-linux-logo.png";
-        if ( strpos($distribution,"openSUSE") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/OpenSUSE_Logo.png";
-        if ( strpos($distribution,"Manjaro") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/Manjaro-logo.png";
-        if ( strpos($distribution,"ALT Linux") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/alt-linux-logo.png";
-        if ( strpos($distribution,"Simply Linux") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/simply-linux-logo.png";
-        if ( strpos($distribution,"Kali ") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/kalilinux-logo.png";
-        if ( strpos($distribution,"Raspbian ") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/raspbian-logo.png";
-        if ( strpos($distribution,"Ultimate Edition ") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/ultimate-edition-logo.png";
-        if ( strpos($distribution,"Gentoo") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/gentoo-logo.png";
-        if ( strpos($distribution,"Linux From Scratch") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/linux-from-scratch-logo.png";
-        if ( strpos($distribution,"Mageia") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/mageia-logo.png";
-        if ( strpos($distribution,"Mageia") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/mageia-logo.png";
-        if ( strpos($distribution,"Pisi") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/pisi-linux-logo.png";
-        if ( strpos($distribution,"KDE neon") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/kde-neon-logo.png";
-        if ( strpos($distribution,"elementary OS") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/elementary-os-logo.png";
-        if ( strpos($distribution,"Netrunner") > -1 )
-                $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/netrunner-logo.png";
+        #fallback:
+        if ($logo == "") $logo = "/wp-content/plugins/lhg-hardware-profile-manager/images/unknown-logo.png";
 
         #print "D: $distribution, LOGO: $logo <br>";
 	return $logo;
 }
 
+function lhg_get_distribution_array( )  {
+
+        $dist = array(
+
+                "mint" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/linuxmint-logo.png",
+                        "url" => "https://www.linuxmint.com/",
+                        "donation_target" => 6
+                        ),
+
+                "ubuntu" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/ubuntu-logo.png",
+                        "url" => "https://www.ubuntu.com/",
+                        "donation_target" => 8
+                        ),
+
+                "debian" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/debian-logo.jpg",
+                        "url" => "https://www.debian.org/",
+                        "donation_target" => 9
+                        ),
+
+                "fedora" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/fedora-logo.jpg",
+                        "url" => "https://getfedora.org",
+                        "donation_target" => -1
+                        ),
+
+                "zorin" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/zorin-logo.png",
+                        "url" => "http://zorinos.com/",
+                        "donation_target" => -1
+                        ),
+
+                "tanglu" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/tanglu-logo.png",
+                        "url" => "http://tanglu.org/",
+                        "donation_target" => -1
+                        ),
+
+                "korora" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/korora-logo.jpg",
+                        "url" => "https://kororaproject.org/",
+                        "donation_target" => 10
+                        ),
+
+                "arch" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/arch-linux-logo.png",
+                        "url" => "https://www.archlinux.org/",
+                        "donation_target" => 11
+                        ),
+
+                "opensuse" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/OpenSUSE_Logo.png",
+                        "url" => "https://www.opensuse.org/",
+                        "donation_target" => -1
+                        ),
+
+                "manjaro" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/Manjaro-logo.png",
+                        "url" => "https://manjaro.org/",
+                        "donation_target" => 12
+                        ),
+
+                "alt" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/alt-linux-logo.png",
+                        "url" => "http://www.altlinux.com/",
+                        "donation_target" => -1
+                        ),
+
+                "simply" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/simply-linux-logo.png",
+                        "url" => "http://simplylinux.ru/",
+                        "donation_target" => -1
+                        ),
+
+                "kali" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/kalilinux-logo.png",
+                        "url" => "https://www.kali.org/",
+                        "donation_target" => -1
+                        ),
+
+                "raspbian" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/raspbian-logo.png",
+                        "url" => "https://www.raspbian.org/",
+                        "donation_target" => 13
+                        ),
+
+                "ultimate-edition" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/ultimate-edition-logo.png",
+                        "url" => "http://ultimateedition.info/",
+                        "donation_target" => 14
+                        ),
+
+                "gentoo" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/gentoo-logo.png",
+                        "url" => "https://www.gentoo.org/",
+                        "donation_target" => 15
+                        ),
+
+                "lfs" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/linux-from-scratch-logo.png",
+                        "url" => "http://linuxfromscratch.org/",
+                        "donation_target" => 16
+                        ),
+
+                "mageia" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/mageia-logo.png",
+                        "url" => "https://www.mageia.org",
+                        "donation_target" => 17
+                        ),
+
+                "pisi" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/pisi-linux-logo.png",
+                        "url" => "http://www.pisilinux.org",
+                        "donation_target" => 18
+                        ),
+
+                "kde-neon" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/kde-neon-logo.png",
+                        "url" => "https://neon.kde.org/",
+                        "donation_target" => 19
+                        ),
+
+                "elementary-os" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/elementary-os-logo.png",
+                        "url" => "https://elementary.io",
+                        "donation_target" => 20
+                        ),
+
+                "netrunner" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/netrunner-logo.png",
+                        "url" => "http://www.netrunner.com/",
+                        "donation_target" => -1
+                        ),
+
+                "aldos" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/aldos-logo.png",
+                        "url" => "http://www.alcancelibre.org/staticpages/index.php/notas-lanzamiento-aldos-1-4",
+                        "donation_target" => 21
+                        ),
+
+                "centos" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/centos-logo.png",
+                        "url" => "https://www.centos.org/",
+                        "donation_target" => 22
+                        ),
+
+                "pclinuxos" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/pclinuxos-logo.png",
+                        "url" => "http://www.pclinuxos.com/",
+                        "donation_target" => 23
+                        ),
+
+                "chakra" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/chakra-logo.png",
+                        "url" => "https://chakralinux.org/",
+                        "donation_target" => 24
+                        ),
+
+                "slackware" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/slackware-logo.png",
+                        "url" => "http://www.slackware.com/",
+                        "donation_target" => 25
+                        ),
+
+                "devuan" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/devuan-logo.png",
+                        "url" => "https://devuan.org/",
+                        "donation_target" => 26
+                        ),
+
+                "solydxk" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/solyd-xk-logo.png",
+                        "url" => "https://solydxk.com/",
+                        "donation_target" => 27
+                        ),
+
+                "antergos" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/antergos-logo.png",
+                        "url" => "https://antergos.com/",
+                        "donation_target" => 28
+                        ),
+
+                "funtoo" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/funtoo-logo.png",
+                        "url" => "http://funtoo.org/",
+                        "donation_target" => 29
+                        ),
+
+                "bodhi" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/bodhi-logo.png",
+                        "url" => "http://www.bodhilinux.com/",
+                        "donation_target" => 30
+                        ),
+
+                "mx-linux" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/mx-linux-logo.png",
+                        "url" => "https://mxlinux.org/",
+                        "donation_target" => 31
+                        ),
+
+                "handylinux" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/handylinux-logo.png",
+                        "url" => "https://handylinux.org/",
+                        "donation_target" => -1
+                        ),
+
+                "point-linux" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/point-linux-logo.png",
+                        "url" => "https://pointlinux.org/",
+                        "donation_target" => 32
+                        ),
+
+                "parabola" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/parabola-logo.png",
+                        "url" => "https://parabola.nu/",
+                        "donation_target" => 33
+                        ),
+
+                "black-panther" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/black-panther-logo.png",
+                        "url" => "http://www.blackpantheros.eu",
+                        "donation_target" => 34
+                        ),
+
+);
+
+        return $dist;
+
+}
+
+function lhg_get_distri_name( $distribution ) {
+
+        if ( strpos($distribution,"Ubuntu") > -1 )
+                return "ubuntu";
+
+        if ( strpos($distribution,"Mint") > -1 )
+                return "mint";
+
+        if ( strpos($distribution,"LMDE") > -1 )
+                return "mint";
+
+        if ( strpos($distribution,"Debian") > -1 )
+                return "debian";
+
+        if ( strpos($distribution,"Fedora") > -1 )
+                return "fedora";
+
+        if ( strpos($distribution,"Zorin") > -1 )
+                return "zorin";
+
+        if ( strpos($distribution,"Tanglu") > -1 )
+                return "tanglu";
+
+        if ( strpos($distribution,"Korora") > -1 )
+                return "korora";
+
+        if ( strpos($distribution,"Arch Linux") > -1 )
+                return "arch";
+
+        if ( strpos($distribution,"openSUSE") > -1 )
+                return "opensuse";
+
+        if ( strpos($distribution,"Manjaro") > -1 )
+                return "manjaro";
+
+        if ( strpos($distribution,"ALT Linux") > -1 )
+                return "alt";
+
+        if ( strpos($distribution,"Simply Linux") > -1 )
+                return "simply";
+
+        if ( strpos($distribution,"Kali ") > -1 )
+                return "kali";
+
+        if ( strpos($distribution,"Raspbian ") > -1 )
+                return "raspbian";
+
+        if ( strpos($distribution,"Ultimate Edition ") > -1 )
+                return "ultimate-edition";
+
+        if ( strpos($distribution,"Gentoo") > -1 )
+                return "gentoo";
+
+        if ( strpos($distribution,"Linux From Scratch") > -1 )
+                return "lfs";
+
+       if ( strpos($distribution,"Mageia") > -1 )
+                return "mageia";
+
+        if ( strpos($distribution,"Pisi") > -1 )
+                return "pisi";
+
+        if ( strpos($distribution,"KDE neon") > -1 )
+                return "kde-neon";
+
+        if ( strpos($distribution,"KDE Neon") > -1 )
+                return "kde-neon";
+
+        if ( strpos($distribution,"elementary OS") > -1 )
+                return "elementary-os";
+
+        if ( strpos($distribution,"Elementary OS") > -1 )
+                return "elementary-os";
+
+        if ( strpos($distribution,"Netrunner") > -1 )
+                return "netrunner";
+
+        if ( strpos($distribution,"ALDOS") > -1 )
+                return "aldos";
+
+        if ( strpos($distribution,"CentOS") > -1 )
+                return "centos";
+
+        if ( strpos($distribution,"PCLinuxOS") > -1 )
+                return "pclinuxos";
+
+        if ( strpos($distribution,"Chakra") > -1 )
+                return "chakra";
+
+        if ( strpos($distribution,"Slackware") > -1 )
+                return "slackware";
+
+        if ( strpos($distribution,"Devuan") > -1 )
+                return "devuan";
+
+        if ( strpos($distribution,"Solyd") > -1 )
+                return "solydxk";
+
+        if ( strpos($distribution,"Antergos") > -1 )
+                return "antergos";
+
+        if ( strpos($distribution,"Funtoo") > -1 )
+                return "funtoo";
+
+        if ( strpos($distribution,"Bodhi") > -1 )
+                return "bodhi";
+
+        if ( strpos($distribution,"MX ") > -1 )
+                return "mx-linux";
+
+        if ( strpos($distribution,"MX-") > -1 )
+                return "mx-linux";
+
+        if ( strpos($distribution,"HandyLinux") > -1 )
+                return "handylinux";
+
+        if ( strpos($distribution,"Point Linux") > -1 )
+                return "point-linux";
+
+        if ( strpos($distribution,"Parabola") > -1 )
+                return "parabola";
+
+        if ( strpos($distribution,"blackPanther") > -1 )
+                return "black-panther";
+
+
+}
 
 // Twitter widget on main page
 // enhance widget with unicode character substitution
@@ -998,12 +1309,16 @@ add_action('manage_users_custom_column', 'add_custom_user_columns', 15, 3);
 add_filter('manage_users_columns', 'add_user_columns', 15, 1);
 
 function add_comment_columns( $columns ) {
-     $columns['language'] = __('Language')." / ".__('Rating');
+     global $lang;
+     if ($lang != "de") $columns['language'] = __('Language')." / ".__('Rating');
+     if ($lang == "de") $columns['language'] = __('Rating');
      //$defaults['title'] = __('Title', 'user-column');
      return $columns;
 }
 
 function add_custom_comment_columns($column_name, $id) {
+      global $lang;
+
       $flag_url="/wp-content/plugins/qtranslate/flags/";
       if( $column_name == 'language' ) {
 		$lang   = get_comment_meta( $id, 'language', true );
@@ -1018,19 +1333,22 @@ function add_custom_comment_columns($column_name, $id) {
                 //echo "L: $lang";
 
                 //default
-                $out = '<img src="'.$flag_url."us.png".'">';
-                if ($lang == "com") $out= '<img src="'.$flag_url."us.png".'">';
-                if ($lang == "ca")  $out= '<img src="'.$flag_url."ca.png".'">';
-                if ($lang == "zh")  $out= '<img src="'.$flag_url."cn.png".'">';
-                if ($lang == "fr")  $out= '<img src="'.$flag_url."fr.png".'">';
-                if ($lang == "in")  $out= '<img src="'.$flag_url."in.png".'">';
-                if ($lang == "it")  $out= '<img src="'.$flag_url."it.png".'">';
-                if ($lang == "jp")  $out= '<img src="'.$flag_url."jp.png".'">';
-                if ($lang == "uk")  $out= '<img src="'.$flag_url."uk.png".'">';
-                if ($lang == "es")  $out= '<img src="'.$flag_url."es.png".'">';
-                if ($lang == "nl")  $out= '<img src="'.$flag_url."nl.png".'">';
-                if ($lang == "de")  $out= '<img src="'.$flag_url."de.png".'">';
-
+                # show language icon in comment section on servers with multiple
+                # language support
+                if ($lang != "de") {
+                	$out = '<img src="'.$flag_url."us.png".'">';
+	                if ($lang == "com") $out= '<img src="'.$flag_url."us.png".'">';
+        	        if ($lang == "ca")  $out= '<img src="'.$flag_url."ca.png".'">';
+	                if ($lang == "zh")  $out= '<img src="'.$flag_url."cn.png".'">';
+        	        if ($lang == "fr")  $out= '<img src="'.$flag_url."fr.png".'">';
+	                if ($lang == "in")  $out= '<img src="'.$flag_url."in.png".'">';
+        	        if ($lang == "it")  $out= '<img src="'.$flag_url."it.png".'">';
+	                if ($lang == "jp")  $out= '<img src="'.$flag_url."jp.png".'">';
+        	        if ($lang == "uk")  $out= '<img src="'.$flag_url."uk.png".'">';
+	                if ($lang == "es")  $out= '<img src="'.$flag_url."es.png".'">';
+        	        if ($lang == "nl")  $out= '<img src="'.$flag_url."nl.png".'">';
+	                if ($lang == "de")  $out= '<img src="'.$flag_url."de.png".'">';
+                }
                 echo $out."<br>".$rating_result;
       }
 }
@@ -3857,7 +4175,7 @@ if ($lang == "de") {
 	$txt_scan_result	= "Ergebnis";
 	$txt_scan_results	= "Ergebnisse";
 	$txt_scan_title		= "Identifizierte Hardware-Konfigurationen";
-	$txt_scan_text          = 'Diese Hardware-Komponente wurde von Linux-Benutzern unter folgenden System-Konfigurationen eingesetzt. S&auml;mtliche Ergebnisse wurdens mit dem <a href="./add-hardware">LHG Scan Tool</a> gesammelt:';
+	$txt_scan_text          = 'Diese Hardware-Komponente wurde von Linux-Benutzern unter folgenden System-Konfigurationen eingesetzt. S&auml;mtliche Ergebnisse wurdens mit dem <a href="./hardware-eintragen">LHG Scan Tool</a> gesammelt:';
 
 
         //user-submit-form.php
@@ -3886,7 +4204,7 @@ Ausgabe von lspci, lsusb und lshw...';
         $txt_username  	= "Benutzername";
 	$txt_register  	= "Registrieren";
 	$txt_mail  	= "Email Adresse";
-        $txt_pwd_send   = "Ein Paswort wird Ihnen zugeschickt.";
+        $txt_pwd_send   = "Ein Passwort wird Ihnen zugeschickt.";
         $txt_new_pwd    = "Neues Passwort erstellen";
         $txt_user_or_mail = "Benutzername oder E-mail";
 

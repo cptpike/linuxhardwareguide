@@ -60,6 +60,21 @@ if (isset($_GET['scansid'] )) {
 	$dmi_line = str_replace("#"," ",$dmi_line);
 	$dmi_line = str_replace("\n"," ",$dmi_line);
 
+	$xorg_server_array = preg_grep("/X.Org X Server /",$dmesg_content_array);
+        $xorg_server = implode(" ",$xorg_server_array);
+	$xorg_server = str_replace("\n"," ",$xorg_server);
+
+        $nvidia_module_array = preg_grep("/NVIDIA GLX Module /",$dmesg_content_array);
+        $nvidia_module = implode(" ", $nvidia_module_array);
+	$nvidia_module = str_replace("\n"," ",$nvidia_module);
+        # clean string
+        $tmp = explode("(II) ",$nvidia_module);
+        $nvidia_module = substr($tmp[1],0,27);
+        #error_log("NVmod: $nvidia_module");
+
+        if ($nvidia_module != "") $nvtxt = 'nvidia_module="'.$nvidia_module.'"';
+
+        $graphicscard_text = '[lhg_graphicscard distribution="'.$distribution.'" version="'.$kernel.'" xserver="'.$xorg_server.'" '.$nvtxt.']';
 
 }
 
@@ -69,10 +84,13 @@ buttonA = edButtons.length;
 edButtons[edButtons.length] = new edButton(\'ed_mainboard\',\'Mainboard\',\'[lhg_mainboard_intro distribution="'.$distribution.'" version="'.$kernel.'" dmi_output="'.$dmi_line.'"]\n\n[lhg_mainboard_lspci] \n[/lhg_mainboard_lspci]\',\'\',\'Mainboard shortcode\');
 buttonB = edButtons.length;
 edButtons[edButtons.length] = new edButton(\'ed_hplip\',\'hplip\',\'[lhg_hplip version="" usb="" url=""]\',\'\',\'hplip shortcode\');
+buttonC = edButtons.length;
+edButtons[edButtons.length] = new edButton(\'ed_graphicscard\',\'Graphics Card\',\''.$graphicscard_text.'\',\'\',\'Graphics Card\');
 
 jQuery(document).ready(function($){
     jQuery("#ed_toolbar").append(\'<input type="button" value="Mainboard" id="ed_mainboard" class="ed_button" onclick="edInsertTag(edCanvas, buttonA);" title="Mainboard shortcode" />\');
     jQuery("#ed_toolbar").append(\'<input type="button" value="hplip" id="ed_hplip" class="ed_button" onclick="edInsertTag(edCanvas, buttonB);" title="hplip" />\');
+    jQuery("#ed_toolbar").append(\'<input type="button" value="Graphics Card" id="ed_graphicscard" class="ed_button" onclick="edInsertTag(edCanvas, buttonC);" title="hplip" />\');
 }); 
 </script>
 ';
@@ -418,11 +436,12 @@ echo '
        			$results = $lhg_price_db->get_results($myquery);
 
 			echo '<p>SID: '.$sid.'<br>';
-                        echo '  <input href="#" id="create-fingerprint" class="button-primary create-fingerprint" value="Create fingerprint"></input>
+                        echo '  <input href="#" id="create-fingerprint" class="button-primary create-fingerprint" value="Create fingerprint" />
                               </p>';
 
                         echo '
-                        
+
+                        <a href="?" id="select_all_pci_yes">all yes</a><br><a href="?" id="select_all_pci_no">all no</a>
                         <table class="table-pci-selector"><tr>
                                 <td class="pci-selector-1">select</td>
                                 <td class="pci-selector-2">Description</td>
@@ -561,7 +580,23 @@ echo '
                                         var origtext = $("#content").val();
                                         var start_pos = origtext.indexOf("[lhg_mainboard_lspci]");
                                         var end_pos   = origtext.indexOf("[/lhg_mainboard_lspci]");
+                                        var delta = 0;
+                                        //alert("1: Start: "+start_pos+" End:"+end_pos);
 
+                                        if (start_pos == end_pos ) {
+                                        	start_pos = origtext.indexOf("[code lang=\"plain\" title=\"lspci -nnk\"]");
+                                        	end_pos   = origtext.indexOf("[/code]");
+                                                delta = 17;
+                                                //alert("2: Start: "+start_pos+" End:"+end_pos);
+
+        	                            	};
+                                        if (start_pos == -1 ) {
+                                        	start_pos = origtext.indexOf("[code lang=\"plain\" title=\"lspci\"]");
+                                        	end_pos   = origtext.indexOf("[/code]");
+                                                delta = 17-5;
+                                                //alert("2: Start: "+start_pos+" End:"+end_pos);
+
+        	                            	};
 
                                         // get new PCI list from PriceDB via AJAX
                                         //
@@ -576,7 +611,7 @@ echo '
                                     	$.get(\'/wp-admin/admin-ajax.php\', data, function(response){
 	                                        var pcilist_txt = "";
                                         	pcilist_txt = $(response).find("supplemental pcilist_txt").text();
-                                                var newtext = origtext.substr(0,start_pos+21) + "\n" + pcilist_txt + origtext.substr(end_pos);
+                                                var newtext = origtext.substr(0,start_pos+21+delta) + "\n" + pcilist_txt + origtext.substr(end_pos);
                                                 //newtext = newtext.replace("<!--:us-->","");
                                                 //newtext = newtext.replace("<!--:-->","");
                                                 //newtext = newtext.replace("&lt;!--:us--&gt;","");
@@ -605,6 +640,24 @@ echo '
                                         //tinyMCE.triggerSave();
                                         tb_remove();
 
+
+                                });
+
+                                // all PCI components to onboard (i.e. yes)
+                                $("#select_all_pci_yes").click(function() {
+	                                $("[id^=radio-y-]").prop("checked",true);
+	                                $("[id^=radio-n-]").prop("checked",false);
+                                        //prevent default behavior
+                                	return false;
+
+                                });
+
+                                // all PCI components to not onboard (i.e. no)
+                                $("#select_all_pci_no").click(function() {
+	                                $("[id^=radio-y-]").prop("checked",false);
+	                                $("[id^=radio-n-]").prop("checked",true);
+                                        //prevent default behavior
+                                	return false;
 
                                 });
 

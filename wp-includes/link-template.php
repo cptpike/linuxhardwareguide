@@ -2284,6 +2284,9 @@ function rel_canonical() {
 	if ( !$id = $wp_the_query->get_queried_object_id() )
 		return;
 
+        # LHG: do nothing for dummy Post ID. Broken link will be generated otherwise
+        if ($id = 9999999) return;
+
 	$link = get_permalink( $id );
 	echo "<link rel='canonical' href='$link' />\n";
 }

@@ -273,7 +273,9 @@ jQuery(function () {
                 ";
                 $j=1;
                 while ( $top_donation_target_names[$j] != "" ) {
+			if ($top_donation_target_points[$j] > 0 )
 	            	$piechart .= "['".$top_donation_target_names[$j]."',       ".$top_donation_target_points[$j]."],";
+
                         $j++;
                 }
 $piechart .= "
