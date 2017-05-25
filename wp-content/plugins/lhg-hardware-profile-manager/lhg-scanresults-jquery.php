@@ -434,6 +434,15 @@ print '
         });
 
 
+        // hide all recognized PCI components by default
+        // show if new mainboard needed
+        $(".mb-default-hidden").hide();
+        $("#create-mainboard").click(function(){
+	        $(".mb-default-hidden").show();
+        });
+
+
+
         });
 
 /*]]> */
@@ -569,7 +578,78 @@ function lhg_mainboard_jquery($_sid) {
 }
 
 
-function lhg_editor_tools_mainboard_jquery( $_sid, $_postid ) {
+function lhg_editor_tools_mainboard_jquery( $_sid, $_postid, $_dmi ) {
+
+// Create article if MB is recognized incorrectly
+
+print           '<script type="text/javascript">
+                /* <![CDATA[ */
+
+                jQuery(document).ready( function($) {
+
+
+                                if($("#lhg-scan-mb-inputarea-found").length > 0) {
+                                	// a mainboard was found
+					$(".mb-buttons-article-exists").hide();
+                                        // hide mainboard input area by default (if already on MB was recognized)
+	                                $("#lhg-scan-mb-inputarea-found").hide();
+
+                                }else{
+					$(".mb-buttons-create-new").hide();
+                                }
+
+                                $("#create-mainboard").click(function() {
+	                                $("#lhg-scan-mb-inputarea-found").show();
+				        //$(".mb-buttons-article-exists").show();
+
+                                        // tag selector needs to be resized. Has zero width because of hidden status
+                                        $("#tag_select_box_mb_chosen").width("80%");
+
+                                	var indicator_html = \'<img class="scan-load-button" id="button-load-new-mb" src="'.$urlprefix.'/wp-uploads/2015/11/loading-circle.gif" />\';
+                                	$(this).after(indicator_html);
+
+                                    //var id = $(this).attr(\'id\').substring(8);
+                                    //$("#pci-feedback-"+id).show("slow");
+                                    //$("#updatearea-"+id).show();
+				    //$("#scan-comments-"+id).show();
+
+                                    //prepare Ajax data:
+                                    var session = "'.$_sid.'";
+                                    var title = "'.trim($_dmi).'";
+	                            var data ={
+                                        action: \'lhg_create_mainboard_post_ajax\',
+                                        session: session,
+                                        title: title
+                                    };
+
+                                    $.get(\'/wp-admin/admin-ajax.php\', data, function(response){
+                                       //currently no visual feedback
+                                        var postid     = $(response).find("supplemental postid").text();
+
+	                                $("#button-load-new-mb").hide();
+                	                //$("#create-mainboard").after(" DoneA"+postid);
+                                        var newurl = "/wp-admin/post.php?post=" + postid + "&action=edit&scansid=" + session;
+        	                        $("#publish-mb-new").after("<a id=\"created-mb-article\" href=\"" + newurl + "\">Edit new mainboard article</a><br>");
+                                        $("#create-mainboard").hide();
+                                    });
+                                    //$(this).replaceWith("Test");
+
+	                            //prevent default behavior
+        	                    return false;
+
+                                });
+
+
+	                        //prevent default behavior
+        	                return false;
+
+        	});
+
+                /*]]> */
+                </script>';
+       // } // end create MB article
+
+
 
 print '
 
