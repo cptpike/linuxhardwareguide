@@ -869,7 +869,7 @@ function lhg_scan_mb_live_update_asin_ajax() {
         #error_log("ASIN: $asin for PID: $pid");
 
 
-        $output = lhg_aws_get_price($asin,"com");
+        $output = lhg_aws_get_price($asin,"all");
         list($image_url_com, $product_url_com, $price_com , $product_title, $label, $brand, $image_url_com2, $image_url_com3 , $image_url_com4, $image_url_com5 ) = split(";;",$output);
         $product_title = str_replace("Title: ","", $product_title);
         $image_url_com   = str_replace("Image: ","", $image_url_com);
