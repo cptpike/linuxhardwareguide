@@ -48,30 +48,36 @@ if (defined( $ARGV[2] ) )  {
     
 $AssociateTag = "unknown";
 if ($region eq "ca"){
-    $aws_partner_id ="linuhardgui01-20";
+    $aws_partner_ids[0] ="linuhardgui01-20";
 }elsif ($region eq "co.uk") {
-    $aws_partner_id ="linuhardguid-21";
+    $aws_partner_ids[0] ="linuhardguid-21";
 }elsif ($region eq "de"){
-    $aws_partner_id ="linuxnetmagor-21";
+    $aws_partner_ids[0] ="linuxnetmagor-21";
 }elsif ($region eq "fr"){
-    $aws_partner_id ="linuhardgui01-21";
+    $aws_partner_ids[0] ="linuhardgui01-21";
 }elsif ($region eq "es"){
-    $aws_partner_id ="linuhardgu061-21";
+    $aws_partner_ids[0] ="linuhardgu061-21";
 }elsif ($region eq "it"){
-    $aws_partner_id ="linuhardgui05-21";
+    $aws_partner_ids[0] ="linuhardgui05-21";
 }elsif ($region eq "co.jp"){
-    $aws_partner_id ="linuhardgui22-22";
+    $aws_partner_ids[0] ="linuhardgui22-22";
     #            //}elseif ($region == "com.br"){
     #//      $aws_partner_id ="linuhardgui22-22";
 }elsif ($region eq "cn"){
-    $aws_partner_id ="linuhardgui23-23";
+    $aws_partner_ids[0] ="linuhardgui23-23";
 }elsif ($region eq "in"){
-    $aws_partner_id ="linuxhardwagu-21";
+    $aws_partner_ids[0] ="linuxhardwagu-21";
+}elsif ($region eq "all"){
+    $mode = "all";
+    @regions = ("com", "de", "fr", "co.uk");
+    $aws_partner_ids[0] ="linuhardguid-20";
+    $aws_partner_ids[1] ="linuxnetmagor-21";
+    $aws_partner_ids[2] ="linuhardgui01-21";
+    $aws_partner_ids[3] ="linuhardguid-21";
 }else {     #// com as default
-    $aws_partner_id ="linuhardguid-20";
+    $aws_partner_ids[0] ="linuhardguid-20";
 }
 
-$AssociateTag = $aws_partner_id;
 
 #print "ID: $ItemID";
 
@@ -80,7 +86,30 @@ $AssociateTag = $aws_partner_id;
   $public_key = "abc";
   $private_key = "abcd";
   require ("$dir/lhg.conf");
+  
+  
+  $i=-1;
+foreach $aws_partner_id (@aws_partner_ids) {
+    
+    
+    # get region corresponding to partner ID
+    $i++;
+    if ($region eq "all") {
+        $region = "com";
+    }
+    if ($i > 0) {
+        $region = $regions[$i];
+    }
+    
+    
+    $AssociateTag = $aws_partner_id;
+    
+    #        print "I: $i -> $region
+    #    ID: $aws_partner_id
+    #    
+    #    ";
 
+  
   #  use URI::Amazon::APA; # instead of URI
   my $u = URI::Amazon::APA->new('http://webservices.amazon.'.$region.'/onca/xml');
    $u->query_form(
@@ -180,6 +209,12 @@ $AssociateTag = $aws_partner_id;
     print $r->status_line, $r->as_string;
   }
   
+  if ($mode eq "all"){
+      if ($medium_image1 eq "") {
+          # go to next server
+          next;
+      }
+  }
   
   if ($return_url eq 1) {
       if ( defined($url) ) { 
@@ -208,7 +243,19 @@ $AssociateTag = $aws_partner_id;
       
           #print "Image: ".join(" - ", @medium_image);
           #}
+      
+      if ($mode eq "all"){
+          if ($medium_image1 ne "") {
+              # found something -> exit
+              exit;
+          }
+      }
 
+      
   }else{
       print $lowestNewPrice;
   }
+  
+}
+
+  
