@@ -126,6 +126,10 @@ if ($show_public_profile) {
 # In this case the DB server is still processing and we need to wait a little
 lhg_check_if_recent_upload( $sid );
 
+# check if scan was carried out inside a virtual machine
+$scan_is_vm = lhg_check_scan_for_virtual_machine($sid);
+
+
 # store login data
 # we need this info to link scan results with users
 # and ratings with kernel versions
@@ -612,6 +616,14 @@ if ( ($uid != "") && ($num_uid > 1) && (strlen($uid)>5) ) {
 
 echo '</table>';
 
+
+if ($scan_is_vm) {
+
+        print '<div class="lhg-scan-vm-warning">This scan was performed on a virtual machine.<br>
+        Due to the nature of a virtual machine the hardware information of the scan is very limited.<br>
+        Please consider carrying out the scan on the host server instead.
+        </div>';
+}
 
 #
 # Show editbox at top of page
@@ -1239,6 +1251,7 @@ print                       " </td>";
 #
 
 
+if (!$scan_is_vm)
 if (count($unidentified_hw_pci) > 0) {
 
         # Always insert all PCI components, but hide via JQuery if we identified some
@@ -2446,6 +2459,19 @@ print '
                         $id=( $a_identified_hw->id );
                         $scantype=( $a_identified_hw->scantype );
 
+                        # skip PCI components in virtual machnies
+                        if ( ( $pciid != "" ) && ( $scan_is_vm ) ) {
+                        	$skip = 1; $num_skip ++;
+                        }
+                        # skip Virtual hardware
+                        if ( ( strpos($title, " VBOX ") !== false ) && ( $scan_is_vm ) ) {
+                        	$skip = 1; $num_skip ++;
+                        }
+                        if ( ( strpos($title, "VirtualBox") !== false ) && ( $scan_is_vm ) ) {
+                        	$skip = 1; $num_skip ++;
+                        }
+
+
                         $original_title = $title;
 
 
@@ -2900,7 +2926,8 @@ print '
                 #$editbox_top .= "finalize article";
         	#$editbox_top .= '&nbsp;&nbsp;&nbsp;<a href="/wp-admin/post.php?post='.$newPostID_mb.'&action=edit&scansid='.$sid.'">finalize article</a>';
 
-                $editbox_top .= '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">finalize article</a>';
+                $editbox_top .= '<br><a id="finalize-hw-post-'.$id.'" href="#">publish article</a>';
+                $editbox_top .= '<br><a href="/wp-admin/post.php?post='.$newPostID.'&action=edit&scansid='.$sid.'">edit article</a>';
                 $editbox_top .= '<br><a href="./" id="finder-'.$id.'" name="pid-'.$newPostID.'">Amazon finder</a>';
                 $editbox_top .= '<br><div class="scan-commentoptions"><a href="#" id="transform-to-comment-'.$id.'" name="postid-'.$newPostID.'">transform to public comment</a>';
          	$editbox_top .= '<br><a href="#" id="add-comment-'.$id.'" name="postid-'.$newPostID.'">add comment to article</a></div>';
