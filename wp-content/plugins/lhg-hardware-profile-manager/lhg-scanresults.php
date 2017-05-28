@@ -272,12 +272,28 @@ function lhg_scan_overview_get_scan_designation($_sid) {
 function lhg_scan_overview_get_mb_type($_sid) {
 
 	global $lhg_price_db;
-
 	$myquery = $lhg_price_db->prepare("SELECT mb_type_user FROM `lhgscansessions` WHERE sid = %s", $_sid);
 	$type = $lhg_price_db->get_var($myquery);
 
         return $type;
+
 }
 
+
+function lhg_check_scan_for_virtual_machine($_sid){
+
+	global $lhg_price_db;
+	$myquery = $lhg_price_db->prepare("SELECT dmi FROM `lhgscansessions` WHERE sid = %s", $_sid);
+	$dmi = $lhg_price_db->get_var($myquery);
+
+        # looks like a virtual machine
+        if (strpos($dmi, "VirtualBox") !== false) {
+                return true;
+	}
+
+        return false;
+
+
+}
 
 ?>
