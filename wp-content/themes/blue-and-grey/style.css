@@ -3004,3 +3004,8 @@ tr#quarterly-points-header-row {
 .hwscan-mb-thumbnail {
 	float: right;
 }
+
+.lhg-scan-vm-warning {
+	color: red;
+        font-weight: bold;
+}
