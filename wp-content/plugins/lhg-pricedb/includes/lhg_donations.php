@@ -175,6 +175,11 @@ $donation = array(
                 "NameShort" => "blackPanther OS",
                 ),
 
+	35 => array (
+                "Name" => "BunsenLabs",
+                "NameShort" => "Bunsenlabs GNU/Linux",
+                ),
+
 );
 
 
