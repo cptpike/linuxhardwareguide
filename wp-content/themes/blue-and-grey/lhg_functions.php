@@ -264,6 +264,12 @@ function lhg_get_distribution_array( )  {
                         "donation_target" => 34
                         ),
 
+                "bunsenlabs" => array(
+                        "logo" => "/wp-content/plugins/lhg-hardware-profile-manager/images/bunsenlabs-logo.png",
+                        "url" => "http://www.bunsenlabs.org",
+                        "donation_target" => 35
+                        ),
+
 );
 
         return $dist;
@@ -394,6 +400,9 @@ function lhg_get_distri_name( $distribution ) {
 
         if ( strpos($distribution,"blackPanther") > -1 )
                 return "black-panther";
+
+        if ( strpos($distribution,"BunsenLabs") > -1 )
+                return "bunsenlabs";
 
 
 }
